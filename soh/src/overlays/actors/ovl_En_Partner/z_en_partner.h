@@ -18,6 +18,7 @@ typedef struct EnPartner {
     Vec3s morphTable[15];
 
     ColliderCylinder collider;
+    ColliderCylinder weaponCollider;
 
     Color_RGBAf innerColor;
     Color_RGBAf outerColor;
