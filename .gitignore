@@ -415,7 +415,9 @@ tags
 *.sav
 shipofharkinian.ini
 shipofharkinian.json
+timesplitdata.json
 imgui.ini
+/Randomizer/*.json
 
 # Switch Stuff
 
