@@ -9,6 +9,14 @@
             "cwd": "${workspaceFolder}",
             "MIMode": "lldb",
             "preLaunchTask": "Build"
+        },
+        {
+            "name": "Debug without build",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build-cmake/soh/soh-macos",
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb"
         }
     ]
 }

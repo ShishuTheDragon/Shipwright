@@ -409,7 +409,6 @@ ZAPD/BuildInfo.h
 
 DebugObj/*
 ReleaseObj/*
-Randomizer/
 .tags
 tags
 *.otr
@@ -418,6 +417,7 @@ shipofharkinian.ini
 shipofharkinian.json
 timesplitdata.json
 imgui.ini
+/Randomizer/*.json
 
 # Switch Stuff
 
