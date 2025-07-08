@@ -10,6 +10,7 @@
 #include "overlays/actors/ovl_En_Si/z_en_si.h"
 #include <objects/object_link_child/object_link_child.h>
 #include <overlays/actors/ovl_En_Bom/z_en_bom.h>
+#include <overlays/actors/ovl_En_Karebaba/z_en_karebaba.h>
 #include <overlays/actors/ovl_Obj_Switch/z_obj_switch.h>
 #include <overlays/effects/ovl_Effect_Ss_HitMark/z_eff_ss_hitmark.h>
 #include "soh/OTRGlobals.h"
@@ -26,6 +27,7 @@ void EnPartner_Update(Actor* thisx, PlayState* play);
 void EnPartner_Draw(Actor* thisx, PlayState* play);
 void EnPartner_SpawnSparkles(EnPartner* this, PlayState* play, s32 sparkleLife);
 
+void EnKarebaba_DeadItemDrop(EnKarebaba* this, PlayState* play);
 void Player_RequestQuake(PlayState* play, s32 speed, s32 y, s32 countdown);
 
 static InitChainEntry sInitChain[] = {
@@ -750,6 +752,14 @@ void UseItem(uint8_t usedItem, u8 started, Actor* thisx, PlayState* play) {
     }
 }
 
+bool IsDeadDekuBaba(Actor* itemActor) {
+    if (itemActor->id == ACTOR_EN_DEKUBABA)
+        return itemActor->category == ACTORCAT_MISC;
+    else if (itemActor->id == ACTOR_EN_KAREBABA)
+        return ((EnKarebaba*)itemActor)->actionFunc == EnKarebaba_DeadItemDrop;
+    return false;
+}
+
 void EnPartner_Update(Actor* thisx, PlayState* play) {
     s32 pad;
     EnPartner* this = (EnPartner*)thisx;
@@ -836,6 +846,15 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
                         itemActor->world.pos = GET_PLAYER(play)->actor.world.pos;
                         break;
                     }
+                }
+            } else if (IsDeadDekuBaba(itemActor)) {
+                Vec3f diff;
+                Math_Vec3f_Diff(&this->actor.world.pos, &itemActor->world.pos, &diff);
+                const f32 capsuleHeight = 50.0f;
+                diff.y = diff.y >= capsuleHeight ? (diff.y - capsuleHeight) : (diff.y >= 0.0f ? 0.0f : diff.y);
+                if (Math3D_Vec3fMagnitude(&diff) <= 20.0f) {
+                    itemActor->world.pos = GET_PLAYER(play)->actor.world.pos;
+                    break;
                 }
             }
             itemActor = itemActor->next;
