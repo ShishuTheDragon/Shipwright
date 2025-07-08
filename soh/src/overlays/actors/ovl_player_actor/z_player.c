@@ -12635,21 +12635,21 @@ s16 func_8084ABD8(PlayState* play, Player* this, s32 arg2, s16 arg3) {
 
     if (!func_8002DD78(this) && !func_808334B4(this) && (arg2 == 0)) { // First person without weapon
         // Y Axis
+        s32 pitch = 0; // 32-bit so large gyro values don’t overflow
         if (!(CVarGetInteger(CVAR_SETTING("MoveInFirstPerson"), 0) &&
               CVarGetInteger(CVAR_SETTING("Controls.RightStickAim"), 0))) {
-            temp2 += sControlInput->rel.stick_y * 240.0f * invertYAxisMulti * yAxisMulti;
+            pitch += sControlInput->rel.stick_y * 240.0f * invertYAxisMulti * yAxisMulti;
         }
         if (CVarGetInteger(CVAR_SETTING("Controls.RightStickAim"), 0)) {
-            temp2 += sControlInput->rel.right_stick_y * 240.0f * invertYAxisMulti * yAxisMulti;
+            pitch += sControlInput->rel.right_stick_y * 240.0f * invertYAxisMulti * yAxisMulti;
         }
         if (fabsf(sControlInput->cur.gyro_x) > 0.01f) {
-            temp2 += (-sControlInput->cur.gyro_x) * 750.0f;
+            pitch += (-sControlInput->cur.gyro_x) * 7500.0f;
         }
         if (CVarGetInteger(CVAR_SETTING("DisableFirstPersonAutoCenterView"), 0)) {
-            this->actor.focus.rot.x += temp2 * 0.1f;
-            this->actor.focus.rot.x = CLAMP(this->actor.focus.rot.x, -14000, 14000);
+            this->actor.focus.rot.x = CLAMP(this->actor.focus.rot.x + pitch * 0.1f, -14000, 14000);
         } else {
-            Math_SmoothStepToS(&this->actor.focus.rot.x, temp2, 14, 4000, 30);
+            Math_SmoothStepToS(&this->actor.focus.rot.x, CLAMP(pitch, -14000, 14000), 14, 4000, 30);
         }
 
         // X Axis
