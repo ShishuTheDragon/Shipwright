@@ -12638,7 +12638,7 @@ s16 func_8084ABD8(PlayState* play, Player* this, s32 arg2, s16 arg3) {
             temp2 += sControlInput->rel.right_stick_y * 240.0f * invertYAxisMulti * yAxisMulti;
         }
         if (fabsf(sControlInput->cur.gyro_x) > 0.01f) {
-            temp2 += (-sControlInput->cur.gyro_x) * 750.0f;
+            temp2 += (-sControlInput->cur.gyro_x) * 7500.0f;
         }
         if (CVarGetInteger(CVAR_SETTING("DisableFirstPersonAutoCenterView"), 0)) {
             this->actor.focus.rot.x += temp2 * 0.1f;
