@@ -1296,6 +1296,25 @@ void Environment_Update(PlayState* play, EnvironmentContext* envCtx, LightContex
             envCtx->dirLight2.params.dir.x = 1;
         }
     }
+
+    switch (play->sceneNum) {
+        case SCENE_KOKIRI_FOREST:
+        case SCENE_LOST_WOODS:
+        case SCENE_DEKU_TREE:
+        case SCENE_DEKU_TREE_BOSS:
+        case SCENE_LINKS_HOUSE:
+        case SCENE_KOKIRI_SHOP:
+        case SCENE_TWINS_HOUSE:
+        case SCENE_KNOW_IT_ALL_BROS_HOUSE:
+        case SCENE_MIDOS_HOUSE:
+        case SCENE_SARIAS_HOUSE:
+            lightCtx->fogColor[0] = 90;
+            lightCtx->fogColor[1] = 30;
+            lightCtx->fogColor[2] = 60;
+            lightCtx->fogNear = 900;
+            lightCtx->fogFar = 5000;
+            break;
+    }
 }
 
 void Environment_DrawSunAndMoon(PlayState* play) {

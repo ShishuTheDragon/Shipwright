@@ -25,6 +25,7 @@
 #include "soh/resource/type/scenecommand/SetMesh.h"
 #include "soh/resource/type/scenecommand/SetObjectList.h"
 #include "soh/resource/type/scenecommand/SetLightList.h"
+#include "soh/resource/type/scenecommand/SetLightingSettings.h"
 #include "soh/resource/type/scenecommand/SetPathways.h"
 #include "soh/resource/type/scenecommand/SetTransitionActorList.h"
 #include "soh/resource/type/scenecommand/SetSkyboxSettings.h"
@@ -229,16 +230,38 @@ void randomizeColor(u8 color[3], u32* rand) {
     color[2] = randomU8(rand);
 }
 
+void setColor(u8 color[3], u8 r, u8 g, u8 b) {
+    color[0] = r;
+    color[1] = g;
+    color[2] = b;
+}
+
 bool Scene_CommandLightSettingsList(PlayState* play, SOH::ISceneCommand* cmd) {
     play->envCtx.lightSettingsList = (EnvLightSettings*)cmd->GetRawPointer();
 
+    // auto lightSettings = ((SOH::SetLightingSettings*)cmd)->settings;
+
+    // auto& light = lightSettings[0];
+    // for (auto& light : lightSettings)
+    // {
+    //     // if (play->sceneNum == SCENE_DEKU_TREE_BOSS)
+    //     {
+    //         setColor(light.ambientColor, 0, 0, 0);
+    //         setColor(light.light1Color, 0, 0, 0);
+    //         setColor(light.light2Color, 0, 0, 0);
+    //         setColor(light.fogColor, 0, 0, 0);
+    //         // light.fogNear = 100;
+    //         // light.fogFar = 200;
+    //     }
+    // }
+
     // SHISHU
-    u32 rand = play->sceneNum;
-    auto list = play->envCtx.lightSettingsList;
-    randomizeColor(list->ambientColor, &rand);
-    randomizeColor(list->light1Color, &rand);
-    randomizeColor(list->light2Color, &rand);
-    randomizeColor(list->fogColor, &rand);
+    // u32 rand = play->sceneNum;
+    // auto list = play->envCtx.lightSettingsList;
+    // randomizeColor(list->ambientColor, &rand);
+    // randomizeColor(list->light1Color, &rand);
+    // randomizeColor(list->light2Color, &rand);
+    // randomizeColor(list->fogColor, &rand);
 
     return false;
 }

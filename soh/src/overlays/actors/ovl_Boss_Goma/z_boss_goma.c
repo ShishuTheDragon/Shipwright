@@ -1507,6 +1507,7 @@ void BossGoma_CeilingSpawnGohmas(BossGoma* this, PlayState* play) {
         for (i = 0; i < ARRAY_COUNT(this->childrenGohmaState); i++) {
             if (this->childrenGohmaState[i] == 0) {
                 BossGoma_SpawnChildGohma(this, play, i);
+                BossGoma_SpawnChildGohma(this, play, i);
                 if (this->actor.colChkInfo.health <= 20)
                     BossGoma_SpawnChildGohma(this, play, i);
                 if (this->actor.colChkInfo.health <= 10)
