@@ -324,21 +324,8 @@ void UpdateHyperBossesState() {
                 Player* player = GET_PLAYER(gPlayState);
                 Actor* actor = static_cast<Actor*>(refActor);
 
-                uint8_t isBossActor = actor->id == ACTOR_BOSS_GOMA ||      // Gohma
-                                      actor->id == ACTOR_BOSS_DODONGO ||   // King Dodongo
-                                      actor->id == ACTOR_EN_BDFIRE ||      // King Dodongo Fire Breath
-                                      actor->id == ACTOR_BOSS_VA ||        // Barinade
-                                      actor->id == ACTOR_BOSS_GANONDROF || // Phantom Ganon
-                                      actor->id == ACTOR_EN_FHG_FIRE || // Phantom Ganon/Ganondorf Energy Ball/Thunder
-                                      actor->id == ACTOR_EN_FHG ||      // Phantom Ganon's Horse
-                                      actor->id == ACTOR_BOSS_FD ||
-                                      actor->id == ACTOR_BOSS_FD2 ||   // Volvagia (grounded/flying)
-                                      actor->id == ACTOR_EN_VB_BALL || // Volvagia Rocks
-                                      actor->id == ACTOR_BOSS_MO ||    // Morpha
-                                      actor->id == ACTOR_BOSS_SST ||   // Bongo Bongo
-                                      actor->id == ACTOR_BOSS_TW ||    // Twinrova
-                                      actor->id == ACTOR_BOSS_GANON || // Ganondorf
-                                      actor->id == ACTOR_BOSS_GANON2;  // Ganon
+                // SHISHU only do gohma
+                uint8_t isBossActor = actor->id == ACTOR_BOSS_GOMA && actor->colChkInfo.health <= 13;
 
                 // Don't apply during cutscenes because it causes weird behaviour and/or crashes on some bosses.
                 if (IsHyperBossesActive() && isBossActor && !Player_InBlockingCsMode(gPlayState, player)) {
@@ -853,6 +840,12 @@ void RegisterRandomizedEnemySizes() {
         float randomScale;
 
         uint8_t bigActor = rand() % 2;
+
+        // SHISHU only apply to the select few randomized enemies
+        if (actor->id == ACTOR_EN_DODONGO)
+            bigActor = true;
+        else
+            return;
 
         // Big actor
         if (bigActor && !smallOnlyEnemy) {

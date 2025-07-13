@@ -272,12 +272,17 @@ extern "C" uint8_t GetRandomizedEnemy(PlayState* play, int16_t* actorId, f32* po
             play->sceneNum + *actorId + (int)*posX + (int)*posY + (int)*posZ + *rotX + *rotY + *rotZ + *params;
         EnemyEntry randomEnemy = GetRandomizedEnemyEntry(seed);
 
-        int8_t timesRandomized = 1;
+        // SHISHU only randomize some very specific enemies
+        if (*actorId == ACTOR_EN_TITE && play->sceneNum == SCENE_DEATH_MOUNTAIN_TRAIL)
+            randomEnemy = { ACTOR_EN_DODONGO, -1 };
+        else {
+            int8_t timesRandomized = 1;
 
-        // While randomized enemy isn't allowed in certain situations, randomize again.
-        while (!IsEnemyAllowedToSpawn(play->sceneNum, play->roomCtx.curRoom.num, randomEnemy)) {
-            randomEnemy = GetRandomizedEnemyEntry(seed + timesRandomized);
-            timesRandomized++;
+            // While randomized enemy isn't allowed in certain situations, randomize again.
+            while (!IsEnemyAllowedToSpawn(play->sceneNum, play->roomCtx.curRoom.num, randomEnemy)) {
+                randomEnemy = GetRandomizedEnemyEntry(seed + timesRandomized);
+                timesRandomized++;
+            }
         }
 
         *actorId = randomEnemy.id;
@@ -354,68 +359,73 @@ bool IsEnemyFoundToRandomize(int16_t sceneNum, int8_t roomNum, int16_t actorId, 
 
     uint32_t isMQ = ResourceMgr_IsSceneMasterQuest(sceneNum);
 
-    for (int i = 0; i < ARRAY_COUNT(enemiesToRandomize); i++) {
+    // SHISHU only randomize some very specific enemies
+    if (actorId == ACTOR_EN_TITE && sceneNum == SCENE_DEATH_MOUNTAIN_TRAIL)
+        return true;
+    return false;
 
-        if (actorId == enemiesToRandomize[i]) {
+    // for (int i = 0; i < ARRAY_COUNT(enemiesToRandomize); i++) {
 
-            switch (actorId) {
-                // Only randomize the main component of Electric Tailparasans, not the tail segments they spawn.
-                case ACTOR_EN_TP:
-                    return (params == -1);
-                // Only randomize the initial Deku Scrub actor (single and triple attack), not the flower they spawn.
-                case ACTOR_EN_DEKUNUTS:
-                    return (params == -256 || params == 768);
-                // Don't randomize the OoB wallmaster in the Silver Rupee room because it's only there to
-                // not trigger unlocking the door after killing the other wallmaster in authentic gameplay.
-                case ACTOR_EN_WALLMAS:
-                    return (!(!isMQ && sceneNum == SCENE_GERUDO_TRAINING_GROUND && roomNum == 2 && posX == -2345));
-                // Only randomize initial Floormaster actor (it can split and does some spawning on init).
-                case ACTOR_EN_FLOORMAS:
-                    return (params == 0 || params == -32768);
-                // Only randomize the initial eggs, not the enemies that spawn from them.
-                case ACTOR_EN_GOMA:
-                    return (params >= 0 && params <= 9);
-                // Only randomize Skullwalltulas, not Golden Skulltulas.
-                case ACTOR_EN_SW:
-                    return (params == 0);
-                // Don't randomize Nabooru because it'll break the cutscene and the door.
-                // Don't randomize Iron Knuckle in MQ Spirit Trial because it's needed to
-                // break the thrones in the room to access a button.
-                case ACTOR_EN_IK:
-                    return (params != 1280 && !(isMQ && sceneNum == SCENE_INSIDE_GANONS_CASTLE && roomNum == 17));
-                // Only randomize the initial spawn of the huge jellyfish. It spawns another copy when hit with a sword.
-                case ACTOR_EN_VALI:
-                    return (params == -1);
-                // Don't randomize Lizalfos in Dodongo's Cavern because the gates won't work correctly otherwise.
-                case ACTOR_EN_ZF:
-                    return (params != 1280 && params != 1281 && params != 1536 && params != 1537);
-                // Don't randomize the Wolfos in SFM because it's needed to open the gate.
-                case ACTOR_EN_WF:
-                    return (params != 7936);
-                // Don't randomize the Stalfos in Forest Temple because other enemies fall through the hole and don't
-                // trigger the platform. Don't randomize the Stalfos spawning on the boat in Shadow Temple, as
-                // randomizing them places the new enemies down in the river.
-                case ACTOR_EN_TEST:
-                    return (params != 1 && !(sceneNum == SCENE_SHADOW_TEMPLE && roomNum == 21));
-                // Only randomize the enemy variant of Armos Statue.
-                // Leave one Armos unrandomized in the Spirit Temple room where an armos is needed to push down a
-                // button.
-                case ACTOR_EN_AM:
-                    return ((params == -1 || params == 255) && !(sceneNum == SCENE_SPIRIT_TEMPLE && posX == 2141));
-                // Don't randomize Shell Blades and Spikes in the underwater portion in Water Temple as it's impossible
-                // to kill most other enemies underwater with just hookshot and they're required to be killed for a
-                // grate to open.
-                case ACTOR_EN_SB:
-                case ACTOR_EN_NY:
-                    return (!(!isMQ && sceneNum == SCENE_WATER_TEMPLE && roomNum == 2));
-                default:
-                    return 1;
-            }
-        }
-    }
+    //     if (actorId == enemiesToRandomize[i]) {
 
-    // If no enemy is found, don't randomize the actor.
-    return 0;
+    //         switch (actorId) {
+    //             // Only randomize the main component of Electric Tailparasans, not the tail segments they spawn.
+    //             case ACTOR_EN_TP:
+    //                 return (params == -1);
+    //             // Only randomize the initial Deku Scrub actor (single and triple attack), not the flower they spawn.
+    //             case ACTOR_EN_DEKUNUTS:
+    //                 return (params == -256 || params == 768);
+    //             // Don't randomize the OoB wallmaster in the Silver Rupee room because it's only there to
+    //             // not trigger unlocking the door after killing the other wallmaster in authentic gameplay.
+    //             case ACTOR_EN_WALLMAS:
+    //                 return (!(!isMQ && sceneNum == SCENE_GERUDO_TRAINING_GROUND && roomNum == 2 && posX == -2345));
+    //             // Only randomize initial Floormaster actor (it can split and does some spawning on init).
+    //             case ACTOR_EN_FLOORMAS:
+    //                 return (params == 0 || params == -32768);
+    //             // Only randomize the initial eggs, not the enemies that spawn from them.
+    //             case ACTOR_EN_GOMA:
+    //                 return (params >= 0 && params <= 9);
+    //             // Only randomize Skullwalltulas, not Golden Skulltulas.
+    //             case ACTOR_EN_SW:
+    //                 return (params == 0);
+    //             // Don't randomize Nabooru because it'll break the cutscene and the door.
+    //             // Don't randomize Iron Knuckle in MQ Spirit Trial because it's needed to
+    //             // break the thrones in the room to access a button.
+    //             case ACTOR_EN_IK:
+    //                 return (params != 1280 && !(isMQ && sceneNum == SCENE_INSIDE_GANONS_CASTLE && roomNum == 17));
+    //             // Only randomize the initial spawn of the huge jellyfish. It spawns another copy when hit with a sword.
+    //             case ACTOR_EN_VALI:
+    //                 return (params == -1);
+    //             // Don't randomize Lizalfos in Dodongo's Cavern because the gates won't work correctly otherwise.
+    //             case ACTOR_EN_ZF:
+    //                 return (params != 1280 && params != 1281 && params != 1536 && params != 1537);
+    //             // Don't randomize the Wolfos in SFM because it's needed to open the gate.
+    //             case ACTOR_EN_WF:
+    //                 return (params != 7936);
+    //             // Don't randomize the Stalfos in Forest Temple because other enemies fall through the hole and don't
+    //             // trigger the platform. Don't randomize the Stalfos spawning on the boat in Shadow Temple, as
+    //             // randomizing them places the new enemies down in the river.
+    //             case ACTOR_EN_TEST:
+    //                 return (params != 1 && !(sceneNum == SCENE_SHADOW_TEMPLE && roomNum == 21));
+    //             // Only randomize the enemy variant of Armos Statue.
+    //             // Leave one Armos unrandomized in the Spirit Temple room where an armos is needed to push down a
+    //             // button.
+    //             case ACTOR_EN_AM:
+    //                 return ((params == -1 || params == 255) && !(sceneNum == SCENE_SPIRIT_TEMPLE && posX == 2141));
+    //             // Don't randomize Shell Blades and Spikes in the underwater portion in Water Temple as it's impossible
+    //             // to kill most other enemies underwater with just hookshot and they're required to be killed for a
+    //             // grate to open.
+    //             case ACTOR_EN_SB:
+    //             case ACTOR_EN_NY:
+    //                 return (!(!isMQ && sceneNum == SCENE_WATER_TEMPLE && roomNum == 2));
+    //             default:
+    //                 return 1;
+    //         }
+    //     }
+    // }
+
+    // // If no enemy is found, don't randomize the actor.
+    // return 0;
 }
 
 bool IsEnemyAllowedToSpawn(int16_t sceneNum, int8_t roomNum, EnemyEntry enemy) {

@@ -336,7 +336,7 @@ void BossGoma_Init(Actor* thisx, PlayState* play) {
     this->actor.world.pos.y = -300.0f; // ceiling
     this->actor.gravity = 0.0f;
     BossGoma_SetupEncounter(this, play);
-    this->actor.colChkInfo.health = 10;
+    this->actor.colChkInfo.health = 26;
     this->actor.colChkInfo.mass = MASS_IMMOVABLE;
     Collider_InitJntSph(play, &this->collider);
     Collider_SetJntSph(play, &this->collider, &this->actor, &sColliderJntSphInit, this->colliderItems);
@@ -366,6 +366,8 @@ void BossGoma_Init(Actor* thisx, PlayState* play) {
     Gfx_RegisterBlendedTexture(gGohmaEyeTex, sClearPixelTex16, NULL);
     Gfx_RegisterBlendedTexture(gGohmaShellTex, sClearPixelTex32, NULL);
     Gfx_RegisterBlendedTexture(gGohmaIrisTex, sClearPixelTex32, NULL);
+
+    Actor_SetScale(thisx, thisx->scale.z * 1.8);
 }
 
 void BossGoma_PlayEffectsAndSfx(BossGoma* this, PlayState* play, s16 arg2, s16 amountMinus1) {
@@ -485,7 +487,7 @@ void BossGoma_SetupCeilingPrepareSpawnGohmas(BossGoma* this) {
     Animation_Change(&this->skelanime, &gGohmaPrepareEggsAnim, 1.0f, 0.0f,
                      Animation_GetLastFrame(&gGohmaPrepareEggsAnim), ANIMMODE_LOOP, -10.0f);
     this->actionFunc = BossGoma_CeilingPrepareSpawnGohmas;
-    this->framesUntilNextAction = 70;
+    this->framesUntilNextAction = 30;
 }
 
 void BossGoma_SetupWallClimb(BossGoma* this) {
@@ -1505,6 +1507,10 @@ void BossGoma_CeilingSpawnGohmas(BossGoma* this, PlayState* play) {
         for (i = 0; i < ARRAY_COUNT(this->childrenGohmaState); i++) {
             if (this->childrenGohmaState[i] == 0) {
                 BossGoma_SpawnChildGohma(this, play, i);
+                if (this->actor.colChkInfo.health <= 20)
+                    BossGoma_SpawnChildGohma(this, play, i);
+                if (this->actor.colChkInfo.health <= 10)
+                    BossGoma_SpawnChildGohma(this, play, i);
                 break;
             }
         }
@@ -1642,8 +1648,8 @@ void BossGoma_FloorMain(BossGoma* this, PlayState* play) {
                 }
             } else {
                 // move away from the player, walking forwards
-                Math_ApproachF(&this->actor.speedXZ, 20.0f / 3.0f, 0.5f, 2.0f);
-                this->skelanime.playSpeed = 2.0f;
+                Math_ApproachF(&this->actor.speedXZ, 60.0f / 3.0f, 0.5f, 2.0f);
+                this->skelanime.playSpeed = 6.0f;
                 rot += 0x8000;
             }
 
