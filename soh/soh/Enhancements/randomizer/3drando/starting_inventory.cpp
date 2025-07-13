@@ -13,6 +13,14 @@ static void AddItemToInventory(RandomizerGet item, size_t count = 1) {
     StartingInventory.insert(StartingInventory.end(), count, item);
 }
 
+static void AddItemToInventoryIfNotAlready(RandomizerGet item, size_t count = 1) {
+    if (item == RG_NONE)
+        return;
+    if (std::find(StartingInventory.begin(), StartingInventory.end(), item) != StartingInventory.end())
+        return;
+    AddItemToInventory(item, count);
+}
+
 void GenerateStartingInventory() {
     auto ctx = Rando::Context::GetInstance();
     StartingInventory.clear();
@@ -63,6 +71,17 @@ void GenerateStartingInventory() {
     if (ctx->GetOption(RSK_GERUDO_FORTRESS).Is(RO_GF_CARPENTERS_FREE) &&
         !ctx->GetOption(RSK_SHUFFLE_GERUDO_MEMBERSHIP_CARD)) {
         AddItemToInventory(RG_GERUDO_MEMBERSHIP_CARD);
+    }
+
+    // SHISHU skip specific dungeons
+    for (auto dungeonId : {Rando::DODONGOS_CAVERN, Rando::BOTTOM_OF_THE_WELL, Rando::GANONS_CASTLE, Rando::GERUDO_TRAINING_GROUND}) {
+        if (auto* dungeon = ctx->GetDungeon(dungeonId)) {
+            if (dungeon->GetSmallKeyCount() > 0)
+                AddItemToInventoryIfNotAlready(dungeon->GetSmallKey(), dungeon->GetSmallKeyCount());
+            AddItemToInventoryIfNotAlready(dungeon->GetBossKey());
+            AddItemToInventoryIfNotAlready(dungeon->GetMap());
+            AddItemToInventoryIfNotAlready(dungeon->GetCompass());
+        }
     }
 
     // Starting Inventory Menu
@@ -154,6 +173,17 @@ void GenerateStartingInventory() {
     // AddItemToInventory(RG_SHADOW_MEDALLION,          StartingShadowMedallion.Value<uint8_t>());
     // AddItemToInventory(RG_LIGHT_MEDALLION,           StartingLightMedallion.Value<uint8_t>());
     AddItemToInventory(RG_GOLD_SKULLTULA_TOKEN, ctx->GetOption(RSK_STARTING_SKULLTULA_TOKEN).Get());
+
+    // SHISHU start with medallions
+    AddItemToInventoryIfNotAlready(RG_KOKIRI_EMERALD);
+    AddItemToInventoryIfNotAlready(RG_GORON_RUBY);
+    AddItemToInventoryIfNotAlready(RG_ZORA_SAPPHIRE);
+    AddItemToInventoryIfNotAlready(RG_FOREST_MEDALLION);
+    AddItemToInventoryIfNotAlready(RG_FIRE_MEDALLION);
+    AddItemToInventoryIfNotAlready(RG_WATER_MEDALLION);
+    AddItemToInventoryIfNotAlready(RG_SPIRIT_MEDALLION);
+    AddItemToInventoryIfNotAlready(RG_SHADOW_MEDALLION);
+    AddItemToInventoryIfNotAlready(RG_LIGHT_MEDALLION);
 
     int8_t hearts = ctx->GetOption(RSK_STARTING_HEARTS).Get() - 2;
     AdditionalHeartContainers = 0;

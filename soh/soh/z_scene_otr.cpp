@@ -232,6 +232,7 @@ void randomizeColor(u8 color[3], u32* rand) {
 bool Scene_CommandLightSettingsList(PlayState* play, SOH::ISceneCommand* cmd) {
     play->envCtx.lightSettingsList = (EnvLightSettings*)cmd->GetRawPointer();
 
+    // SHISHU
     u32 rand = play->sceneNum;
     auto list = play->envCtx.lightSettingsList;
     randomizeColor(list->ambientColor, &rand);

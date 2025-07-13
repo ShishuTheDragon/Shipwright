@@ -1237,6 +1237,15 @@ void GenerateItemPool() {
         ReplaceMaxItem(RG_DOUBLE_DEFENSE, 0);
     }
 
+    // SHISHU replace all hearts with heart containers
+    auto hc = std::count_if(ItemPool.begin(), ItemPool.end(), [](RandomizerGet& item) {
+        return item == RG_HEART_CONTAINER || item == RG_DOUBLE_DEFENSE;
+    });
+    std::erase(ItemPool, RG_HEART_CONTAINER);
+    std::erase(ItemPool, RG_DOUBLE_DEFENSE);
+    AddItemToPool(ItemPool, RG_PIECE_OF_HEART, hc);
+    AddItemToPool(PendingJunkPool, RG_PIECE_OF_HEART, hc * 3);
+
     std::erase(ItemPool, RG_NONE);
 
     if (ItemPool.size() < ctx->allLocations.size()) {

@@ -961,6 +961,37 @@ static void RandomizeDungeonRewards() {
     //  };
     int baseOffset = Rando::StaticData::RetrieveItem(RG_KOKIRI_EMERALD).GetItemID();
 
+    // SHISHU
+    if (true) {
+        // delete dungeon rewards
+        // FilterAndEraseFromPool(ItemPool, [](const auto i) {
+        //     return Rando::StaticData::RetrieveItem(i).GetItemType() == ITEMTYPE_DUNGEONREWARD;
+        // });
+
+        // choose possible locations
+        std::vector<RandomizerCheck> rewardLocations = {
+            RC_QUEEN_GOHMA,
+            RC_KING_DODONGO,
+            RC_BARINADE,
+            RC_PHANTOM_GANON,
+            RC_VOLVAGIA,
+            RC_MORPHA,
+            RC_TWINROVA,
+            RC_BONGO_BONGO,
+        };
+
+        // make adult link impossible
+        // FilterAndEraseFromPool(ItemPool, [](const auto i) {
+        //     return i == RG_SONG_OF_TIME || i == RG_OCARINA_OF_TIME;
+        // });
+
+        // put triforce pieces as dungeon rewards
+        std::vector<RandomizerGet> rewards = FilterAndEraseFromPool(ItemPool, [](const auto i) {
+            return i == RG_TRIFORCE_PIECE;
+        });
+        AssumedFill(rewards, rewardLocations, true);
+    } else
+
     // End of Dungeons includes Link's Pocket
     if (ctx->GetOption(RSK_SHUFFLE_DUNGEON_REWARDS).Is(RO_DUNGEON_REWARDS_END_OF_DUNGEON) ||
         ctx->GetOption(RSK_SHUFFLE_DUNGEON_REWARDS).Is(RO_DUNGEON_REWARDS_VANILLA)) {
