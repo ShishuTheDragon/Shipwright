@@ -215,8 +215,29 @@ bool Scene_CommandTransitionActorList(PlayState* play, SOH::ISceneCommand* cmd) 
 //    transiActorCtx->numActors = 0;
 //}
 
+u8 randomU8(u32* rand) {
+    return (u8)Rand_Next_Variable(rand);
+}
+
+u32 randomizeBetween(u32 min, u32 max, u32* rand) {
+    return min + Rand_Next_Variable(rand) % (max+1 - min);
+}
+
+void randomizeColor(u8 color[3], u32* rand) {
+    color[0] = randomU8(rand);
+    color[1] = randomU8(rand);
+    color[2] = randomU8(rand);
+}
+
 bool Scene_CommandLightSettingsList(PlayState* play, SOH::ISceneCommand* cmd) {
     play->envCtx.lightSettingsList = (EnvLightSettings*)cmd->GetRawPointer();
+
+    u32 rand = play->sceneNum;
+    auto list = play->envCtx.lightSettingsList;
+    randomizeColor(list->ambientColor, &rand);
+    randomizeColor(list->light1Color, &rand);
+    randomizeColor(list->light2Color, &rand);
+    randomizeColor(list->fogColor, &rand);
 
     return false;
 }
