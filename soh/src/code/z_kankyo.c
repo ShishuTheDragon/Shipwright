@@ -1297,9 +1297,21 @@ void Environment_Update(PlayState* play, EnvironmentContext* envCtx, LightContex
         }
     }
 
+    float spookyFog = 1.0f;
+    float playerX = GET_PLAYER(play)->actor.world.pos.x;
+    float playerZ = GET_PLAYER(play)->actor.world.pos.z;
     switch (play->sceneNum) {
+        case SCENE_LOST_WOODS: // 241 is KF, -2500 is SFM
+            spookyFog = 1.0f - (241.0f - playerZ) / (241.0f - -2500.0f);
+            spookyFog = CLAMP(spookyFog, 0.0f, 1.0f);
+            goto APPLY_SPOOKY_FOG;
+        case SCENE_HYRULE_FIELD: // 5184 is KF, 4490 is HF
+            if (playerZ < 8000.0f)
+                break;
+            spookyFog = 1.0f - (5184.0f - playerX) / (5184.0f - 4490.0f);
+            spookyFog = CLAMP(spookyFog, 0.0f, 1.0f) * 0.5f;
+            goto APPLY_SPOOKY_FOG;
         case SCENE_KOKIRI_FOREST:
-        case SCENE_LOST_WOODS:
         case SCENE_DEKU_TREE:
         case SCENE_DEKU_TREE_BOSS:
         case SCENE_LINKS_HOUSE:
@@ -1308,11 +1320,13 @@ void Environment_Update(PlayState* play, EnvironmentContext* envCtx, LightContex
         case SCENE_KNOW_IT_ALL_BROS_HOUSE:
         case SCENE_MIDOS_HOUSE:
         case SCENE_SARIAS_HOUSE:
-            lightCtx->fogColor[0] = 90;
-            lightCtx->fogColor[1] = 30;
-            lightCtx->fogColor[2] = 60;
-            lightCtx->fogNear = 900;
-            lightCtx->fogFar = 5000;
+            APPLY_SPOOKY_FOG:
+            float spookyFogColorBlend = CLAMP(spookyFog * 10.0f, 0.0f, 1.0f);
+            lightCtx->fogColor[0] = LERP(lightCtx->fogColor[0], 90, spookyFogColorBlend);
+            lightCtx->fogColor[1] = LERP(lightCtx->fogColor[1], 30, spookyFogColorBlend);
+            lightCtx->fogColor[2] = LERP(lightCtx->fogColor[2], 60, spookyFogColorBlend);
+            lightCtx->fogNear = LERP(lightCtx->fogNear, 900, spookyFog);
+            lightCtx->fogFar = LERP(lightCtx->fogFar, 5000, spookyFog);
             break;
     }
 }

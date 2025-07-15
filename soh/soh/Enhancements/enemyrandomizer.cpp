@@ -275,6 +275,8 @@ extern "C" uint8_t GetRandomizedEnemy(PlayState* play, int16_t* actorId, f32* po
         // SHISHU only randomize some very specific enemies
         if (*actorId == ACTOR_EN_TITE && play->sceneNum == SCENE_DEATH_MOUNTAIN_TRAIL)
             randomEnemy = { ACTOR_EN_DODONGO, -1 };
+        else if (play->sceneNum == SCENE_KOKIRI_FOREST || play->sceneNum == SCENE_DEKU_TREE)
+            { *rotY = Random(0, 0x10000); randomEnemy = { ACTOR_EN_RD, 1 }; }
         else {
             int8_t timesRandomized = 1;
 
@@ -359,9 +361,20 @@ bool IsEnemyFoundToRandomize(int16_t sceneNum, int8_t roomNum, int16_t actorId, 
 
     uint32_t isMQ = ResourceMgr_IsSceneMasterQuest(sceneNum);
 
+    // Only randomize the initial Deku Scrub actor (single and triple attack), not the flower they spawn.
+    if (actorId == ACTOR_EN_DEKUNUTS && !(params == -256 || params == 768)) return false;
+
     // SHISHU only randomize some very specific enemies
-    if (actorId == ACTOR_EN_TITE && sceneNum == SCENE_DEATH_MOUNTAIN_TRAIL)
-        return true;
+    switch (sceneNum) {
+        case SCENE_DEATH_MOUNTAIN_TRAIL:
+            return actorId == ACTOR_EN_TITE;
+        case SCENE_KOKIRI_FOREST:
+        case SCENE_DEKU_TREE:
+            return actorId == ACTOR_EN_DEKUBABA || actorId == ACTOR_EN_KAREBABA
+                || actorId == ACTOR_EN_DEKUNUTS || actorId == ACTOR_EN_HINTNUTS
+                || actorId == ACTOR_EN_OKUTA || actorId == ACTOR_EN_ST;
+    }
+
     return false;
 
     // for (int i = 0; i < ARRAY_COUNT(enemiesToRandomize); i++) {
@@ -372,9 +385,6 @@ bool IsEnemyFoundToRandomize(int16_t sceneNum, int8_t roomNum, int16_t actorId, 
     //             // Only randomize the main component of Electric Tailparasans, not the tail segments they spawn.
     //             case ACTOR_EN_TP:
     //                 return (params == -1);
-    //             // Only randomize the initial Deku Scrub actor (single and triple attack), not the flower they spawn.
-    //             case ACTOR_EN_DEKUNUTS:
-    //                 return (params == -256 || params == 768);
     //             // Don't randomize the OoB wallmaster in the Silver Rupee room because it's only there to
     //             // not trigger unlocking the door after killing the other wallmaster in authentic gameplay.
     //             case ACTOR_EN_WALLMAS:

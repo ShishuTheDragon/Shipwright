@@ -345,9 +345,9 @@ void func_80AE2C1C(EnRd* this, PlayState* play) {
             if (this->unk_306 == 0) {
                 if (!(this->unk_312 & PLAYER_STATE2_GRABBED_BY_ENEMY) &&
                     !CVarGetInteger(CVAR_CHEAT("NoRedeadFreeze"), 0)) {
-                    player->actor.freezeTimer = 40;
-                    Player_SetAutoLockOnActor(play, &this->actor);
-                    GET_PLAYER(play)->autoLockOnActor = &this->actor;
+                    player->actor.freezeTimer = 20;
+                    // Player_SetAutoLockOnActor(play, &this->actor);
+                    // GET_PLAYER(play)->autoLockOnActor = &this->actor;
                     func_800AA000(this->actor.xzDistToPlayer, 0xFF, 0x14, 0x96);
                 }
                 this->unk_306 = 0x3C;
@@ -576,9 +576,9 @@ void func_80AE3834(EnRd* this, PlayState* play) {
 
     if (ABS(temp_v0) < 0x2008) {
         if (!(this->unk_312 & 0x80) && !CVarGetInteger(CVAR_CHEAT("NoRedeadFreeze"), 0)) {
-            player->actor.freezeTimer = 60;
+            player->actor.freezeTimer = 30;
             func_800AA000(this->actor.xzDistToPlayer, 0xFF, 0x14, 0x96);
-            Player_SetAutoLockOnActor(play, &this->actor);
+            // Player_SetAutoLockOnActor(play, &this->actor);
         }
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_REDEAD_AIM);
         func_80AE2B90(this, play);

@@ -2035,10 +2035,8 @@ void RandomizerOnActorInitHandler(void* actorRef) {
         }
     }
 
-    if (actor->id == ACTOR_BG_TREEMOUTH && LINK_IS_ADULT &&
-        RAND_GET_OPTION(RSK_SHUFFLE_DUNGEON_ENTRANCES) != RO_DUNGEON_ENTRANCE_SHUFFLE_OFF &&
-        (RAND_GET_OPTION(RSK_FOREST) == RO_CLOSED_FOREST_OFF ||
-         Flags_GetEventChkInf(EVENTCHKINF_SHOWED_MIDO_SWORD_SHIELD))) {
+    // SHISHU always open tree mouth
+    if (actor->id == ACTOR_BG_TREEMOUTH && LINK_IS_ADULT) {
         BgTreemouth* bgTreemouth = static_cast<BgTreemouth*>(actorRef);
         bgTreemouth->unk_168 = 1.0f;
     }

@@ -324,8 +324,8 @@ void UpdateHyperBossesState() {
                 Player* player = GET_PLAYER(gPlayState);
                 Actor* actor = static_cast<Actor*>(refActor);
 
-                // SHISHU only do gohma
-                uint8_t isBossActor = actor->id == ACTOR_BOSS_GOMA && actor->colChkInfo.health <= 13;
+                // SHISHU nothing
+                uint8_t isBossActor = false; // actor->id == ACTOR_BOSS_GOMA && actor->colChkInfo.health <= 10;
 
                 // Don't apply during cutscenes because it causes weird behaviour and/or crashes on some bosses.
                 if (IsHyperBossesActive() && isBossActor && !Player_InBlockingCsMode(gPlayState, player)) {

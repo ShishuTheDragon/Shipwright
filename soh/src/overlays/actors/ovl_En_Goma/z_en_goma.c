@@ -167,7 +167,7 @@ void EnGoma_Init(Actor* thisx, PlayState* play) {
         this->gomaType = ENGOMA_EGG;
         this->eggScale = 1.0f;
         this->eggSquishAngle = Rand_ZeroOne() * 1000.0f;
-        this->actionTimer = 50;
+        this->actionTimer = 20;
         Collider_InitCylinder(play, &this->colCyl1);
         Collider_SetCylinder(play, &this->colCyl1, &this->actor, &D_80A4B7A0);
         Collider_InitCylinder(play, &this->colCyl2);
@@ -252,7 +252,7 @@ void EnGoma_EggFallToGround(EnGoma* this, PlayState* play) {
         case 2:
             if (this->actionTimer == 0) {
                 this->hatchState = 3;
-                this->actionTimer = 80;
+                this->actionTimer = 20 + (int)(Rand_ZeroOne() * 20.0f);
             } else {
                 Math_ApproachF(&this->eggScale, 0.75f, 0.5f, 1.0f);
             }
@@ -430,7 +430,7 @@ void EnGoma_Dead(EnGoma* this, PlayState* play) {
         Audio_PlaySoundGeneral(NA_SE_EN_EXTINCT, &this->actor.projectedPos, 4, &gSfxDefaultFreqAndVolScale,
                                &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
         Actor_Kill(&this->actor);
-        Item_DropCollectibleRandom(play, NULL, &this->actor.world.pos, 0x30);
+        Item_DropCollectibleRandom(play, NULL, &this->actor.world.pos, 0x33);
     }
     this->visualState = 2;
 }

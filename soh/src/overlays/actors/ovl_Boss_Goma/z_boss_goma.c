@@ -336,7 +336,7 @@ void BossGoma_Init(Actor* thisx, PlayState* play) {
     this->actor.world.pos.y = -300.0f; // ceiling
     this->actor.gravity = 0.0f;
     BossGoma_SetupEncounter(this, play);
-    this->actor.colChkInfo.health = 26;
+    this->actor.colChkInfo.health = 26; // master sword: 13 slashes, 7 jump attacks
     this->actor.colChkInfo.mass = MASS_IMMOVABLE;
     Collider_InitJntSph(play, &this->collider);
     Collider_SetJntSph(play, &this->collider, &this->actor, &sColliderJntSphInit, this->colliderItems);
@@ -487,11 +487,11 @@ void BossGoma_SetupCeilingPrepareSpawnGohmas(BossGoma* this) {
     Animation_Change(&this->skelanime, &gGohmaPrepareEggsAnim, 1.0f, 0.0f,
                      Animation_GetLastFrame(&gGohmaPrepareEggsAnim), ANIMMODE_LOOP, -10.0f);
     this->actionFunc = BossGoma_CeilingPrepareSpawnGohmas;
-    this->framesUntilNextAction = 30;
+    this->framesUntilNextAction = this->actor.colChkInfo.health * 5 / 2;
 }
 
 void BossGoma_SetupWallClimb(BossGoma* this) {
-    Animation_Change(&this->skelanime, &gGohmaClimbAnim, 1.0f, 0.0f, Animation_GetLastFrame(&gGohmaClimbAnim),
+    Animation_Change(&this->skelanime, &gGohmaClimbAnim, 2.0f, 0.0f, Animation_GetLastFrame(&gGohmaClimbAnim),
                      ANIMMODE_LOOP, -10.0f);
     this->actionFunc = BossGoma_WallClimb;
     this->actor.speedXZ = 0.0f;
@@ -503,13 +503,13 @@ void BossGoma_SetupWallClimb(BossGoma* this) {
  * Gohma either reached the ceiling after climbing a wall, or is waiting for the player to kill the (children) Gohmas.
  */
 void BossGoma_SetupCeilingMoveToCenter(BossGoma* this) {
-    Animation_Change(&this->skelanime, &gGohmaWalkAnim, 1.0f, 0.0f, Animation_GetLastFrame(&gGohmaWalkAnim),
+    Animation_Change(&this->skelanime, &gGohmaWalkAnim, 2.0f, 0.0f, Animation_GetLastFrame(&gGohmaWalkAnim),
                      ANIMMODE_LOOP, -5.0f);
     this->actionFunc = BossGoma_CeilingMoveToCenter;
     this->actor.speedXZ = 0.0f;
     this->actor.velocity.y = 0.0f;
     this->actor.gravity = 0.0f;
-    this->framesUntilNextAction = Rand_S16Offset(30, 60);
+    this->framesUntilNextAction = Rand_S16Offset(15, 30);
 }
 
 /**
@@ -1331,7 +1331,7 @@ void BossGoma_FloorAttack(BossGoma* this, PlayState* play) {
                                  Animation_GetLastFrame(&gGohmaRestAfterAttackAnim), ANIMMODE_LOOP, -1.0f);
 
                 if (this->framesUntilNextAction == 0) {
-                    this->timer = (s16)(Rand_ZeroOne() * 30.0f) + 30;
+                    this->timer = (s16)(Rand_ZeroOne() * 15.0f) + 15;
                 }
             }
             break;
@@ -1507,11 +1507,13 @@ void BossGoma_CeilingSpawnGohmas(BossGoma* this, PlayState* play) {
         for (i = 0; i < ARRAY_COUNT(this->childrenGohmaState); i++) {
             if (this->childrenGohmaState[i] == 0) {
                 BossGoma_SpawnChildGohma(this, play, i);
-                BossGoma_SpawnChildGohma(this, play, i);
                 if (this->actor.colChkInfo.health <= 20)
                     BossGoma_SpawnChildGohma(this, play, i);
-                if (this->actor.colChkInfo.health <= 10)
+                if (this->actor.colChkInfo.health <= 10) {
                     BossGoma_SpawnChildGohma(this, play, i);
+                    BossGoma_SpawnChildGohma(this, play, i);
+                    BossGoma_SpawnChildGohma(this, play, i);
+                }
                 break;
             }
         }
@@ -1681,7 +1683,7 @@ void BossGoma_WallClimb(BossGoma* this, PlayState* play) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_GOMA_CLIM);
     }
 
-    Math_ApproachF(&this->actor.velocity.y, 5.0f, 0.5f, 2.0f);
+    Math_ApproachF(&this->actor.velocity.y, 10.0f, 0.5f, 2.0f);
     Math_ApproachS(&this->actor.shape.rot.x, -0x4000, 2, 0x7D0);
     Math_ApproachS(&this->actor.world.rot.y, this->actor.wallYaw + 0x8000, 2, 0x5DC);
 
@@ -1700,7 +1702,7 @@ void BossGoma_CeilingMoveToCenter(BossGoma* this, PlayState* play) {
     s16 angle;
     s16 absDiff;
 
-    BossGoma_UpdateCeilingMovement(this, play, 0.0f, -5.0f, true);
+    BossGoma_UpdateCeilingMovement(this, play, 0.0f, -10.0f, true);
 
     if (this->frameCount % 64 == 0) {
         Audio_PlayActorSound2(&this->actor, NA_SE_EN_GOMA_CRY2);
@@ -1844,6 +1846,14 @@ void BossGoma_UpdateHit(BossGoma* this, PlayState* play) {
                 Audio_PlayActorSound2(&this->actor, NA_SE_EN_GOMA_DAM2);
             } else if (this->actionFunc == BossGoma_FloorStunned &&
                        (damage = CollisionCheck_GetSwordDamage(acHitInfo->toucher.dmgFlags, play)) != 0) {
+
+                // this boss is balanced for adult link, so scale kokiri up to avoid a tedious battle
+                if (acHitInfo->toucher.dmgFlags & (DMG_JUMP_KOKIRI | DMG_SPIN_KOKIRI | DMG_SLASH_KOKIRI))
+                    damage++; // 13 slashes, 8 jump attacks. deku stick jump attacks are slightly better.
+                // giant sword jump attacks are OP
+                if (acHitInfo->toucher.dmgFlags & DMG_JUMP_GIANT)
+                    damage = 6; // 7 slashes, 5 jump attacks
+
                 this->actor.colChkInfo.health -= damage;
 
                 if ((s8)this->actor.colChkInfo.health > 0) {
