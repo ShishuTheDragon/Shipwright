@@ -364,6 +364,9 @@ bool IsEnemyFoundToRandomize(int16_t sceneNum, int8_t roomNum, int16_t actorId, 
     // Only randomize the initial Deku Scrub actor (single and triple attack), not the flower they spawn.
     if (actorId == ACTOR_EN_DEKUNUTS && !(params == -256 || params == 768)) return false;
 
+    // Only randomize Skullwalltulas, not Golden Skulltulas.
+    if (actorId == ACTOR_EN_SW && !(params == 0)) return false;
+
     // SHISHU only randomize some very specific enemies
     switch (sceneNum) {
         case SCENE_DEATH_MOUNTAIN_TRAIL:
@@ -372,7 +375,8 @@ bool IsEnemyFoundToRandomize(int16_t sceneNum, int8_t roomNum, int16_t actorId, 
         case SCENE_DEKU_TREE:
             return actorId == ACTOR_EN_DEKUBABA || actorId == ACTOR_EN_KAREBABA
                 || actorId == ACTOR_EN_DEKUNUTS || actorId == ACTOR_EN_HINTNUTS
-                || actorId == ACTOR_EN_OKUTA || actorId == ACTOR_EN_ST;
+                || actorId == ACTOR_EN_OKUTA || actorId == ACTOR_EN_ST
+                || actorId == ACTOR_EN_SW;
     }
 
     return false;

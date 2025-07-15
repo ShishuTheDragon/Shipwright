@@ -33,6 +33,9 @@ const ActorInit Bg_Ydan_Maruta_InitVars = {
     NULL,
 };
 
+// SHISHU let other things break the ladder
+#define LADDERFLAGS (DMG_RANGED|DMG_EXPLOSIVE|DMG_BOOMERANG|DMG_DEKU_NUT|DMG_HAMMER_SWING)
+
 static ColliderTrisElementInit sTrisElementsInit[2] = {
     {
         {
@@ -49,7 +52,7 @@ static ColliderTrisElementInit sTrisElementsInit[2] = {
         {
             ELEMTYPE_UNK0,
             { 0x20000000, 0x00, 0x04 },
-            { 0x00000004, 0x00, 0x00 },
+            { LADDERFLAGS, 0x00, 0x00 },
             TOUCH_ON | TOUCH_SFX_WOOD,
             BUMP_ON,
             OCELEM_NONE,

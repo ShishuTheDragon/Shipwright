@@ -16,15 +16,11 @@ void RegionTable_Init_DekuTree() {
 
 #pragma region Vanilla
 
-    areaTable[RR_DEKU_TREE_LOBBY] = Region("Deku Tree Lobby", "Deku Tree", {RA_DEKU_TREE}, NO_DAY_NIGHT_CYCLE, {
-        //Events
-        EventAccess(&logic->DekuBabaSticks, []{return logic->CanGetDekuBabaSticks();}),
-        EventAccess(&logic->DekuBabaNuts,   []{return logic->CanGetDekuBabaNuts();}),
-    }, {
+    areaTable[RR_DEKU_TREE_LOBBY] = Region("Deku Tree Lobby", "Deku Tree", {RA_DEKU_TREE}, NO_DAY_NIGHT_CYCLE, {}, {
         //Locations
         LOCATION(RC_DEKU_TREE_MAP_CHEST,         true),
         LOCATION(RC_DEKU_TREE_LOBBY_LOWER_HEART, true),
-        LOCATION(RC_DEKU_TREE_LOBBY_UPPER_HEART, logic->CanPassEnemy(RE_BIG_SKULLTULA)),
+        LOCATION(RC_DEKU_TREE_LOBBY_UPPER_HEART, true),
         LOCATION(RC_DEKU_TREE_LOBBY_GRASS_1,     logic->CanCutShrubs()),
         LOCATION(RC_DEKU_TREE_LOBBY_GRASS_2,     logic->CanCutShrubs()),
         LOCATION(RC_DEKU_TREE_LOBBY_GRASS_3,     logic->CanCutShrubs()),
@@ -35,35 +31,31 @@ void RegionTable_Init_DekuTree() {
         Entrance(RR_DEKU_TREE_ENTRYWAY,          []{return true;}),
         Entrance(RR_DEKU_TREE_2F_MIDDLE_ROOM,    []{return true;}),
         Entrance(RR_DEKU_TREE_COMPASS_ROOM,      []{return true;}),
-        Entrance(RR_DEKU_TREE_BASEMENT_LOWER,    []{return Here(RR_DEKU_TREE_LOBBY, []{return logic->CanAttack() || logic->CanUse(RG_NUTS);});}),
+        Entrance(RR_DEKU_TREE_BASEMENT_LOWER,    []{return true;}),
         Entrance(RR_DEKU_TREE_OUTSIDE_BOSS_ROOM, []{return false;}),
         Entrance(RR_DEKU_TREE_BOSS_ENTRYWAY,     []{return false;}),
     });
 
     areaTable[RR_DEKU_TREE_2F_MIDDLE_ROOM] = Region("Deku Tree 2F Middle Room", "Deku Tree", {RA_DEKU_TREE}, NO_DAY_NIGHT_CYCLE, {}, {}, {
         //Exits
-        Entrance(RR_DEKU_TREE_LOBBY,          []{return Here(RR_DEKU_TREE_2F_MIDDLE_ROOM, []{return logic->CanReflectNuts() || logic->CanUse(RG_MEGATON_HAMMER);});}),
-        Entrance(RR_DEKU_TREE_SLINGSHOT_ROOM, []{return Here(RR_DEKU_TREE_2F_MIDDLE_ROOM, []{return logic->CanReflectNuts() || logic->CanUse(RG_MEGATON_HAMMER);});}),
+        Entrance(RR_DEKU_TREE_LOBBY,          []{return Here(RR_DEKU_TREE_2F_MIDDLE_ROOM, []{return logic->CanKillEnemy(RE_REDEAD);});}),
+        Entrance(RR_DEKU_TREE_SLINGSHOT_ROOM, []{return Here(RR_DEKU_TREE_2F_MIDDLE_ROOM, []{return logic->CanKillEnemy(RE_REDEAD);});}),
     });
 
     areaTable[RR_DEKU_TREE_SLINGSHOT_ROOM] = Region("Deku Tree Slingshot Room", "Deku Tree", {RA_DEKU_TREE}, NO_DAY_NIGHT_CYCLE, {}, {
         //Locations
         LOCATION(RC_DEKU_TREE_SLINGSHOT_CHEST,           true),
         LOCATION(RC_DEKU_TREE_SLINGSHOT_ROOM_SIDE_CHEST, true),
-        LOCATION(RC_DEKU_TREE_SLINGSHOT_GRASS_1,         logic->CanCutShrubs() && logic->CanReflectNuts()),
-        LOCATION(RC_DEKU_TREE_SLINGSHOT_GRASS_2,         logic->CanCutShrubs() && logic->CanReflectNuts()),
-        LOCATION(RC_DEKU_TREE_SLINGSHOT_GRASS_3,         logic->CanCutShrubs() && logic->CanReflectNuts()),
-        LOCATION(RC_DEKU_TREE_SLINGSHOT_GRASS_4,         logic->CanCutShrubs() && logic->CanReflectNuts()),
+        LOCATION(RC_DEKU_TREE_SLINGSHOT_GRASS_1,         logic->CanCutShrubs() && logic->CanKillEnemy(RE_REDEAD)),
+        LOCATION(RC_DEKU_TREE_SLINGSHOT_GRASS_2,         logic->CanCutShrubs() && logic->CanKillEnemy(RE_REDEAD)),
+        LOCATION(RC_DEKU_TREE_SLINGSHOT_GRASS_3,         logic->CanCutShrubs() && logic->CanKillEnemy(RE_REDEAD)),
+        LOCATION(RC_DEKU_TREE_SLINGSHOT_GRASS_4,         logic->CanCutShrubs() && logic->CanKillEnemy(RE_REDEAD)),
     }, {
         //Exits
-        Entrance(RR_DEKU_TREE_2F_MIDDLE_ROOM, []{return logic->CanUse(RG_FAIRY_SLINGSHOT) || logic->CanUse(RG_HOVER_BOOTS);}),
+        Entrance(RR_DEKU_TREE_2F_MIDDLE_ROOM, []{return true;}),
     });
 
-    areaTable[RR_DEKU_TREE_COMPASS_ROOM] = Region("Deku Tree Compass Room", "Deku Tree", {RA_DEKU_TREE}, NO_DAY_NIGHT_CYCLE, {
-        //Events
-        EventAccess(&logic->DekuBabaSticks, []{return logic->CanGetDekuBabaSticks();}),
-        EventAccess(&logic->DekuBabaNuts,   []{return logic->CanGetDekuBabaNuts();}),
-    }, {
+    areaTable[RR_DEKU_TREE_COMPASS_ROOM] = Region("Deku Tree Compass Room", "Deku Tree", {RA_DEKU_TREE}, NO_DAY_NIGHT_CYCLE, {}, {
         //Locations
         LOCATION(RC_DEKU_TREE_COMPASS_CHEST,           true),
         LOCATION(RC_DEKU_TREE_COMPASS_ROOM_SIDE_CHEST, true),
@@ -76,11 +68,7 @@ void RegionTable_Init_DekuTree() {
         Entrance(RR_DEKU_TREE_BOSS_ENTRYWAY, []{return false;}),
     });
 
-    areaTable[RR_DEKU_TREE_BASEMENT_LOWER] = Region("Deku Tree Basement Lower", "Deku Tree", {RA_DEKU_TREE}, NO_DAY_NIGHT_CYCLE, {
-        //Events
-        EventAccess(&logic->DekuBabaSticks, []{return logic->CanGetDekuBabaSticks();}),
-        EventAccess(&logic->DekuBabaNuts,   []{return logic->CanGetDekuBabaNuts();}),
-    }, {
+    areaTable[RR_DEKU_TREE_BASEMENT_LOWER] = Region("Deku Tree Basement Lower", "Deku Tree", {RA_DEKU_TREE}, NO_DAY_NIGHT_CYCLE, {}, {
         //Locations
         LOCATION(RC_DEKU_TREE_BASEMENT_CHEST,    true),
         LOCATION(RC_DEKU_TREE_GS_BASEMENT_GATE,  logic->CanKillEnemy(RE_GOLD_SKULLTULA, ED_SHORT_JUMPSLASH)),
@@ -123,11 +111,7 @@ void RegionTable_Init_DekuTree() {
         Entrance(RR_DEKU_TREE_BASEMENT_TORCH_ROOM,       []{return true;}),
     });
 
-    areaTable[RR_DEKU_TREE_BASEMENT_TORCH_ROOM] = Region("Deku Tree Basement Torch Room", "Deku Tree", {RA_DEKU_TREE}, NO_DAY_NIGHT_CYCLE, {
-        //Events
-        EventAccess(&logic->DekuBabaSticks, []{return logic->CanGetDekuBabaSticks();}),
-        EventAccess(&logic->DekuBabaNuts,   []{return logic->CanGetDekuBabaNuts();}),
-    }, {
+    areaTable[RR_DEKU_TREE_BASEMENT_TORCH_ROOM] = Region("Deku Tree Basement Torch Room", "Deku Tree", {RA_DEKU_TREE}, NO_DAY_NIGHT_CYCLE, {}, {
         //Locations
         LOCATION(RC_DEKU_TREE_BASEMENT_TORCHES_GRASS_1, logic->CanCutShrubs()),
         LOCATION(RC_DEKU_TREE_BASEMENT_TORCHES_GRASS_2, logic->CanCutShrubs()),
@@ -139,8 +123,6 @@ void RegionTable_Init_DekuTree() {
 
     areaTable[RR_DEKU_TREE_BASEMENT_BACK_LOBBY] = Region("Deku Tree Basement Back Lobby", "Deku Tree", {RA_DEKU_TREE}, NO_DAY_NIGHT_CYCLE, {
         //Events
-        EventAccess(&logic->DekuBabaSticks, []{return logic->CanGetDekuBabaSticks();}),
-        EventAccess(&logic->DekuBabaNuts,   []{return logic->CanGetDekuBabaNuts();}),
     }, {
         //Location
         LOCATION(RC_DEKU_TREE_BASEMENT_LARVAE_GRASS_1, logic->CanCutShrubs()),
@@ -162,8 +144,6 @@ void RegionTable_Init_DekuTree() {
 
     areaTable[RR_DEKU_TREE_BASEMENT_UPPER] = Region("Deku Tree Basement Upper", "Deku Tree", {RA_DEKU_TREE}, NO_DAY_NIGHT_CYCLE, {
         //Events
-        EventAccess(&logic->DekuBabaSticks, []{return logic->CanGetDekuBabaSticks();}),
-        EventAccess(&logic->DekuBabaNuts,   []{return logic->CanGetDekuBabaNuts();}),
     }, {}, {
         //Exits
         Entrance(RR_DEKU_TREE_BASEMENT_LOWER,      []{return true;}),
@@ -182,7 +162,7 @@ void RegionTable_Init_DekuTree() {
     }, {
         //Exits
         Entrance(RR_DEKU_TREE_BASEMENT_UPPER, []{return true;}),
-        Entrance(RR_DEKU_TREE_BOSS_ENTRYWAY,  []{return (logic->HasItem(RG_BRONZE_SCALE) || Here(RR_DEKU_TREE_OUTSIDE_BOSS_ROOM, []{return logic->CanUse(RG_IRON_BOOTS);})) && Here(RR_DEKU_TREE_OUTSIDE_BOSS_ROOM, []{return logic->CanReflectNuts();});}),
+        Entrance(RR_DEKU_TREE_BOSS_ENTRYWAY,  []{return (logic->HasItem(RG_BRONZE_SCALE) || Here(RR_DEKU_TREE_OUTSIDE_BOSS_ROOM, []{return logic->CanUse(RG_IRON_BOOTS);})) && Here(RR_DEKU_TREE_OUTSIDE_BOSS_ROOM, []{return logic->CanKillEnemy(RE_REDEAD);});}),
     });
 
 #pragma endregion
