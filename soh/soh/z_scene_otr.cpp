@@ -256,12 +256,12 @@ bool Scene_CommandLightSettingsList(PlayState* play, SOH::ISceneCommand* cmd) {
     // }
 
     // SHISHU
-    // u32 rand = play->sceneNum;
-    // auto list = play->envCtx.lightSettingsList;
-    // randomizeColor(list->ambientColor, &rand);
-    // randomizeColor(list->light1Color, &rand);
-    // randomizeColor(list->light2Color, &rand);
-    // randomizeColor(list->fogColor, &rand);
+    u32 rand = play->sceneNum;
+    auto list = play->envCtx.lightSettingsList;
+    randomizeColor(list->ambientColor, &rand);
+    randomizeColor(list->light1Color, &rand);
+    randomizeColor(list->light2Color, &rand);
+    randomizeColor(list->fogColor, &rand);
 
     return false;
 }

@@ -215,6 +215,10 @@ extern "C" uint8_t GetRandomizedEnemy(PlayState* play, int16_t* actorId, f32* po
         return 0;
     }
 
+    // SHISHU
+    if (play->sceneNum == SCENE_DEATH_MOUNTAIN_TRAIL && *actorId == ACTOR_EN_GOROIWA)
+        return 0;
+
     // Hack to change a pot in Spirit Temple that holds a Deku Shield to not hold anything.
     // This should probably be handled on OTR generation in the future when object dependency is fully removed.
     // This Deku Shield doesn't normally spawn in authentic gameplay because of object dependency.
@@ -273,10 +277,12 @@ extern "C" uint8_t GetRandomizedEnemy(PlayState* play, int16_t* actorId, f32* po
         EnemyEntry randomEnemy = GetRandomizedEnemyEntry(seed);
 
         // SHISHU only randomize some very specific enemies
-        if (*actorId == ACTOR_EN_TITE && play->sceneNum == SCENE_DEATH_MOUNTAIN_TRAIL)
-            randomEnemy = { ACTOR_EN_DODONGO, -1 };
+        if (play->sceneNum == SCENE_DEATH_MOUNTAIN_TRAIL)
+            *rotY = Random(0, 0x10000), randomEnemy = { ACTOR_EN_DODONGO, -1 };
         else if (play->sceneNum == SCENE_KOKIRI_FOREST || play->sceneNum == SCENE_DEKU_TREE)
-            { *rotY = Random(0, 0x10000); randomEnemy = { ACTOR_EN_RD, 1 }; }
+            *rotY = Random(0, 0x10000), randomEnemy = { ACTOR_EN_RD, 1 };
+        else if (play->sceneNum == SCENE_HYRULE_FIELD && *actorId == ACTOR_EN_WEATHER_TAG && seed == 3633)
+            *posX = 116, *posY = 192, *posZ = 6206, *rotX = 0, *rotY = 0, *rotZ = 0, randomEnemy = { ACTOR_EN_ENCOUNT1, 4260 };
         else {
             int8_t timesRandomized = 1;
 
@@ -370,13 +376,15 @@ bool IsEnemyFoundToRandomize(int16_t sceneNum, int8_t roomNum, int16_t actorId, 
     // SHISHU only randomize some very specific enemies
     switch (sceneNum) {
         case SCENE_DEATH_MOUNTAIN_TRAIL:
-            return actorId == ACTOR_EN_TITE;
+            return actorId == ACTOR_EN_TITE || actorId == ACTOR_OBJ_HAMISHI;
         case SCENE_KOKIRI_FOREST:
         case SCENE_DEKU_TREE:
             return actorId == ACTOR_EN_DEKUBABA || actorId == ACTOR_EN_KAREBABA
                 || actorId == ACTOR_EN_DEKUNUTS || actorId == ACTOR_EN_HINTNUTS
                 || actorId == ACTOR_EN_OKUTA || actorId == ACTOR_EN_ST
                 || actorId == ACTOR_EN_SW;
+        case SCENE_HYRULE_FIELD:
+            return actorId == ACTOR_EN_WEATHER_TAG || actorId == ACTOR_EN_SKB;
     }
 
     return false;

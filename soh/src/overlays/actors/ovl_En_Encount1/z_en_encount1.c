@@ -84,6 +84,7 @@ void EnEncount1_Init(Actor* thisx, PlayState* play) {
         case SPAWNER_WOLFOS:
             if (play->sceneNum == SCENE_HYRULE_FIELD) { // Hyrule Field
                 this->maxTotalSpawns = 10000;
+                this->fieldSpawnTimer = 100;
             }
             this->updateFunc = EnEncount1_SpawnStalchildOrWolfos;
             break;
@@ -234,9 +235,6 @@ void EnEncount1_SpawnStalchildOrWolfos(EnEncount1* this, PlayState* play) {
             this->outOfRangeTimer++;
             return;
         }
-    } else if (IS_DAY || (Player_GetMask(play) == PLAYER_MASK_BUNNY)) {
-        this->killCount = 0;
-        return;
     }
 
     this->outOfRangeTimer = 0;
@@ -267,10 +265,9 @@ void EnEncount1_SpawnStalchildOrWolfos(EnEncount1* this, PlayState* play) {
                 }
 
                 spawnDist = Rand_CenteredFloat(40.0f) + 200.0f;
-                spawnAngle = player->actor.shape.rot.y;
-                if (this->curNumSpawn != 0) {
-                    spawnAngle = -spawnAngle;
-                    spawnDist = Rand_CenteredFloat(40.0f) + 100.0f;
+                spawnAngle = player->actor.shape.rot.y+0x2000;
+                if (this->curNumSpawn & 1) {
+                    spawnAngle = spawnAngle-0x4000;
                 }
                 spawnPos.x =
                     player->actor.world.pos.x + (Math_SinS(spawnAngle) * spawnDist) + Rand_CenteredFloat(40.0f);

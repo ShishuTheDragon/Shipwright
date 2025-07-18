@@ -489,7 +489,10 @@ void Play_Init(GameState* thisx) {
         }
     } else if ((gEntranceTable[((void)0, gSaveContext.entranceIndex)].scene == SCENE_KOKIRI_FOREST) &&
                !IS_CUTSCENE_LAYER) {
-        gSaveContext.sceneSetupIndex = (Flags_GetEventChkInf(EVENTCHKINF_USED_DEKU_TREE_BLUE_WARP)) ? 3 : 2;
+        if (!Flags_GetEventChkInf(EVENTCHKINF_USED_DEKU_TREE_BLUE_WARP))
+            gSaveContext.sceneSetupIndex = 2; // SHISHU use adult-day if deku tree not beaten. because of the danger.
+        else if (LINK_IS_ADULT)
+            gSaveContext.sceneSetupIndex = 3; // SHISHU use adult-night if adult, just like base game logic
     }
 
     Play_SpawnScene(
