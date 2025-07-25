@@ -844,6 +844,8 @@ void RegisterRandomizedEnemySizes() {
         // SHISHU only apply to the select few randomized enemies
         if (actor->id == ACTOR_EN_DODONGO || actor->id == ACTOR_EN_FZ)
             bigActor = true;
+        else if (actor->id == ACTOR_BOSS_DODONGO)
+            smallOnlyEnemy = true; // SHISHU dodongo is weak
         else
             return;
 
@@ -854,7 +856,7 @@ void RegisterRandomizedEnemySizes() {
             randomScale = 1.0f + (randomNumber / 100);
         } else {
             // Small actor
-            randomNumber = rand() % 90;
+            randomNumber = rand() % 40;
             // Between 10% and 100% size.
             randomScale = 0.1f + (randomNumber / 100);
         }
