@@ -1297,10 +1297,19 @@ void Environment_Update(PlayState* play, EnvironmentContext* envCtx, LightContex
         }
     }
 
+    // SHISHU custom fog
     float spookyFog = 1.0f;
     float playerX = GET_PLAYER(play)->actor.world.pos.x;
     float playerZ = GET_PLAYER(play)->actor.world.pos.z;
     switch (play->sceneNum) {
+        case SCENE_DODONGOS_CAVERN:
+        case SCENE_DODONGOS_CAVERN_BOSS:
+            lightCtx->fogColor[0] = 170;
+            lightCtx->fogColor[1] = 190;
+            lightCtx->fogColor[2] = 220;
+            lightCtx->fogNear = 930;
+            lightCtx->fogFar = 5000;
+            break;
         case SCENE_DEKU_TREE:
         case SCENE_DEKU_TREE_BOSS:
             goto APPLY_SPOOKY_FOG;

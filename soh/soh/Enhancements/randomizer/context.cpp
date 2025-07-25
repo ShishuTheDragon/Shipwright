@@ -346,6 +346,9 @@ void Context::SetSpoilerLoaded(const bool spoilerLoaded) {
 
 GetItemEntry Context::GetFinalGIEntry(const RandomizerCheck rc, const bool checkObtainability,
                                       const GetItemID ogItemId) {
+    // SHISHU hack for bad randomizer
+    if (rc == RC_GC_MAZE_LEFT_CHEST)
+        return GetFinalGIEntry(RC_GC_GS_BOULDER_MAZE, checkObtainability, ogItemId);
     const auto itemLoc = GetItemLocation(rc);
     if (itemLoc->GetPlacedRandomizerGet() == RG_NONE) {
         if (ogItemId != GI_NONE) {

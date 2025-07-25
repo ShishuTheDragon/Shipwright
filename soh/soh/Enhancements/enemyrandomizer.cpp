@@ -283,6 +283,14 @@ extern "C" uint8_t GetRandomizedEnemy(PlayState* play, int16_t* actorId, f32* po
             *rotY = Random(0, 0x10000), randomEnemy = { ACTOR_EN_RD, 1 };
         else if (play->sceneNum == SCENE_HYRULE_FIELD && *actorId == ACTOR_EN_WEATHER_TAG && seed == 3633)
             *posX = 116, *posY = 192, *posZ = 6206, *rotX = 0, *rotY = 0, *rotZ = 0, randomEnemy = { ACTOR_EN_ENCOUNT1, 4260 };
+        else if (play->sceneNum == SCENE_GORON_CITY)
+            randomEnemy = { ACTOR_EN_AM, -1 };
+        else if (play->sceneNum == SCENE_DODONGOS_CAVERN) {
+            if (*actorId == ACTOR_EN_FIREFLY || *actorId == ACTOR_EN_DODOJR)
+                randomEnemy = { ACTOR_EN_FIREFLY, 4 };
+            else
+                randomEnemy = { ACTOR_EN_FZ, 0 };
+        }
         else {
             int8_t timesRandomized = 1;
 
@@ -385,6 +393,11 @@ bool IsEnemyFoundToRandomize(int16_t sceneNum, int8_t roomNum, int16_t actorId, 
                 || actorId == ACTOR_EN_SW;
         case SCENE_HYRULE_FIELD:
             return actorId == ACTOR_EN_WEATHER_TAG || actorId == ACTOR_EN_SKB;
+        case SCENE_DODONGOS_CAVERN:
+            return actorId == ACTOR_EN_VM || actorId == ACTOR_EN_DODOJR
+                || actorId == ACTOR_EN_DODONGO || actorId == ACTOR_EN_FIREFLY;
+        case SCENE_GORON_CITY:
+            return roomNum == 0 && (actorId == ACTOR_OBJ_BOMBIWA || actorId == ACTOR_OBJ_HAMISHI || actorId == ACTOR_EN_ISHI);
     }
 
     return false;

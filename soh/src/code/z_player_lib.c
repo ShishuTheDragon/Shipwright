@@ -932,7 +932,13 @@ s32 Player_GetEnvironmentalHazard(PlayState* play) {
     TextTriggerEntry* triggerEntry;
     s32 var;
 
-    if (play->roomCtx.curRoom.behaviorType2 == ROOM_BEHAVIOR_TYPE2_3) { // Room is hot
+    if (play->sceneNum == SCENE_DODONGOS_CAVERN || play->sceneNum == SCENE_DODONGOS_CAVERN_BOSS) {
+        if (play->sceneNum == SCENE_DODONGOS_CAVERN_BOSS || play->roomCtx.curRoom.num == 0
+            || play->roomCtx.curRoom.num == 3)
+            var = 0;
+        else
+            return 0;
+    } else if (play->roomCtx.curRoom.behaviorType2 == ROOM_BEHAVIOR_TYPE2_3) { // Room is hot
         var = 0;
     } else if ((this->underwaterTimer > 80) &&
                ((this->currentBoots == PLAYER_BOOTS_IRON) || (this->underwaterTimer >= 300))) { // Deep underwater

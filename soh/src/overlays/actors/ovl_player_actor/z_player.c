@@ -12485,6 +12485,8 @@ void Player_Update(Actor* thisx, PlayState* play) {
     // Don't apply gravity when Link is in water, otherwise
     // it makes him sink instead of float.
     if (!(this->stateFlags1 & PLAYER_STATE1_IN_WATER)) {
+        if (play->sceneNum == SCENE_DODONGOS_CAVERN || play->sceneNum == SCENE_DODONGOS_CAVERN_BOSS)
+                this->actor.gravity = -0.3f; // SHISHU gravity
         switch (GameInteractor_GravityLevel()) {
             case GI_GRAVITY_LEVEL_HEAVY:
                 this->actor.gravity = -4.0f;

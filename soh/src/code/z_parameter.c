@@ -5947,7 +5947,7 @@ void Interface_Draw(PlayState* play) {
                 case 1:
                     D_8015FFE2 = 20;
                     D_8015FFE0 = 20;
-                    gSaveContext.timerSeconds = gSaveContext.health >> 1;
+                    gSaveContext.timerSeconds = gSaveContext.health; // SHISHU more time
                     gSaveContext.timerState = 2;
                     break;
                 case 2:
@@ -6030,8 +6030,15 @@ void Interface_Draw(PlayState* play) {
                             if (gSaveContext.timerSeconds == 0) {
                                 gSaveContext.timerState = 10;
                                 if (D_80125A5C != 0) {
-                                    gSaveContext.health = 0;
-                                    play->damagePlayer(play, -(gSaveContext.health + 2));
+                                    // SHISHU freeze
+                                    if (play->sceneNum == SCENE_DODONGOS_CAVERN || play->sceneNum == SCENE_DODONGOS_CAVERN_BOSS) {
+                                        Player* player = GET_PLAYER(gPlayState);
+                                        player->actor.colChkInfo.damage = 0;
+                                        func_80837C0C(gPlayState, player, 3, 0, 0, 0, 0);
+                                    } else {
+                                        gSaveContext.health = 0;
+                                        play->damagePlayer(play, -(gSaveContext.health + 2));
+                                    }
                                 }
                                 D_80125A5C = 0;
                             } else if (gSaveContext.timerSeconds > 60) {

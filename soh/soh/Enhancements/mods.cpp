@@ -842,7 +842,7 @@ void RegisterRandomizedEnemySizes() {
         uint8_t bigActor = rand() % 2;
 
         // SHISHU only apply to the select few randomized enemies
-        if (actor->id == ACTOR_EN_DODONGO)
+        if (actor->id == ACTOR_EN_DODONGO || actor->id == ACTOR_EN_FZ)
             bigActor = true;
         else
             return;

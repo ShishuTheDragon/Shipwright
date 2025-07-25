@@ -2177,7 +2177,11 @@ extern "C" int CustomMessage_RetrieveIfExists(PlayState* play) {
         bool nonBeanMerchants = ctx->GetOption(RSK_SHUFFLE_MERCHANTS).Is(RO_SHUFFLE_MERCHANTS_ALL_BUT_BEANS) ||
                                 ctx->GetOption(RSK_SHUFFLE_MERCHANTS).Is(RO_SHUFFLE_MERCHANTS_ALL);
         Player* player = GET_PLAYER(play);
-        if (textId == TEXT_RANDOMIZER_CUSTOM_ITEM) {
+        // SHISHU custom message
+        if (textId == 12352 && (play->sceneNum == SCENE_DODONGOS_CAVERN || play->sceneNum == SCENE_DODONGOS_CAVERN_BOSS)) {
+            messageEntry = CustomMessage("Yo what! It's so #cold# in here! No wonder the dodongos flew the coop, huh?", { QM_BLUE, QM_BLUE, QM_BLUE });
+            messageEntry.AutoFormat();
+        } else if (textId == TEXT_RANDOMIZER_CUSTOM_ITEM) {
             if (player->getItemEntry.getItemId == RG_ICE_TRAP) {
                 messageEntry = Randomizer::GetIceTrapMessage();
             } else if (player->getItemEntry.getItemId == RG_TRIFORCE_PIECE) {
