@@ -504,8 +504,7 @@ void ObjBean_Init(Actor* thisx, PlayState* play) {
             ObjBean_FindFloor(this, play);
             this->unk_1F6 = this->dyna.actor.home.rot.z & 3;
         } else {
-            Actor_Kill(&this->dyna.actor);
-            return;
+            ObjBean_SetupWaitForBean(this);
         }
     } else if ((Flags_GetSwitch(play, this->dyna.actor.params & 0x3F) != 0) || (mREG(1) == 1)) {
         ObjBean_SetupWaitForWater(this);
