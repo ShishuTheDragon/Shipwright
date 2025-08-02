@@ -349,6 +349,11 @@ GetItemEntry Context::GetFinalGIEntry(const RandomizerCheck rc, const bool check
     // SHISHU hack for bad randomizer
     if (rc == RC_GC_MAZE_LEFT_CHEST)
         return GetFinalGIEntry(RC_GC_GS_BOULDER_MAZE, checkObtainability, ogItemId);
+    if (rc == RC_SFM_GS)
+        return GetFinalGIEntry(RC_LH_GS_LAB_WALL, checkObtainability, ogItemId);
+    if (rc == RC_DODONGOS_CAVERN_BOMB_BAG_CHEST)
+        return GetFinalGIEntry(RC_DODONGOS_CAVERN_GS_SIDE_ROOM_NEAR_LOWER_LIZALFOS, checkObtainability, ogItemId);
+
     const auto itemLoc = GetItemLocation(rc);
     if (itemLoc->GetPlacedRandomizerGet() == RG_NONE) {
         if (ogItemId != GI_NONE) {
