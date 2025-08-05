@@ -3165,7 +3165,7 @@ void FileChoose_MoveSelectedFileToTop(GameState* thisx) {
     if ((this->actionTimer == 0) || (this->buttonYOffsets[this->buttonIndex] == fileYOffsets[this->buttonIndex])) {
         this->buttonYOffsets[FS_BTN_SELECT_YES] = this->buttonYOffsets[FS_BTN_SELECT_QUIT] = -24;
         this->actionTimer = 8;
-        this->selectMode++;
+        this->selectMode = SM_FADE_OUT; // SHISHU
     }
 }
 
