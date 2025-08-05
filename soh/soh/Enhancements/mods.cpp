@@ -16,6 +16,7 @@
 #include "soh/Enhancements/timesaver_hook_handlers.h"
 #include "soh/Enhancements/TimeSavers/TimeSavers.h"
 #include "soh/Enhancements/randomizer/hook_handlers.h"
+#include "soh/Enhancements/EscapeRoom/EscapeRoom.h"
 
 #include "src/overlays/actors/ovl_En_Bb/z_en_bb.h"
 #include "src/overlays/actors/ovl_En_Dekubaba/z_en_dekubaba.h"
@@ -1104,4 +1105,5 @@ void InitMods() {
     RegisterPauseMenuHooks();
     RandoKaleido_RegisterHooks();
     RegisterCustomSkeletons();
+    EscapeRoom_RegisterHooks();
 }

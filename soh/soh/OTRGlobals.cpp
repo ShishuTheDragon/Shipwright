@@ -131,6 +131,7 @@ Sail* Sail::Instance;
 
 extern "C" {
 #include "src/overlays/actors/ovl_En_Dns/z_en_dns.h"
+#include "Enhancements/EscapeRoom/EscapeRoom.h"
 }
 
 void SoH_ProcessDroppedFiles(std::string filePath);
@@ -2179,6 +2180,9 @@ extern "C" int CustomMessage_RetrieveIfExists(PlayState* play) {
     const int maxBufferSize = sizeof(font->msgBuf);
     CustomMessage messageEntry;
     s16 actorParams = 0;
+
+    messageEntry = EscapeRoom_GetCustomMessage(textId);
+    if (messageEntry == CustomMessage()) {
     if (IS_RANDO) {
         auto ctx = Rando::Context::GetInstance();
         bool nonBeanMerchants = ctx->GetOption(RSK_SHUFFLE_MERCHANTS).Is(RO_SHUFFLE_MERCHANTS_ALL_BUT_BEANS) ||
@@ -2483,6 +2487,7 @@ extern "C" int CustomMessage_RetrieveIfExists(PlayState* play) {
         messageEntry =
             CustomMessageManager::Instance->RetrieveMessage(customMessageTableID, TEXT_FISHERMAN_LEAVE, MF_FORMATTED);
     }
+    } // if !EscapeRoom_GetCustomMessage
     font->charTexBuf[0] = (messageEntry.GetTextBoxType() << 4) | messageEntry.GetTextBoxPosition();
     switch (gSaveContext.language) {
         case LANGUAGE_FRA:
