@@ -8295,7 +8295,7 @@ void Player_ChooseNextIdleAnim(PlayState* play, Player* this) {
     } else {
         this->stateFlags2 |= PLAYER_STATE2_IDLE_FIDGET;
 
-        if (this->stateFlags1 & PLAYER_STATE1_CARRYING_ACTOR) {
+        if (true) { //this->stateFlags1 & PLAYER_STATE1_CARRYING_ACTOR) {
             // Default idle animation will play if carrying an actor.
             // Note that in this case, `PLAYER_STATE2_IDLE_FIDGET` is still set even though the
             // animation that plays isn't a fidget animation.
