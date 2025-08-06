@@ -21,7 +21,7 @@ s32 EnAni_SetText(EnAni* this, PlayState* play, u16 textId);
 void func_809B04F0(EnAni* this, PlayState* play);
 void func_809B0524(EnAni* this, PlayState* play);
 void func_809B0558(EnAni* this, PlayState* play);
-void func_809B05F0(EnAni* this, PlayState* play);
+void EnAni_ParkourChat(EnAni* this, PlayState* play);
 void func_809B064C(EnAni* this, PlayState* play);
 void func_809B07F8(EnAni* this, PlayState* play);
 void func_809B0988(EnAni* this, PlayState* play);
@@ -132,18 +132,23 @@ void func_809B0558(EnAni* this, PlayState* play) {
         Flags_SetItemGetInf(ITEMGETINF_15);
     } else {
         if (GameInteractor_Should(VB_GIVE_ITEM_FROM_MAN_ON_ROOF, true)) {
-            Actor_OfferGetItem(&this->actor, play, GI_HEART_PIECE, 10000.0f, 200.0f);
+            Actor_OfferGetItem(&this->actor, play, GI_LETTER_RUTO, 10000.0f, 200.0f);
         }
     }
 }
 
-void func_809B05F0(EnAni* this, PlayState* play) {
+void EnAni_AboutToGiveItem(EnAni* this, PlayState* play) {
     if (Actor_TextboxIsClosing(&this->actor, play)) {
         EnAni_SetupAction(this, func_809B0558);
     }
+}
 
-    if (GameInteractor_Should(VB_GIVE_ITEM_FROM_MAN_ON_ROOF, true)) {
-        Actor_OfferGetItem(&this->actor, play, GI_HEART_PIECE, 10000.0f, 200.0f);
+void EnAni_ParkourChat(EnAni* this, PlayState* play) {
+    if (Actor_TextboxIsClosing(&this->actor, play)) {
+        Message_StartTextbox(play, 0x5051, &this->actor);
+        EnAni_SetupAction(this, EnAni_AboutToGiveItem);
+    } else {
+        this->actor.shape.rot.y += 6000;
     }
 }
 
@@ -166,7 +171,7 @@ void func_809B064C(EnAni* this, PlayState* play) {
         if (this->actor.textId == 0x5056) {
             EnAni_SetupAction(this, func_809B04F0);
         } else if (this->actor.textId == 0x5055) {
-            EnAni_SetupAction(this, func_809B05F0);
+            EnAni_SetupAction(this, EnAni_ParkourChat);
         } else {
             EnAni_SetupAction(this, func_809B04F0);
         }
@@ -192,7 +197,7 @@ void func_809B07F8(EnAni* this, PlayState* play) {
         if (this->actor.textId == 0x5056) {
             EnAni_SetupAction(this, func_809B0524);
         } else if (this->actor.textId == 0x5055) {
-            EnAni_SetupAction(this, func_809B05F0);
+            EnAni_SetupAction(this, EnAni_ParkourChat);
         } else {
             EnAni_SetupAction(this, func_809B0524);
         }

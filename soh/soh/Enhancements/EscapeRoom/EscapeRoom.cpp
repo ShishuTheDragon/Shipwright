@@ -36,9 +36,6 @@ namespace {
     bool mAfterSceneInit = false;
 
     void SetupKakarikoVillage() {
-        // crate cosmetics
-        Find(ACTOR_OBJ_KIBAKO2).SetParams(-2);
-
         // rocks blocking the graveyard
         Spawn(ACTOR_EN_ISHI, {1887, 189, 1381}, Ishi::LargeGrayRock);
         Spawn(ACTOR_EN_ISHI, {1916, 189, 1446}, Ishi::LargeGrayRock);
@@ -75,10 +72,31 @@ namespace {
         Spawn(ACTOR_EN_BOMBF, {-522, 200, -365}, Bombf::FlowerBase);
     }
 
+    void SetupZoraHouse() {
+        Find(ACTOR_EN_DAIKU_KAKARIKO).Delete();
+        Spawn(ACTOR_EN_KZ, {-110, 0, 50}, {0, 7000, 0}, 0);
+    }
+
     CustomMessage GetCustomMessage(u16 textId) {
         switch (textId) {
             case TEXT_BEAN_SALESMAN_BUY_FOR_20:
                 return CustomMessage("Do you like my bomb flowers?");
+
+            // case 0x0301: // test sign
+
+            // rooftop man
+            case 0x5050:
+                return CustomMessage("Do some parkour!");
+            case 0x5055:
+                return CustomMessage("\x08             Parkour!\x0E\x48");
+            case 0x5051:
+                return CustomMessage("Sweet moves!^Anyway, this washed up while I was sleeping. You can have it!");
+            case 0x0099:
+                return CustomMessage("You found a letter in a bottle!&Don't give it to any strange hands.");
+            case 0x5056:
+                return CustomMessage("Maybe ask around town, see if anyone knows how to read.");
+            case 0x4005:
+                return CustomMessage("Help! I'm a letter trapped in a bottle!");
 
             // the chicken hiding in a bean spot
             case 0x2022:
@@ -86,17 +104,24 @@ namespace {
             case 0x2028:
                 return CustomMessage("Eww, I saw a chicken!");
             case 0x002F:
-                return CustomMessage("Yep, that’s ground.");
+                return CustomMessage("Yep, that's ground.");
 
             // the chicken in a hurty crate
             case Signs::TellsTruth: {
                 EnKanban* other = Find(ACTOR_EN_KANBAN, Signs::TellsLies).Single<EnKanban>();
                 if (other->partFlags != 0xFFFF)
-                    return CustomMessage("One of us tells the truth and the other got wrecked, LOL!", TEXTBOX_TYPE_WOODEN);
-                return CustomMessage("One of us tells the truth and the other lies.", TEXTBOX_TYPE_WOODEN);
+                    return CustomMessage("One sign tells the truth and the other got wrecked, LOL!", TEXTBOX_TYPE_WOODEN);
+                return CustomMessage("One sign always tells the truth and the other always lies.", TEXTBOX_TYPE_WOODEN);
             }
             case Signs::TellsLies:
                 return CustomMessage("Tip: Rolling into boxes is a good idea!", TEXTBOX_TYPE_WOODEN);
+
+            // king zora
+            case 0x401A:
+            case 0x401C:
+                return CustomMessage("Mweep?\x1B#Mweep&Mweepn't#", { QM_GREEN });
+            case 0x401B:
+                return CustomMessage("Mweep!");
 
             default:
                 char buf[64];
@@ -115,6 +140,7 @@ void EscapeRoom_RegisterHooks() {
         if (mAfterSceneInit) {
             switch (gPlayState->sceneNum) {
                 case SCENE_KAKARIKO_VILLAGE: SetupKakarikoVillage(); break;
+                case SCENE_POTION_SHOP_KAKARIKO: SetupZoraHouse(); break;
             }
             mAfterSceneInit = false;
         }
