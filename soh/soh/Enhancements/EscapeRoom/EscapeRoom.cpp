@@ -4,30 +4,31 @@
 #include "../game-interactor/GameInteractor.h"
 #include "../custom-message/CustomMessageTypes.h"
 #include "../custom-message/CustomMessageManager.h"
+#include "soh/ActorDB.h"
+#include "overlays/actors/ovl_En_Kanban/z_en_kanban.h"
+
+#include "ActorListHelpers.h"
+using namespace EscapeRoom;
 
 namespace {
-    constexpr s16 LargeGrayRock = 1;
-    constexpr s16 BombFlowerBase = -1;
-
-    namespace SceneFlags {
+    namespace Ishi {
+        constexpr s16 LargeGrayRock = 1;
+    }
+    namespace Bombf {
+        constexpr s16 FlowerBase = -1;
+    }
+    namespace Makekinsuta {
+        constexpr s16 BeanSpotChicken = 0x4000;
+    }
+    namespace Niw {
+        constexpr s16 HideInACrate = 4;
+    }
+    namespace KV_SceneFlag {
         constexpr s16 BoulderAroundChicken = 0x10;
     }
-
-    Actor* Spawn(s16 actorId, Vec3f pos, Vec3s rot, s16 params) {
-        return Actor_Spawn(&gPlayState->actorCtx, gPlayState, actorId, pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, params, false);
-    }
-
-    Actor* Spawn(s16 actorId, Vec3f pos, s16 params) {
-        return Spawn(actorId, pos, {0, 0, 0}, params);
-    }
-
-    void Delete(ActorCategory cat, s16 actorId, Vec3f pos) {
-        Actor* begin = gPlayState->actorCtx.actorLists[cat].head;
-        for (Actor* iter = begin; iter != nullptr; iter = iter->next) {
-            if (iter->id != actorId) continue;
-            if (Math_Vec3f_DistXYZ(&iter->world.pos, &pos) >= 1) continue;
-            Actor_Kill(iter);
-        }
+    namespace Signs {
+        constexpr s16 TellsTruth = 0x030A;
+        constexpr s16 TellsLies = 0x030B;
     }
 }
 
@@ -35,30 +36,73 @@ namespace {
     bool mAfterSceneInit = false;
 
     void SetupKakarikoVillage() {
+        // crate cosmetics
+        Find(ACTOR_OBJ_KIBAKO2).SetParams(-2);
+
         // rocks blocking the graveyard
-        Spawn(ACTOR_EN_ISHI, {1887, 189, 1381}, LargeGrayRock);
-        Spawn(ACTOR_EN_ISHI, {1916, 189, 1446}, LargeGrayRock);
-        Spawn(ACTOR_EN_ISHI, {1857, 189, 1306}, LargeGrayRock);
+        Spawn(ACTOR_EN_ISHI, {1887, 189, 1381}, Ishi::LargeGrayRock);
+        Spawn(ACTOR_EN_ISHI, {1916, 189, 1446}, Ishi::LargeGrayRock);
+        Spawn(ACTOR_EN_ISHI, {1857, 189, 1306}, Ishi::LargeGrayRock);
 
         // gate blocking hyrule field
         Spawn(ACTOR_BG_GATE_SHUTTER, {-2140, 137, 1050}, {0, 17074, 0}, -1);
 
         // the chicken hiding in a bean spot
+        // (formerly the one by the entrance)
         Spawn(ACTOR_OBJ_BEAN, {295, 160, 1053}, 0);
         if (!(gSaveContext.infTable[25] & 0x0200)) {
-            Delete(ACTORCAT_PROP, ACTOR_EN_NIW, {-1697, 80, 870});
-            Spawn(ACTOR_OBJ_MAKEKINSUTA, {295, 160, 1053}, 0x4000);
+            Find(ACTOR_EN_NIW, {-1697, 80, 870}).Delete();
+            Spawn(ACTOR_OBJ_MAKEKINSUTA, {295, 160, 1053}, Makekinsuta::BeanSpotChicken);
         }
+        Spawn(ACTOR_EN_CS, {330, 160, 1080}, {0, -22965, 0}, 0);
 
-        // rock covering chicken instead of crate
-        Delete(ACTORCAT_BG, ACTOR_OBJ_KIBAKO2, {-60, 0, -46});
-        Spawn(ACTOR_OBJ_BOMBIWA, {-70, 0, -40}, SceneFlags::BoulderAroundChicken);
+        // the chicken in a hurty crate
+        // (formerly just chillin’ by Anju)
+        Spawn(ACTOR_EN_KANBAN, {746, 65, 1597}, {0, -21013, 0}, Signs::TellsLies);
+        Spawn(ACTOR_EN_KANBAN, {830, 65, 1580}, {0, 27250, 0}, Signs::TellsTruth);
+        Find(ACTOR_EN_NIW, {796, 80, 1639}).SetParams(Niw::HideInACrate);
+        Spawn(ACTOR_OBJ_KIBAKO2, {796, 80, 1639}, -6);
+
+        // the chicken in a rock
+        // (formerly the one in a crate)
+        Find(ACTOR_OBJ_KIBAKO2, {-60, 0, -46}).Delete();
+        Spawn(ACTOR_OBJ_BOMBIWA, {-70, 0, -40}, KV_SceneFlag::BoulderAroundChicken);
 
         // bean salesman
         Spawn(ACTOR_EN_MS, {-537, 200, -319}, {0, 552, 0}, 0);
-        Spawn(ACTOR_EN_BOMBF, {-576, 200, -343}, BombFlowerBase);
-        Spawn(ACTOR_EN_BOMBF, {-472, 200, -358}, BombFlowerBase);
-        Spawn(ACTOR_EN_BOMBF, {-522, 200, -365}, BombFlowerBase);
+        Spawn(ACTOR_EN_BOMBF, {-576, 200, -343}, Bombf::FlowerBase);
+        Spawn(ACTOR_EN_BOMBF, {-472, 200, -358}, Bombf::FlowerBase);
+        Spawn(ACTOR_EN_BOMBF, {-522, 200, -365}, Bombf::FlowerBase);
+    }
+
+    CustomMessage GetCustomMessage(u16 textId) {
+        switch (textId) {
+            case TEXT_BEAN_SALESMAN_BUY_FOR_20:
+                return CustomMessage("Do you like my bomb flowers?");
+
+            // the chicken hiding in a bean spot
+            case 0x2022:
+                return CustomMessage("I wish I was small and icky. Then I could crawl into this soil!");
+            case 0x2028:
+                return CustomMessage("Eww, I saw a chicken!");
+            case 0x002F:
+                return CustomMessage("Yep, that’s ground.");
+
+            // the chicken in a hurty crate
+            case Signs::TellsTruth: {
+                EnKanban* other = Find(ACTOR_EN_KANBAN, Signs::TellsLies).Single<EnKanban>();
+                if (other->partFlags != 0xFFFF)
+                    return CustomMessage("One of us tells the truth and the other got wrecked, LOL!", TEXTBOX_TYPE_WOODEN);
+                return CustomMessage("One of us tells the truth and the other lies.", TEXTBOX_TYPE_WOODEN);
+            }
+            case Signs::TellsLies:
+                return CustomMessage("Tip: Rolling into boxes is a good idea!", TEXTBOX_TYPE_WOODEN);
+
+            default:
+                char buf[64];
+                snprintf(buf, sizeof(buf), "err: missing string for 0x%04X", textId);
+                return CustomMessage(buf);
+        }
     }
 }
 
@@ -81,14 +125,7 @@ void EscapeRoom_RegisterHooks() {
 //gSaveContext.ship.maskMemory = PLAYER_MASK_NONE;
 
 CustomMessage EscapeRoom_GetCustomMessage(u16 textId) {
-    CustomMessage msg;
-    switch (textId) {
-        case TEXT_BEAN_SALESMAN_BUY_FOR_20:
-            msg = CustomMessage("Do you like my bomb flowers?");
-            break;
-        default:
-            return CustomMessage();
-    }
+    CustomMessage msg = GetCustomMessage(textId);
     msg.AutoFormat();
     return msg;
 }

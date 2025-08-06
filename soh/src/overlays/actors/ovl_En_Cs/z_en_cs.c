@@ -141,9 +141,9 @@ void EnCs_Init(Actor* thisx, PlayState* play) {
     CollisionCheck_SetInfo2(&this->actor.colChkInfo, sDamageTable, &sColChkInfoInit2);
     Actor_UpdateBgCheckInfo(play, &this->actor, 0.0f, 0.0f, 0.0f, 4);
 
-    Animation_Change(&this->skelAnime, sAnimationInfo[ENCS_ANIM_0].animation, 1.0f, 0.0f,
-                     Animation_GetLastFrame(sAnimationInfo[ENCS_ANIM_0].animation), sAnimationInfo[ENCS_ANIM_0].mode,
-                     sAnimationInfo[ENCS_ANIM_0].morphFrames);
+    Animation_Change(&this->skelAnime, sAnimationInfo[ENCS_ANIM_3].animation, 1.0f, 0.0f,
+                     Animation_GetLastFrame(sAnimationInfo[ENCS_ANIM_3].animation), sAnimationInfo[ENCS_ANIM_3].mode,
+                     sAnimationInfo[ENCS_ANIM_3].morphFrames);
 
     this->actor.targetMode = 6;
     this->path = this->actor.params & 0xFF;
@@ -152,10 +152,11 @@ void EnCs_Init(Actor* thisx, PlayState* play) {
     this->currentAnimIndex = -1;
     this->actor.gravity = -1.0f;
 
-    EnCs_ChangeAnim(this, ENCS_ANIM_0, &this->currentAnimIndex);
+    EnCs_ChangeAnim(this, ENCS_ANIM_3, &this->currentAnimIndex);
 
     this->actionFunc = EnCs_Walk;
     this->walkSpeed = 1.0f;
+    this->walkAngle = this->actor.world.rot.y;
 }
 
 void EnCs_Destroy(Actor* thisx, PlayState* play) {
@@ -211,22 +212,13 @@ s32 EnCs_GetTalkState(EnCs* this, PlayState* play) {
 }
 
 s32 EnCs_GetTextID(EnCs* this, PlayState* play) {
-    Player* player = GET_PLAYER(play);
-    s32 textId = Text_GetFaceReaction(play, 15);
-
     if (Flags_GetItemGetInf(ITEMGETINF_3A)) {
-        if (textId == 0) {
-            textId = 0x2028;
-        }
-    } else if (player->currentMask == PLAYER_MASK_SPOOKY) {
-        textId = 0x2023;
+        return 0x2028;
+    // } else if (player->currentMask == PLAYER_MASK_SPOOKY) {
+        // return 0x2023;
     } else {
-        if (textId == 0) {
-            textId = 0x2022;
-        }
+        return 0x2022;
     }
-
-    return textId;
 }
 
 void EnCs_HandleTalking(EnCs* this, PlayState* play) {
@@ -263,66 +255,6 @@ void EnCs_HandleTalking(EnCs* this, PlayState* play) {
     }
 }
 
-s32 EnCs_GetwaypointCount(Path* pathList, s32 pathIndex) {
-    Path* path = &pathList[pathIndex];
-
-    return path->count;
-}
-
-s32 EnCs_GetPathPoint(Path* pathList, Vec3f* dest, s32 pathIndex, s32 waypoint) {
-    Path* path = pathList;
-    Vec3s* pathPos;
-
-    path += pathIndex;
-    pathPos = &((Vec3s*)SEGMENTED_TO_VIRTUAL(path->points))[waypoint];
-
-    dest->x = pathPos->x;
-    dest->y = pathPos->y;
-    dest->z = pathPos->z;
-
-    return 0;
-}
-
-s32 EnCs_HandleWalking(EnCs* this, PlayState* play) {
-    f32 xDiff;
-    f32 zDiff;
-    Vec3f pathPos;
-    s32 waypointCount;
-    s16 walkAngle1;
-    s16 walkAngle2;
-
-    EnCs_GetPathPoint(play->setupPathList, &pathPos, this->path, this->waypoint);
-    xDiff = pathPos.x - this->actor.world.pos.x;
-    zDiff = pathPos.z - this->actor.world.pos.z;
-    walkAngle1 = Math_FAtan2F(xDiff, zDiff) * (32768.0f / M_PI);
-    this->walkAngle = walkAngle1;
-    this->walkDist = sqrtf((xDiff * xDiff) + (zDiff * zDiff));
-
-    while (this->walkDist <= 10.44f) {
-        this->waypoint++;
-        waypointCount = EnCs_GetwaypointCount(play->setupPathList, this->path);
-
-        if ((this->waypoint < 0) || (!(this->waypoint < waypointCount))) {
-            this->waypoint = 0;
-        }
-
-        EnCs_GetPathPoint(play->setupPathList, &pathPos, this->path, this->waypoint);
-        xDiff = pathPos.x - this->actor.world.pos.x;
-        zDiff = pathPos.z - this->actor.world.pos.z;
-        walkAngle2 = Math_FAtan2F(xDiff, zDiff) * (32768.0f / M_PI);
-        this->walkAngle = walkAngle2;
-        this->walkDist = sqrtf((xDiff * xDiff) + (zDiff * zDiff));
-    }
-
-    Math_SmoothStepToS(&this->actor.shape.rot.y, this->walkAngle, 1, 2500, 0);
-    this->actor.world.rot.y = this->actor.shape.rot.y;
-    this->actor.speedXZ = this->walkSpeed;
-    Actor_MoveXZGravity(&this->actor);
-    Actor_UpdateBgCheckInfo(play, &this->actor, 0.0f, 0.0f, 0.0f, 4);
-
-    return 0;
-}
-
 void EnCs_Walk(EnCs* this, PlayState* play) {
     s32 rnd;
     s32 animIndex;
@@ -337,23 +269,14 @@ void EnCs_Walk(EnCs* this, PlayState* play) {
         animIndex = this->currentAnimIndex;
 
         if (this->talkState == 0) {
-            if (Flags_GetItemGetInf(ITEMGETINF_3A)) {
-                rnd = Rand_ZeroOne() * 10.0f;
-            } else {
-                rnd = Rand_ZeroOne() * 5.0f;
-            }
+            rnd = Rand_ZeroOne() * 10.0f;
 
             if (rnd == 0) {
-                if (Flags_GetItemGetInf(ITEMGETINF_3A)) {
-                    animIndex = 2.0f * Rand_ZeroOne();
-                    animIndex = (animIndex == 0) ? ENCS_ANIM_2 : ENCS_ANIM_1;
-                } else {
-                    animIndex = ENCS_ANIM_2;
-                }
-
+                animIndex = 2.0f * Rand_ZeroOne();
+                animIndex = (animIndex == 0) ? ENCS_ANIM_2 : ENCS_ANIM_1;
                 this->actionFunc = EnCs_Wait;
             } else {
-                animIndex = ENCS_ANIM_0;
+                animIndex = ENCS_ANIM_3;
             }
         }
 
@@ -361,16 +284,8 @@ void EnCs_Walk(EnCs* this, PlayState* play) {
     }
 
     if (this->talkState == 0) {
-        curAnimFrame = this->skelAnime.curFrame;
-
-        if (((curAnimFrame >= 8) && (curAnimFrame < 16)) || ((curAnimFrame >= 23) && (curAnimFrame < 30)) ||
-            (curAnimFrame == 0)) {
-            this->walkSpeed = 0.0f;
-        } else {
-            this->walkSpeed = 1.0f;
-        }
-
-        EnCs_HandleWalking(this, play);
+        Math_SmoothStepToS(&this->actor.shape.rot.y, this->walkAngle, 1, 2500, 0);
+        this->actor.world.rot.y = this->actor.shape.rot.y;
     }
 }
 
@@ -390,7 +305,7 @@ void EnCs_Wait(EnCs* this, PlayState* play) {
                 this->animLoopCount--;
                 animIndex = this->currentAnimIndex;
             } else {
-                animIndex = ENCS_ANIM_0;
+                animIndex = ENCS_ANIM_3;
                 this->actionFunc = EnCs_Walk;
             }
         }
@@ -413,7 +328,7 @@ void EnCs_Talk(EnCs* this, PlayState* play) {
     Npc_TrackPoint(&this->actor, &this->interactInfo, 0, NPC_TRACKING_FULL_BODY);
 
     if (this->talkState == 0) {
-        EnCs_ChangeAnim(this, ENCS_ANIM_0, &this->currentAnimIndex);
+        EnCs_ChangeAnim(this, ENCS_ANIM_3, &this->currentAnimIndex);
         this->actionFunc = EnCs_Walk;
         this->flag &= ~1;
     }
@@ -472,7 +387,7 @@ void EnCs_Draw(Actor* thisx, PlayState* play) {
 
     SkelAnime_DrawSkeletonOpa(play, &this->skelAnime, EnCs_OverrideLimbDraw, EnCs_PostLimbDraw, &this->actor);
 
-    if (Flags_GetItemGetInf(ITEMGETINF_3A)) {
+    if (false && Flags_GetItemGetInf(ITEMGETINF_3A)) {
         s32 childLinkObjectIndex = Object_GetIndex(&play->objectCtx, OBJECT_LINK_CHILD);
 
         // Handle attaching the Spooky Mask to the boy's face

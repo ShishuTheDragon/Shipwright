@@ -51,6 +51,7 @@ void func_80B98320(ObjMakekinsuta* this, PlayState* play) {
             // SHISHU EscapeRoom: spawn a chicken instead
             Actor_Spawn(&play->actorCtx, play, ACTOR_EN_NIW, this->actor.world.pos.x, this->actor.world.pos.y,
                         this->actor.world.pos.z, 0, this->actor.shape.rot.y, 0, 0, false);
+            Flags_SetItemGetInf(ITEMGETINF_3A);
             this->actionFunc = ObjMakekinsuta_DoNothing;
         } else {
             this->timer++;

@@ -8,6 +8,7 @@
 #include "objects/object_kibako2/object_kibako2.h"
 #include "overlays/effects/ovl_Effect_Ss_Kakera/z_eff_ss_kakera.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
+#include "assets/soh_assets.h"
 
 #define FLAGS 0
 
@@ -145,6 +146,11 @@ void ObjKibako2_Destroy(Actor* thisx, PlayState* play) {
 }
 
 void ObjKibako2_Idle(ObjKibako2* this, PlayState* play) {
+    if (this->dyna.actor.params == -6 && this->dyna.actor.home.rot.z != 0) {
+        Health_ChangeBy(gPlayState, -16); // 1 whole heart
+        GET_PLAYER(gPlayState)->invincibilityTimer = 28;
+    } // SHISHU the heart is a lie
+
     if ((this->collider.base.acFlags & AC_HIT) || (this->dyna.actor.home.rot.z != 0) ||
         func_80033684(play, &this->dyna.actor) != NULL) {
         ObjKibako2_Break(this, play);
@@ -180,5 +186,30 @@ void ObjKibako2_Draw(Actor* thisx, PlayState* play) {
         return;
     }
 
-    Gfx_DrawDListOpa(play, gLargeCrateDL);
+    switch (thisx->params) {
+        case -2:
+            Gfx_DrawDListOpa(play, gLargeMajorCrateDL);
+            break;
+        case -3:
+            Gfx_DrawDListOpa(play, gLargeTokenCrateDL);
+            break;
+        case -4:
+            Gfx_DrawDListOpa(play, gLargeSmallKeyCrateDL);
+            break;
+        case -5:
+            Gfx_DrawDListOpa(play, gLargeBossKeyCrateDL);
+            break;
+        case -6:
+            Gfx_DrawDListOpa(play, gLargeHeartCrateDL);
+            break;
+        case -7:
+            Gfx_DrawDListOpa(play, gLargeMinorCrateDL);
+            break;
+        case -8:
+            Gfx_DrawDListOpa(play, gLargeJunkCrateDL);
+            break;
+        default:
+            Gfx_DrawDListOpa(play, gLargeCrateDL);
+            break;
+    }
 }
