@@ -62,7 +62,7 @@ void EnTuboTrap_Init(Actor* thisx, PlayState* play) {
     osSyncPrintf(VT_FGCOL(GREEN) "☆☆☆☆☆ 壷トラップ ☆☆☆☆☆ %x\n" VT_RST, this->actor.params); // "Urn Trap"
     Collider_InitCylinder(play, &this->collider);
     Collider_SetCylinder(play, &this->collider, &this->actor, &sCylinderInit);
-    Actor_SetScale(&this->actor, 0.1f);
+    Actor_SetScale(&this->actor, 0.2f);
     this->actionFunc = EnTuboTrap_WaitForProximity;
 }
 

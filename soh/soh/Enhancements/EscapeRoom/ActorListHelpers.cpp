@@ -20,7 +20,7 @@ namespace EscapeRoom {
     bool Find::matches(Actor* actor) {
         if (actor->id != actorId)
             return false;
-        if (pos.has_value() && Math_Vec3f_DistXYZ(&actor->world.pos, &*pos) >= 1)
+        if (pos.has_value() && Math_Vec3f_DistXYZ(&actor->world.pos, &*pos) >= posTolerance)
             return false;
         if (params.has_value() && actor->params != *params)
             return false;
@@ -50,6 +50,12 @@ namespace EscapeRoom {
         });
     }
 
+    void Find::Move(Vec3f newPos) {
+        each([&](Actor* actor) {
+            Math_Vec3f_Copy(&actor->world.pos, &newPos);
+        });
+    }
+
     void Find::Move(Vec3f newPos, Vec3f newRot) {
         each([&](Actor* actor) {
             Math_Vec3f_Copy(&actor->world.pos, &newPos);
@@ -61,5 +67,12 @@ namespace EscapeRoom {
 
     void Find::Delete() {
         each(Actor_Kill);
+    }
+
+    void Find::ReplaceWith(s16 newActorId) {
+        each([&](Actor* actor) {
+            Spawn(newActorId, actor->world.pos, actor->world.rot, actor->params);
+            Actor_Kill(actor);
+        });
     }
 }

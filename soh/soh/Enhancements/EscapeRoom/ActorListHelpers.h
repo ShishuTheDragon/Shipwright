@@ -11,6 +11,7 @@ namespace EscapeRoom {
     class Find {
         s16 actorId{0};
         std::optional<Vec3f> pos;
+        f32 posTolerance{1};
         std::optional<s16> params;
 
         Actor* head();
@@ -32,12 +33,34 @@ namespace EscapeRoom {
         Actor* Single();
 
         void SetParams(s16 params);
+        void Move(Vec3f newPos);
         void Move(Vec3f newPos, Vec3f newRot);
         void Delete();
+        void ReplaceWith(s16 newActorId);
 
         template<typename T>
         T* Single() {
             return (T*)Single();
         }
     };
+
+    namespace Ishi {
+        constexpr s16 LargeGrayRock = 1;
+    }
+    namespace Bombf {
+        constexpr s16 FlowerBase = -1;
+    }
+    namespace Makekinsuta {
+        constexpr s16 BeanSpotChicken = 0x4000;
+    }
+    namespace Niw {
+        constexpr s16 HideInACrate = 4;
+    }
+    namespace Tsubo {
+        constexpr s16 HeartPot = 19715;
+    }
+    namespace Signs {
+        constexpr s16 TellsTruth = 0x030A;
+        constexpr s16 TellsLies = 0x030B;
+    }
 }
