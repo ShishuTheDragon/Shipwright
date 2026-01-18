@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.26.0 FATAL_ERROR)
 set(CMAKE_SYSTEM_VERSION 10.0 CACHE STRING "" FORCE)
 set(CMAKE_CXX_STANDARD 20 CACHE STRING "The C++ standard to use")
 set(CMAKE_C_STANDARD 23 CACHE STRING "The C standard to use")
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
 
 project(Ship VERSION 9.1.2 LANGUAGES C CXX)
@@ -263,7 +263,7 @@ add_custom_target(CreateOSXIcons
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Creating OSX icons ..."
     )
-add_dependencies(soh CreateOSXIcons)
+# add_dependencies(soh CreateOSXIcons)
 
 install(TARGETS ZAPD DESTINATION ${CMAKE_BINARY_DIR}/assets)
 

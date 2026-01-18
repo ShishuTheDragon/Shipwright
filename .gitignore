@@ -419,6 +419,7 @@ shipofharkinian.ini
 shipofharkinian.json
 imgui.ini
 timesplitdata.json
+/Randomizer/*.json
 
 # Switch Stuff
 
@@ -460,3 +461,4 @@ soh/properties.h
 /clang-format
 /clang-format.exe
 *.o2r
+/mods
