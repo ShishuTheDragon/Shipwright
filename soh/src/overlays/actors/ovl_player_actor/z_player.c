@@ -5111,6 +5111,8 @@ static u8 sReturnEntranceGroupIndices[] = {
     0,  // ENTR_RETURN_GREAT_FAIRYS_FOUNTAIN_MAGIC
 };
 
+s32 BGCheck_Tmp_Highlight = -1;
+
 s32 Player_HandleExitsAndVoids(PlayState* play, Player* this, CollisionPoly* poly, u32 bgId) {
     s32 exitIndex;
     s32 temp;
@@ -5121,11 +5123,23 @@ s32 Player_HandleExitsAndVoids(PlayState* play, Player* this, CollisionPoly* pol
     if (this->actor.category == ACTORCAT_PLAYER) {
         exitIndex = 0;
 
+        for (int i = 0; i < play->colCtx.colHeader->numPolygons; i++) {
+            if (&play->colCtx.colHeader->polyList[i] == poly) {
+                BGCheck_Tmp_Highlight = i;
+            }
+        }
+
         if (!(this->stateFlags1 & PLAYER_STATE1_DEAD) && (play->transitionTrigger == TRANS_TRIGGER_OFF) &&
             (this->csAction == 0) && !(this->stateFlags1 & PLAYER_STATE1_LOADING) &&
             (((poly != NULL) &&
               (exitIndex = SurfaceType_GetSceneExitIndex(&play->colCtx, poly, bgId), exitIndex != 0)) ||
              (func_8083816C(sFloorType) && (this->floorProperty == 12)))) {
+
+            // THIS IS THE PLACE TO DO IT
+            // Player* player = GET_PLAYER(play);
+            // if (player->actor.world.pos.y > -915) {
+                // return 0;
+            // }
 
             sp34 = this->unk_A84 - (s32)this->actor.world.pos.y;
 

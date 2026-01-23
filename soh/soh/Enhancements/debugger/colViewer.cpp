@@ -377,6 +377,10 @@ void InitGfx(std::vector<Gfx>& gfx, ColRenderSetting setting) {
     gfx.push_back(gsDPSetEnvColor(0xFF, 0xFF, 0xFF, alpha));
 }
 
+extern "C" {
+    extern s32 BGCheck_Tmp_Highlight;
+}
+
 // Draws a dynapoly structure (scenes or Bg Actors)
 void DrawDynapoly(std::vector<Gfx>& dl, CollisionHeader* col, int32_t bgId) {
     Color_RGBA8 color = { 255, 255, 255, 255 };
@@ -394,7 +398,9 @@ void DrawDynapoly(std::vector<Gfx>& dl, CollisionHeader* col, int32_t bgId) {
     for (int i = 0; i < col->numPolygons; i++) {
         CollisionPoly* poly = &col->polyList[i];
 
-        if (SurfaceType_IsHookshotSurface(&gPlayState->colCtx, poly, bgId)) {
+        if (BGCheck_Tmp_Highlight == i) {
+            color = { 255, 128, 0, 255 };
+        } else if (SurfaceType_IsHookshotSurface(&gPlayState->colCtx, poly, bgId)) {
             color = CVarGetColor(CVAR_DEVELOPER_TOOLS("ColViewer.ColorHookshot.Value"), { 128, 128, 255, 255 });
         } else if (func_80041D94(&gPlayState->colCtx, poly, bgId) > 0x01) {
             color = CVarGetColor(CVAR_DEVELOPER_TOOLS("ColViewer.ColorInteractable.Value"), { 192, 0, 192, 255 });

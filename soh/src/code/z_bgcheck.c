@@ -5,6 +5,8 @@
 #include "soh/ResourceManagerHelpers.h"
 #include <assert.h>
 
+#include <stdio.h>
+
 #define SS_NULL 0xFFFF
 
 // bccFlags
@@ -1525,6 +1527,30 @@ void BgCheck_Allocate(CollisionContext* colCtx, PlayState* play, CollisionHeader
 
     // "/*---------------- BGCheck Buffer Memory Size -------------*/\n"
     osSyncPrintf("/*---------------- BGCheck バッファーメモリサイズ -------------*/\n");
+
+    if (play->sceneNum == SCENE_HYRULE_FIELD) {
+        int x = 1;
+
+        printf("THINGY[ ");
+
+        for (int i = 0; i < colHeader->numPolygons; i++) {
+            CollisionPoly* poly = &colHeader->polyList[i];
+
+            printf("[%d,%d], ", (int)i, (int)poly->type);
+
+            // if (poly->type == 53) {
+                // poly->type = 53;
+            // }
+
+            if (SurfaceType_GetSceneExitIndex(colCtx, poly, BGCHECK_SCENE) == 9) {
+                s32 dataIdx = 0;
+                SurfaceType* surfaceTypes;
+                surfaceTypes = colCtx->colHeader->surfaceTypeList;
+                u32 AA = surfaceTypes[poly->type].data[dataIdx];
+                int y = 1;
+            }
+        }
+    }
 
     if (YREG(15) == 0x10 || YREG(15) == 0x20 || YREG(15) == 0x30 || YREG(15) == 0x40) {
         if (play->sceneNum == SCENE_STABLE) {
@@ -3993,7 +4019,23 @@ Vec3s* SurfaceType_GetCamPosData(CollisionContext* colCtx, CollisionPoly* poly, 
  * SurfaceType Get Scene Exit Index
  */
 u32 SurfaceType_GetSceneExitIndex(CollisionContext* colCtx, CollisionPoly* poly, s32 bgId) {
-    return SurfaceType_GetData(colCtx, poly, bgId, 0) >> 8 & 0x1F;
+    u32 result = SurfaceType_GetData(colCtx, poly, bgId, 0) >> 8 & 0x1F;
+
+    for (int i = 0; i < colCtx->colHeader->numPolygons; i++) {
+        if (&colCtx->colHeader->polyList[i] == poly) {
+            u32 data0 = SurfaceType_GetData(colCtx, poly, bgId, 0);
+            u32 data0Excl = data0 & ~(0x1F<<8);
+            u32 data1 = SurfaceType_GetData(colCtx, poly, bgId, 1);
+            if (result != 0) {
+                u32 x = 1;
+            }
+        }
+    }
+
+    //if (result == 9 || result == 5) {
+    //    result = 0;
+    //}
+    return result;
 }
 
 /**

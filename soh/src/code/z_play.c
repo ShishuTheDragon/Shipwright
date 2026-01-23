@@ -97,6 +97,7 @@ void Gameplay_SetupTransition(PlayState* play, s32 transitionType) {
 
     memset(transitionCtx, 0, sizeof(TransitionContext));
 
+    transitionType = TRANS_TYPE_INSTANT;
     transitionCtx->transitionType = transitionType;
 
     // Circle Transition Types
@@ -559,7 +560,7 @@ void Play_Init(GameState* thisx) {
         play->transitionType = TRANS_TYPE_FADE_BLACK_SLOW;
     }
 
-    ShrinkWindow_Init();
+    // ShrinkWindow_Init();
     TransitionFade_Init(&play->transitionFade);
     TransitionFade_SetType(&play->transitionFade, 3);
     TransitionFade_SetColor(&play->transitionFade, RGBA8(160, 160, 160, 255));

@@ -45,6 +45,17 @@ bool Scene_CommandSpawnList(PlayState* play, SOH::ISceneCommand* cmd) {
     SOH::SetStartPositionList* cmdStartPos = (SOH::SetStartPositionList*)cmd;
     ActorEntry* entries = (ActorEntry*)cmdStartPos->GetRawPointer();
 
+    if (play->sceneNum == SCENE_LAKE_HYLIA) {
+        // Patch the spawn point when entering from Hyrule Field to align the maps better.
+        entries[0].pos = { -1838, -885, -272 };
+        // entries[0].pos = { -1806, -884, -255 };
+        entries[0].rot = { 0, 13000, 0 };
+    }
+
+    if (play->sceneNum == SCENE_HYRULE_FIELD && play->curSpawn == 4) {
+
+    }
+
     play->linkActorEntry = &entries[play->setupEntranceList[play->curSpawn].spawn];
     play->linkAgeOnLoad = ((void)0, gSaveContext.linkAge);
     s16 linkObjectId = gLinkObjectIds[((void)0, gSaveContext.linkAge)];
@@ -75,6 +86,16 @@ bool Scene_CommandCollisionHeader(PlayState* play, SOH::ISceneCommand* cmd) {
     // SOH::SetCollisionHeader* cmdCol = std::static_pointer_cast<SOH::SetCollisionHeader>(cmd);
     SOH::SetCollisionHeader* cmdCol = (SOH::SetCollisionHeader*)cmd;
     BgCheck_Allocate(&play->colCtx, play, (CollisionHeader*)cmdCol->GetRawPointer());
+
+    if (play->sceneNum == SCENE_LAKE_HYLIA) {
+        CollisionPoly* polyList = play->colCtx.colHeader->polyList;
+
+        // Patch the exit to Hyrule Field:
+        // - 215 and 216 were type 14, which has exit and conveyor. Type 14 is no longer used.
+        // - 274 was type 18, which has exit.
+        // - They now use type 15, which is the regular ground near that exit.
+        polyList[215].type = polyList[216].type = polyList[274].type = 15;
+    }
 
     return false;
 }

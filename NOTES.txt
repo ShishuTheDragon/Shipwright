@@ -1,0 +1,46 @@
+-5350.1, 14819.0   to   -5703.0, 14596.6   polies: 1278, 1279, 1282
+
+G_MARKER: scenes/shared/spot00_scene/spot00_room_0DL_00F3F8
+
+G_VTX_OTR_HASH: scenes/shared/spot00_scene/spot00_room_0Vtx_00EA08 << walls
+
+G_VTX_OTR_HASH: scenes/shared/spot00_scene/spot00_room_0Vtx_00EA08 << floor
+
+
+__OTR__scenes/shared/spot00_scene/spot00_room_0DL_00F3F8
+
+
+
+Lake Hylia:
+poly 217, 218 (type 15)
+good
+
+poly 215, 216 (type 14)
+disable exit
+needs conveyor disabled
+
+poly 274 (type 18)
+disable exit
+
+poly 273, 272 (type 14)
+keep the exit for now
+
+directly on entrance:
+Link X: -1844.3
+Link Y: -885.9
+Link Z: -274.5
+
+bit after entrance:
+Link X: -1806.1
+Link Y: -885.3
+Link Z: -255.3
+
+entrance index: 0
+exit index: 1
+
+
+entrance data:
+x -2093
+y -1037
+z 705
+rot 13000

@@ -64,6 +64,22 @@ extern "C" void gSPSegmentLoadRes(void* value, int segNum, uintptr_t target) {
     __gSPSegment(value, segNum, target);
 }
 
+inline void patchToNoOp(Gfx* dlist, size_t start, size_t endIncl) {
+    for (size_t i = start; i <= endIncl; i++) {
+        dlist[i].words.w0 = 0;
+        dlist[i].words.w1 = 0;
+    }
+}
+
+bool apply_patch(Gfx* dlist, char* path) {
+    if (strcmp(path, "__OTR__scenes/shared/spot00_scene/spot00_room_0DL_00F3F8") == 0) {
+        if (dlist[35].words.w0 == 0)
+            return;
+        patchToNoOp(dlist, 35, 38);
+        patchToNoOp(dlist, 60, 67);
+    }
+}
+
 extern "C" void gSPDisplayList(Gfx* pkt, Gfx* dl) {
     char* imgData = (char*)dl;
 
@@ -72,6 +88,7 @@ extern "C" void gSPDisplayList(Gfx* pkt, Gfx* dl) {
         // ResourceMgr_PushCurrentDirectory(imgData);
         // gsSPPushCD(pkt++, imgData);
         dl = ResourceMgr_LoadGfxByName(imgData);
+        // apply_patch(dl, imgData);
     }
 
     __gSPDisplayList(pkt, dl);
