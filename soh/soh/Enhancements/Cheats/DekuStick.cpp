@@ -25,3 +25,28 @@ void RegisterDekuStickCheats() {
 }
 
 static RegisterShipInitFunc initFunc(RegisterDekuStickCheats, { CVAR_DEKU_STICK_NAME });
+
+
+// putting it here for now because i need to put it somewhere
+
+void CheckForClicks() {
+    if (Ship::Context::GetInstance()->GetControlDeck()->MouseGameInputBlocked()) {
+        int x = 1;
+    }
+
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+        auto v = ImGui::GetMousePos();
+        // printf("CLICK: %f %f\n", v.x, v.y);
+
+        auto q = gPlayState->roomCtx.curRoom.meshHeader;
+
+        auto XXX = 1;
+    }
+}
+
+void RegisterDeleteFace() {
+    COND_HOOK(OnGameFrameUpdate, true, CheckForClicks);
+}
+
+static RegisterShipInitFunc initFunc2(RegisterDeleteFace);
+

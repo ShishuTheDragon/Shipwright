@@ -94,6 +94,9 @@ extern "C" void gSPDisplayList(Gfx* pkt, Gfx* dl) {
 
         // ResourceMgr_PushCurrentDirectory(imgData);
         // gsSPPushCD(pkt++, imgData);
+        if (strncmp(imgData, LOST_WOODS_PREFIX, LOST_WOODS_PREFIX_LENGTH) == 0) {
+            int x = 1;
+        }
         dl = ResourceMgr_LoadGfxByName(imgData);
         // apply_patch(dl, imgData);
 
