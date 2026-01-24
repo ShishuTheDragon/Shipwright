@@ -1348,6 +1348,8 @@ void Play_DrawOverlayElements(PlayState* play) {
     }
 }
 
+extern void SeamlessHook_DrawNextScene();
+
 void Play_Draw(PlayState* play) {
     GraphicsContext* gfxCtx = play->state.gfxCtx;
     Lights* sp228;
@@ -1546,6 +1548,7 @@ void Play_Draw(PlayState* play) {
                 Scene_Draw(play);
                 Room_Draw(play, &play->roomCtx.curRoom, roomDrawFlags & 3);
                 Room_Draw(play, &play->roomCtx.prevRoom, roomDrawFlags & 3);
+                SeamlessHook_DrawNextScene();
             }
         }
 

@@ -5,3 +5,13 @@ G_MARKER: scenes/shared/spot10_scene/spot10_room_8DL_0017C8
 [81] -> noop
 [82] -> noop
 [83] -> halfnoop?
+
+
+from { 792, 0, -2768 } rot 32693
+
+to { -201, -1.2, 2219 } rot -32767
+
+G_MARKER: scenes/shared/spot05_scene/spot05_room_0DL_0084C8
+G_MARKER: scenes/shared/spot05_scene/spot05_room_0DL_001CD8
+G_MARKER: scenes/shared/spot05_scene/spot05_room_0DL_007F00
+G_MARKER: scenes/shared/spot05_scene/spot05_room_0DL_002200

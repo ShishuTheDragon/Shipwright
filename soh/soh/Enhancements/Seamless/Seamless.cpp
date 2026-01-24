@@ -3,6 +3,10 @@
 #include "macros.h"
 #include "soh/resource/type/Scene.h"
 #include <soh/ResourceManagerHelpers.h>
+#include "align_asset_macro.h"
+#include <functions.h>
+#include <scenes/overworld/spot05/spot05_room_0.h>
+#include "global.h"
 
 extern "C" PlayState* gPlayState;
 
@@ -39,6 +43,37 @@ void AfterSceneCommands(int sceneNum) {
     }
 }
 
+namespace {
+    f32 x = 1000;
+    f32 y = 0;
+    f32 z = -5000;
+}
+
+extern "C" void SeamlessHook_DrawNextScene() {
+    auto play = gPlayState;
+    auto gfxCtx = play->state.gfxCtx;
+
+    MtxF mfTrans;
+    SkinMatrix_SetTranslate(&mfTrans, x, y, z);
+
+    OPEN_DISPS(gfxCtx);
+
+    gSPMatrix(POLY_OPA_DISP++, &gMtxClear, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    Mtx* mtx = SkinMatrix_MtxFToNewMtx(gfxCtx, &mfTrans);
+    assert(mtx != nullptr);
+
+    if (mtx != nullptr) {
+        gSPMatrix(POLY_OPA_DISP++, mtx, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        Gfx_SetupDL_25Opa(gfxCtx);
+        gSPDisplayList(POLY_OPA_DISP++, (Gfx*)(spot05_room_0DL_0084C8));
+        gSPDisplayList(POLY_OPA_DISP++, (Gfx*)(spot05_room_0DL_001CD8));
+        gSPDisplayList(POLY_OPA_DISP++, (Gfx*)(spot05_room_0DL_0015B0));
+        gSPDisplayList(POLY_OPA_DISP++, (Gfx*)(spot05_room_0DL_007F00));
+        gSPDisplayList(POLY_OPA_DISP++, (Gfx*)(spot05_room_0DL_002200));
+    }
+
+    CLOSE_DISPS(gfxCtx);
+}
 
 void RegisterSeamless() {
     COND_HOOK(AfterSceneCommands, true, AfterSceneCommands);
