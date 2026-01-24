@@ -6678,6 +6678,14 @@ s32 func_8083C910(PlayState* play, Player* this, f32 arg2) {
     return 1;
 }
 
+void Player_StartMode_Seamless(PlayState* play, Player* this) {
+    if (func_8083C910(play, this, 180.0f)) {
+        this->av2.actionVar2 = -20;
+    }
+    // this->stateFlags1 &= ~PLAYER_STATE1_IN_CUTSCENE;
+    // this->fallStartHeight = this->actor.world.pos.y - 100;
+}
+
 void Player_StartMode_Idle(PlayState* play, Player* this) {
     if (func_8083C910(play, this, 180.0f)) {
         this->av2.actionVar2 = -20;
@@ -9448,6 +9456,7 @@ void Player_Action_8084377C(Player* this, PlayState* play) {
     if (LinkAnimation_Update(play, &this->skelAnime) && (this->actor.bgCheckFlags & 1)) {
         if (this->av2.actionVar2 != 0) {
             this->av2.actionVar2--;
+            this->av2.actionVar2 = 0;
             if (this->av2.actionVar2 == 0) {
                 func_80853080(this, play);
             }
@@ -9455,6 +9464,7 @@ void Player_Action_8084377C(Player* this, PlayState* play) {
                    (!(this->cylinder.base.acFlags & AC_HIT) && (this->knockbackType == 0))) {
             if (this->stateFlags1 & PLAYER_STATE1_IN_CUTSCENE) {
                 this->av2.actionVar2++;
+                this->av2.actionVar2 = 60;
             } else {
                 Player_SetupAction(play, this, Player_Action_80843954, 0);
                 this->stateFlags1 |= PLAYER_STATE1_DAMAGED;
@@ -9522,6 +9532,7 @@ void func_80843AE8(PlayState* play, Player* this) {
     if (this->av2.actionVar2 != 0) {
         if (this->av2.actionVar2 > 0) {
             this->av2.actionVar2--;
+            this->av2.actionVar2 = 0;
             if (this->av2.actionVar2 == 0) {
                 if (this->stateFlags1 & PLAYER_STATE1_IN_WATER) {
                     LinkAnimation_Change(play, &this->skelAnime, &gPlayerAnim_link_swimer_swim_wait, 1.0f, 0.0f,
@@ -10563,6 +10574,7 @@ void Player_Action_80846408(Player* this, PlayState* play) {
 
     if (this->av2.actionVar2 != 0) {
         this->av2.actionVar2--;
+        this->av2.actionVar2 = 0;
         if (this->av2.actionVar2 == 0) {
             func_8083A098(this, &gPlayerAnim_link_normal_nocarry_free_end, play);
             this->stateFlags1 &= ~PLAYER_STATE1_CARRYING_ACTOR;
@@ -10816,7 +10828,7 @@ static void (*sStartModeFuncs[PLAYER_START_MODE_MAX])(PlayState* play, Player* t
     Player_StartMode_MoveForwardSlow, // PLAYER_START_MODE_UNUSED_9
     Player_StartMode_MoveForwardSlow, // PLAYER_START_MODE_UNUSED_10
     Player_StartMode_MoveForwardSlow, // PLAYER_START_MODE_UNUSED_11
-    Player_StartMode_MoveForwardSlow, // PLAYER_START_MODE_UNUSED_12
+    Player_StartMode_Seamless,        // PLAYER_START_MODE_UNUSED_12
     Player_StartMode_Idle,            // PLAYER_START_MODE_IDLE
     Player_StartMode_MoveForwardSlow, // PLAYER_START_MODE_MOVE_FORWARD_SLOW
     Player_StartMode_MoveForward,     // PLAYER_START_MODE_MOVE_FORWARD
@@ -11987,24 +11999,29 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
 
     if (this->unk_A73 != 0) {
         this->unk_A73--;
+        this->unk_A73 = 0;
     }
 
     if (this->textboxBtnCooldownTimer != 0) {
         this->textboxBtnCooldownTimer--;
+        this->textboxBtnCooldownTimer = 0;
     }
 
     if (this->unk_A87 != 0) {
         this->unk_A87--;
+        this->unk_A87 = 0;
     }
 
     if (this->invincibilityTimer < 0) {
         this->invincibilityTimer++;
     } else if (this->invincibilityTimer > 0) {
         this->invincibilityTimer--;
+        this->invincibilityTimer = 0;
     }
 
     if (this->unk_890 != 0) {
         this->unk_890--;
+        this->unk_890 = 0;
     }
 
     Player_UpdateInterface(play, this);
@@ -12076,8 +12093,10 @@ void Player_UpdateCommon(Player* this, PlayState* play, Input* input) {
             this->unk_845 = 0;
         } else if (this->unk_844 < 0) {
             this->unk_844++;
+            this->unk_844 = 0;
         } else {
             this->unk_844--;
+            this->unk_844 = 0;
         }
 
         Math_ScaledStepToS(&this->unk_6C2, 0, 400);
@@ -12517,6 +12536,8 @@ void Player_Update(Actor* thisx, PlayState* play) {
     }
 
     GameInteractor_ExecuteOnPlayerUpdate();
+
+    this->stateFlags1 &= ~PLAYER_STATE1_IN_CUTSCENE;
 }
 
 typedef struct BunnyEarKinematics {
@@ -14511,6 +14532,7 @@ void Player_Action_8084E6D4(Player* this, PlayState* play) {
         if (this->av2.actionVar2 != 0) {
             if (this->av2.actionVar2 >= 2) {
                 this->av2.actionVar2--;
+                this->av2.actionVar2 = 0;
             }
 
             if (func_8084DFF4(play, this) && (this->av2.actionVar2 == 1)) {

@@ -40,6 +40,12 @@ extern "C" s32 Object_Spawn(ObjectContext* objectCtx, s16 objectId);
 extern "C" RomFile sNaviMsgFiles[];
 s32 OTRScene_ExecuteCommands(PlayState* play, SOH::Scene* scene);
 
+inline void PatchEntrance(ActorEntry& entry, const Vec3s& pos, const Vec3s& rot) {
+    entry.pos = pos;
+    entry.rot = rot;
+    entry.params = (entry.params & ~0xF00) | (PLAYER_START_MODE_UNUSED_12 << 8);
+}
+
 bool Scene_CommandSpawnList(PlayState* play, SOH::ISceneCommand* cmd) {
     // SOH::SetStartPositionList* cmdStartPos = std::static_pointer_cast<SOH::SetStartPositionList>(cmd);
     SOH::SetStartPositionList* cmdStartPos = (SOH::SetStartPositionList*)cmd;
@@ -47,13 +53,11 @@ bool Scene_CommandSpawnList(PlayState* play, SOH::ISceneCommand* cmd) {
 
     if (play->sceneNum == SCENE_LAKE_HYLIA) {
         // Patch the spawn point when entering from Hyrule Field to align the maps better.
-        entries[0].pos = { -1838, -885, -272 };
-        // entries[0].pos = { -1806, -884, -255 };
-        entries[0].rot = { 0, 13000, 0 };
+        PatchEntrance(entries[0], { -1838, -885, -272 }, { 0, 13000, 0 });
     }
 
-    if (play->sceneNum == SCENE_HYRULE_FIELD && play->curSpawn == 4) {
-
+    if (play->sceneNum == SCENE_HYRULE_FIELD) {
+        PatchEntrance(entries[4], { -5842, -882, 15707 }, { 0, -22500, 0 });
     }
 
     play->linkActorEntry = &entries[play->setupEntranceList[play->curSpawn].spawn];
