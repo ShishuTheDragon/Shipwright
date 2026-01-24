@@ -80,6 +80,13 @@ bool apply_patch(Gfx* dlist, char* path) {
     }
 }
 
+const char* LOST_WOODS_PREFIX = "__OTR__scenes/shared/spot10_scene/spot10_room";
+const int LOST_WOODS_PREFIX_LENGTH = strlen(LOST_WOODS_PREFIX);
+
+inline u8 opcodeOf(const Gfx& dlist) {
+    return ((dlist.words.w0 >> 24) & 0xFF);
+}
+
 extern "C" void gSPDisplayList(Gfx* pkt, Gfx* dl) {
     char* imgData = (char*)dl;
 
@@ -89,6 +96,22 @@ extern "C" void gSPDisplayList(Gfx* pkt, Gfx* dl) {
         // gsSPPushCD(pkt++, imgData);
         dl = ResourceMgr_LoadGfxByName(imgData);
         // apply_patch(dl, imgData);
+
+        if (opcodeOf(dl[0]) == G_MARKER && dl[0].words.w1 == 0xbeefbeef) {
+            if (strncmp(imgData, LOST_WOODS_PREFIX, LOST_WOODS_PREFIX_LENGTH) == 0) {
+                auto AAA = dl[11].words;
+                int xxx = 1;
+                if (strcmp(imgData, "__OTR__scenes/shared/spot10_scene/spot10_room_0DL_001EB8") == 0) {
+                    auto AAA = dl[11].words;
+                    int xxx = 1;
+                }
+                int i;
+                for (i = 0; opcodeOf(dl[i]) != G_ENDDL; i++) {
+                }
+                printf("%s has this many: %d\n", imgData, i);
+                dl[0].words.w1++;
+            }
+        }
     }
 
     __gSPDisplayList(pkt, dl);

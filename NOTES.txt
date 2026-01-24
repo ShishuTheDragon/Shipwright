@@ -52,3 +52,18 @@ from rot 10500 to rot 13000
 -5891
 -881
 15676
+
+
+
+
+
+
+Lost Woods
+==========
+
+G_MARKER: scenes/shared/spot10_scene/spot10_room_0DL_0025B0
+
+G_DL_OTR_HASH: scenes/shared/spot10_scene/spot10_room_0DL_001EB8
+26, 27, 28
+
+G_SETTIMG_OTR_HASH: scenes/shared/spot10_scene/spot10_sceneTex_00F430
