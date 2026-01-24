@@ -1,0 +1,7 @@
+G_MARKER: scenes/shared/spot10_scene/spot10_room_8DL_002630
+[8]: G_DL_OTR_HASH: scenes/shared/spot10_scene/spot10_room_8DL_0017C8
+
+G_MARKER: scenes/shared/spot10_scene/spot10_room_8DL_0017C8
+[81] -> noop
+[82] -> noop
+[83] -> halfnoop?
