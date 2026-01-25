@@ -2,7 +2,7 @@
 
 void FrameAdvance_Init(FrameAdvanceContext* frameAdvCtx) {
     frameAdvCtx->timer = 0;
-    frameAdvCtx->enabled = false;
+    frameAdvCtx->enabled = true;
 }
 
 /**

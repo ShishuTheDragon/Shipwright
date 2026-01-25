@@ -199,6 +199,9 @@ static const char* actionsTbl[] = {
 
 // original name: "alpha_change"
 void Interface_ChangeAlpha(u16 alphaType) {
+    if (alphaType == 50) {
+        int XXX = 1;
+    }
     if (alphaType != gSaveContext.unk_13EA) {
         osSyncPrintf("ＡＬＰＨＡーＴＹＰＥ＝%d  LAST_TIME_TYPE=%d\n", alphaType, gSaveContext.unk_13EE);
         gSaveContext.unk_13EA = gSaveContext.unk_13E8 = alphaType;

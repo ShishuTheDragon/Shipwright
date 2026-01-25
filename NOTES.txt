@@ -15,3 +15,6 @@ G_MARKER: scenes/shared/spot05_scene/spot05_room_0DL_0084C8
 G_MARKER: scenes/shared/spot05_scene/spot05_room_0DL_001CD8
 G_MARKER: scenes/shared/spot05_scene/spot05_room_0DL_007F00
 G_MARKER: scenes/shared/spot05_scene/spot05_room_0DL_002200
+
+
+current state: moving all the code into hooks. also, need to figure out why bombiwa spawns a frame late when returning to LW

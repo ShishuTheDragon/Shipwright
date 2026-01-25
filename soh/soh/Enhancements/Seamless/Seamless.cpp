@@ -101,18 +101,47 @@ extern "C" void SeamlessHook_DrawNextScene() {
     CLOSE_DISPS(gfxCtx);
 }
 
+int restoreHUD = 0;
+
 void OnPlayDrawEnd() {
     auto interfaceCtx = &gPlayState->interfaceCtx;
 
-    interfaceCtx->aAlpha = interfaceCtx->bAlpha = interfaceCtx->cLeftAlpha =
-        interfaceCtx->cDownAlpha = interfaceCtx->cRightAlpha = interfaceCtx->dpadUpAlpha = interfaceCtx->dpadDownAlpha =
-            interfaceCtx->dpadLeftAlpha = interfaceCtx->dpadRightAlpha = interfaceCtx->healthAlpha =
-                interfaceCtx->startAlpha = interfaceCtx->magicAlpha = 255;
+    if (restoreHUD > 0) {
+        restoreHUD--;
+
+        interfaceCtx->aAlpha = interfaceCtx->bAlpha = interfaceCtx->cLeftAlpha =
+            interfaceCtx->cDownAlpha = interfaceCtx->cRightAlpha = interfaceCtx->dpadUpAlpha = interfaceCtx->dpadDownAlpha =
+                interfaceCtx->dpadLeftAlpha = interfaceCtx->dpadRightAlpha = interfaceCtx->healthAlpha =
+                    interfaceCtx->startAlpha = interfaceCtx->magicAlpha = 255;
+    }
+}
+
+void OnPlayDestroy() {
+    int XXX = 1;
+    restoreHUD = 20;
+}
+
+void OnExitGame(int) {
+}
+
+void OnLoadGame(int) {
+}
+
+void OnPlayerUpdate() {
+    auto play = gPlayState;
+
+    if (play->transitionTrigger == TRANS_TRIGGER_START) {
+        restoreHUD = 20;
+    }
 }
 
 void RegisterSeamless() {
+    COND_HOOK(OnPlayerUpdate, true, OnPlayerUpdate);
     COND_HOOK(AfterSceneCommands, true, AfterSceneCommands);
+    COND_HOOK(OnLoadGame, true, OnLoadGame);
     COND_HOOK(OnPlayDrawEnd, true, OnPlayDrawEnd);
+    COND_HOOK(OnPlayDestroy, true, OnPlayDestroy);
+    COND_HOOK(OnExitGame, true, OnExitGame);
 }
 
 static RegisterShipInitFunc initFunc(RegisterSeamless);
