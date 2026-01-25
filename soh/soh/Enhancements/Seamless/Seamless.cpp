@@ -6,6 +6,7 @@
 #include "align_asset_macro.h"
 #include <functions.h>
 #include <scenes/overworld/spot05/spot05_room_0.h>
+#include <scenes/overworld/spot10/spot10_room_8.h>
 #include "global.h"
 
 extern "C" PlayState* gPlayState;
@@ -27,10 +28,13 @@ void KeepSecondTriangle(Gfx& gfx) {
     gfx.words.w1 = 0;
 }
 
+#define dspot10_room_8DL_0017C8 "__OTR__scenes/shared/spot10_scene/spot10_room_8DL_0017C8"
+static const ALIGN_ASSET(2) char spot10_room_8DL_0017C8[] = dspot10_room_8DL_0017C8;
+
 void AfterSceneCommands(int sceneNum) {
     // if (sceneNum == SCENE_LOST_WOODS)
     {
-        Gfx* gfx = ResourceMgr_LoadGfxByName("scenes/shared/spot10_scene/spot10_room_8DL_0017C8");
+        Gfx* gfx = ResourceMgr_LoadGfxByName(spot10_room_8DL_0017C8);
         if (gfx[0].words.w1 == 0xbeefbeef) {
             SkipCommand(gfx[81]);
             SkipCommand(gfx[82]);
@@ -41,7 +45,7 @@ void AfterSceneCommands(int sceneNum) {
 
     // if (sceneNum == SCENE_SACRED_FOREST_MEADOW)
     {
-        Gfx* gfx = ResourceMgr_LoadGfxByName("scenes/shared/spot05_scene/spot05_room_0DL_0084C8");
+        Gfx* gfx = ResourceMgr_LoadGfxByName(spot05_room_0DL_0084C8);
         if (gfx[0].words.w1 == 0xbeefbeef) {
             SkipCommand(gfx[38]);
             SkipCommand(gfx[39]);
@@ -53,7 +57,7 @@ void AfterSceneCommands(int sceneNum) {
 
 namespace {
     f32 x = 1000;
-    f32 y = 0;
+    f32 y = 10;
     f32 z = -5100;
 }
 
@@ -62,7 +66,13 @@ extern "C" void SeamlessHook_DrawNextScene() {
     auto gfxCtx = play->state.gfxCtx;
 
     MtxF mfTrans;
-    SkinMatrix_SetTranslate(&mfTrans, x, y, z);
+    if (play->sceneNum == SCENE_LOST_WOODS) {
+        SkinMatrix_SetTranslate(&mfTrans, x, y, z);
+    } else if (play->sceneNum == SCENE_SACRED_FOREST_MEADOW) {
+        SkinMatrix_SetTranslate(&mfTrans, -x, -y, -z);
+    } else {
+        return;
+    }
 
     OPEN_DISPS(gfxCtx);
 
@@ -73,11 +83,19 @@ extern "C" void SeamlessHook_DrawNextScene() {
     if (mtx != nullptr) {
         gSPMatrix(POLY_OPA_DISP++, mtx, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
         Gfx_SetupDL_25Opa(gfxCtx);
-        gSPDisplayList(POLY_OPA_DISP++, (Gfx*)(spot05_room_0DL_0084C8));
-        gSPDisplayList(POLY_OPA_DISP++, (Gfx*)(spot05_room_0DL_001CD8));
-        gSPDisplayList(POLY_OPA_DISP++, (Gfx*)(spot05_room_0DL_0015B0));
-        gSPDisplayList(POLY_OPA_DISP++, (Gfx*)(spot05_room_0DL_007F00));
-        gSPDisplayList(POLY_OPA_DISP++, (Gfx*)(spot05_room_0DL_002200));
+
+        if (play->sceneNum == SCENE_LOST_WOODS) {
+            gSPDisplayList(POLY_OPA_DISP++, (Gfx*)spot05_room_0DL_0084C8);
+            gSPDisplayList(POLY_OPA_DISP++, (Gfx*)spot05_room_0DL_007620);
+            gSPDisplayList(POLY_OPA_DISP++, (Gfx*)spot05_room_0DL_006EC8);
+            gSPDisplayList(POLY_OPA_DISP++, (Gfx*)spot05_room_0DL_001CD8);
+            gSPDisplayList(POLY_OPA_DISP++, (Gfx*)spot05_room_0DL_0015B0);
+            gSPDisplayList(POLY_OPA_DISP++, (Gfx*)spot05_room_0DL_007F00);
+            gSPDisplayList(POLY_OPA_DISP++, (Gfx*)spot05_room_0DL_002200);
+            gSPDisplayList(POLY_OPA_DISP++, (Gfx*)spot05_room_0DL_003D88);
+        } else if (play->sceneNum == SCENE_SACRED_FOREST_MEADOW) {
+            gSPDisplayList(POLY_OPA_DISP++, (Gfx*)(spot10_room_8DL_002630));
+        }
     }
 
     CLOSE_DISPS(gfxCtx);

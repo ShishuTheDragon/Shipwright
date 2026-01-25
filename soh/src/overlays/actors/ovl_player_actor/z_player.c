@@ -5111,6 +5111,8 @@ static u8 sReturnEntranceGroupIndices[] = {
     0,  // ENTR_RETURN_GREAT_FAIRYS_FOUNTAIN_MAGIC
 };
 
+extern void OTRPlay_SpawnScene(PlayState* play, s32 sceneId, s32 spawn);
+
 s32 Player_HandleExitsAndVoids(PlayState* play, Player* this, CollisionPoly* poly, u32 bgId) {
     s32 exitIndex;
     s32 temp;
@@ -6665,9 +6667,12 @@ s32 func_8083C910(PlayState* play, Player* this, f32 arg2) {
 }
 
 void Player_StartMode_Idle(PlayState* play, Player* this) {
-    if (func_8083C910(play, this, 180.0f)) {
-        this->av2.actionVar2 = -20;
-    }
+    // if (func_8083C910(play, this, 180.0f)) {
+    //     // this->av2.actionVar2 = -20;
+    //     // this->stateFlags1 &= ~PLAYER_STATE1_IN_CUTSCENE;
+    //     this->av2.actionVar2 = 0;
+    // }
+    func_8083C0E8(this, play);
 }
 
 void Player_StartMode_MoveForwardSlow(PlayState* play, Player* this) {
@@ -12377,6 +12382,9 @@ void Player_Update(Actor* thisx, PlayState* play) {
     s32 pad;
     Input sp44;
     Actor* dog;
+
+    this->stateFlags1 &= ~PLAYER_STATE1_IN_CUTSCENE;
+    // this->av2.actionVar2 = 0;
 
     if (Player_UpdateNoclip(this, play)) {
         if (gSaveContext.dogParams < 0) {

@@ -1205,8 +1205,8 @@ void Environment_Update(PlayState* play, EnvironmentContext* envCtx, LightContex
             lightCtx->fogFar = 12800;
         }
 
-        lightCtx->fogNear = 996;
-        lightCtx->fogFar = 12800;
+        // lightCtx->fogNear = 996;
+        // lightCtx->fogFar = 12800;
 
         // When environment debug is enabled, various environment related variables can be configured via the reg editor
         if (R_ENV_DISABLE_DBG) {

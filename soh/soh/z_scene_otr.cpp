@@ -45,6 +45,12 @@ bool Scene_CommandSpawnList(PlayState* play, SOH::ISceneCommand* cmd) {
     SOH::SetStartPositionList* cmdStartPos = (SOH::SetStartPositionList*)cmd;
     ActorEntry* entries = (ActorEntry*)cmdStartPos->GetRawPointer();
 
+    if (play->sceneNum == SCENE_SACRED_FOREST_MEADOW) {
+        entries[0].pos.y = -6;
+        entries[0].pos.z = 2200;
+        entries[0].params = (entries[0].params & ~0xF00) | (PLAYER_START_MODE_IDLE << 8);
+    }
+
     play->linkActorEntry = &entries[play->setupEntranceList[play->curSpawn].spawn];
     play->linkAgeOnLoad = ((void)0, gSaveContext.linkAge);
     s16 linkObjectId = gLinkObjectIds[((void)0, gSaveContext.linkAge)];

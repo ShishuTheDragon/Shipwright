@@ -104,6 +104,11 @@ void Scene_SetTransitionForNextEntrance(PlayState* play) {
     }
 
     play->transitionType = ENTRANCE_INFO_START_TRANS_TYPE(gEntranceTable[entranceIndex].field); // Fade out
+
+    // if (play->sceneNum == SCENE_LOST_WOODS && play->nextEntranceIndex == ENTR_SACRED_FOREST_MEADOW_SOUTH_EXIT) {
+        play->transitionType = TRANS_TYPE_INSTANT;
+        gSaveContext.nextTransitionType = TRANS_TYPE_INSTANT;
+    // }
 }
 
 // Scene Draw Config 0
