@@ -47,7 +47,7 @@ bool Scene_CommandSpawnList(PlayState* play, SOH::ISceneCommand* cmd) {
 
     if (play->sceneNum == SCENE_SACRED_FOREST_MEADOW) {
         entries[0].pos.y = -6;
-        entries[0].pos.z = 2200;
+        entries[0].pos.z = 2300;
         entries[0].params = (entries[0].params & ~0xF00) | (PLAYER_START_MODE_IDLE << 8);
     }
 

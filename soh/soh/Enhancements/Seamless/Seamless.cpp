@@ -101,8 +101,18 @@ extern "C" void SeamlessHook_DrawNextScene() {
     CLOSE_DISPS(gfxCtx);
 }
 
+void OnPlayDrawEnd() {
+    auto interfaceCtx = &gPlayState->interfaceCtx;
+
+    interfaceCtx->aAlpha = interfaceCtx->bAlpha = interfaceCtx->cLeftAlpha =
+        interfaceCtx->cDownAlpha = interfaceCtx->cRightAlpha = interfaceCtx->dpadUpAlpha = interfaceCtx->dpadDownAlpha =
+            interfaceCtx->dpadLeftAlpha = interfaceCtx->dpadRightAlpha = interfaceCtx->healthAlpha =
+                interfaceCtx->startAlpha = interfaceCtx->magicAlpha = 255;
+}
+
 void RegisterSeamless() {
     COND_HOOK(AfterSceneCommands, true, AfterSceneCommands);
+    COND_HOOK(OnPlayDrawEnd, true, OnPlayDrawEnd);
 }
 
 static RegisterShipInitFunc initFunc(RegisterSeamless);
