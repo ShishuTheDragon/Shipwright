@@ -28,8 +28,8 @@ void KeepSecondTriangle(Gfx& gfx) {
 }
 
 void AfterSceneCommands(int sceneNum) {
-    if (sceneNum == SCENE_LOST_WOODS) {
-
+    // if (sceneNum == SCENE_LOST_WOODS)
+    {
         Gfx* gfx = ResourceMgr_LoadGfxByName("scenes/shared/spot10_scene/spot10_room_8DL_0017C8");
         if (gfx[0].words.w1 == 0xbeefbeef) {
             SkipCommand(gfx[81]);
@@ -37,16 +37,24 @@ void AfterSceneCommands(int sceneNum) {
             KeepSecondTriangle(gfx[83]);
             gfx[0].words.w1++;
         }
+    }
 
-        auto XXX = 1;
-
+    // if (sceneNum == SCENE_SACRED_FOREST_MEADOW)
+    {
+        Gfx* gfx = ResourceMgr_LoadGfxByName("scenes/shared/spot05_scene/spot05_room_0DL_0084C8");
+        if (gfx[0].words.w1 == 0xbeefbeef) {
+            SkipCommand(gfx[38]);
+            SkipCommand(gfx[39]);
+            KeepSecondTriangle(gfx[40]);
+            gfx[0].words.w1++;
+        }
     }
 }
 
 namespace {
     f32 x = 1000;
     f32 y = 0;
-    f32 z = -5000;
+    f32 z = -5100;
 }
 
 extern "C" void SeamlessHook_DrawNextScene() {
