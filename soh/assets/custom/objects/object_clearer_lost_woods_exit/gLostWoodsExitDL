@@ -1,0 +1,26 @@
+<DisplayList Version="0">
+	<SetTextureImage Path="scenes/shared/spot10_scene/spot10_sceneTex_00F230" Format="G_IM_FMT_RGBA" Size="G_IM_SIZ_16b" Width="1"/>
+	<SetTile Format="G_IM_FMT_RGBA" Size="G_IM_SIZ_16b" Line="0" TMem="0" Tile="7" Palette="0" Cmt0="G_TX_CLAMP" Cmt1="G_TX_NOMIRROR" MaskT="4" ShiftT="0" Cms0="G_TX_WRAP" Cms1="G_TX_NOMIRROR" MaskS="4" ShiftS="0"/>
+	<LoadSync/>
+	<LoadBlock Tile="7" Uls="0" Ult="0" Lrs="255" Dxt="512"/>
+    <PipeSync/>
+	<SetTile Format="G_IM_FMT_RGBA" Size="G_IM_SIZ_16b" Line="4" TMem="0" Tile="0" Palette="0" Cmt0="G_TX_CLAMP" Cmt1="G_TX_NOMIRROR" MaskT="4" ShiftT="0" Cms0="G_TX_WRAP" Cms1="G_TX_NOMIRROR" MaskS="4" ShiftS="0"/>
+    <SetTileSize T="0" Uls="0" Ult="0" Lrs="60" Lrt="60"/>
+	<LoadVertices Path="objects/object_clearer_lost_woods_exit/gLostWoodsExitDL_vtx_0" VertexBufferIndex="0" VertexOffset="0" Count="16"/>
+    <Triangle1 V00="2" V01="12" V02="11"/>
+    <Triangle1 V00="13" V01="2" V02="11"/>
+    <Triangle1 V00="14" V01="8" V02="13"/>
+    <Triangle1 V00="15" V01="8" V02="14"/>
+    <Triangle1 V00="10" V01="7" V02="15"/>
+    <Triangle1 V00="3" V01="9" V02="6"/>
+    <Triangle1 V00="12" V01="0" V02="5"/>
+    <Triangle1 V00="5" V01="0" V02="6"/>
+    <Triangle1 V00="0" V01="12" V02="2"/>
+    <Triangle1 V00="15" V01="7" V02="8"/>
+    <Triangle1 V00="3" V01="6" V02="0"/>
+    <Triangle1 V00="2" V01="13" V02="8"/>
+    <Triangle1 V00="1" V01="3" V02="4"/>
+    <Triangle1 V00="1" V01="9" V02="3"/>
+    <PipeSync/>
+    <EndDisplayList/>
+</DisplayList>
