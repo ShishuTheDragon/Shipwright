@@ -1399,6 +1399,22 @@ void Play_Draw(PlayState* play) {
 
     Gfx_SetupFrame(gfxCtx, 0, 0, 0);
 
+    if (gIvanFrameBuffer >= 0) {
+        Gfx* gfxP = WORK_DISP;
+
+        gsSPSetFB(gfxP++, gIvanFrameBuffer);
+        gDPPipeSync(gfxP++);
+        gDPSetCycleType(gfxP++, G_CYC_FILL);
+        gDPSetRenderMode(gfxP++, G_RM_NOOP, G_RM_NOOP2);
+        gDPSetFillColor(gfxP++, (GPACK_RGBA5551(0, 0, 255, 1) << 16) | GPACK_RGBA5551(0, 0, 255, 1));
+        gDPFillRectangle(gfxP++, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+        gDPPipeSync(gfxP++);
+        gDPSetCycleType(gfxP++, G_CYC_1CYCLE);
+        gsSPResetFB(gfxP++);
+
+        WORK_DISP = gfxP;
+    }
+
     if ((HREG(80) != 10) || (HREG(82) != 0)) {
         GameInteractor_ExecuteOnPlayDrawBegin();
 
