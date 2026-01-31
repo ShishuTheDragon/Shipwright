@@ -64,7 +64,7 @@ func_800AAA50(&ivanView, 15);
 - New ImGui window in `soh/soh/SohGui` (plus registration in `SohGui.cpp`)
 
 ## Next Steps
-- [ ] Add a new framebuffer ID and allocation for Ivan in `soh/soh/framebuffer_effects.h` and `soh/soh/framebuffer_effects.c` (initialize in `FB_CreateFramebuffers()`).
+- [x] Add a new framebuffer ID and allocation for Ivan in `soh/soh/framebuffer_effects.h` and `soh/soh/framebuffer_effects.c` (initialize in `FB_CreateFramebuffers()`).
 - [ ] Refactor `Play_Draw` in `soh/src/code/z_play.c` to render the world via a helper that accepts a `View*` + target framebuffer; call it for main view and Ivan view.
 - [ ] Build Ivan’s camera using a temporary `View` (find Ivan actor, compute eye/lookAt/up, call `View_Init` and the view setup helpers).
 - [ ] Expose framebuffer texture ID through the fast renderer: add `Interpreter::GetFramebufferTextureId(int fb)` and a corresponding `Fast3dWindow` accessor.
