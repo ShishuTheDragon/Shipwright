@@ -66,7 +66,8 @@ func_800AAA50(&ivanView, 15);
 ## Next Steps
 - [x] Add a new framebuffer ID and allocation for Ivan in `soh/soh/framebuffer_effects.h` and `soh/soh/framebuffer_effects.c` (initialize in `FB_CreateFramebuffers()`).
 - [x] Decide ImGui integration details: no toggle or MSAA; window name "Ivan Cam"; default size 320x240; texture source is the Ivan framebuffer; implementation lives in `soh/soh/Enhancements/ExtraModes/IvanCam.cpp`.
-- [ ] Create and register an ImGui window in `soh/soh/Enhancements/ExtraModes/IvanCam.cpp` to display the Ivan framebuffer texture (window name "Ivan Cam", default size 320x240).
+- [x] Create and register an ImGui window in `soh/soh/Enhancements/ExtraModes/IvanCam.cpp`
+- [ ] Display the Ivan framebuffer texture.
 - [ ] Add framebuffer texture accessors (`Interpreter::GetFramebufferTextureId(int fb)` and `Fast3dWindow::GetFramebufferTextureId(int fb)`).
 - [ ] Refactor `Play_Draw` in `soh/src/code/z_play.c` to render the world via a helper that accepts a `View*` + target framebuffer; call it for main view and Ivan view.
 - [ ] Build Ivan’s camera using a temporary `View` (find Ivan actor, compute eye/lookAt/up, call `View_Init` and the view setup helpers).

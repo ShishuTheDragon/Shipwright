@@ -26,6 +26,7 @@
 #include "soh/Enhancements/Presets/Presets.h"
 #include "soh/resource/type/Skeleton.h"
 #include "libultraship/libultraship.h"
+#include "soh/Enhancements/ExtraModes/IvanCam.h"
 
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 #include "soh/Enhancements/cosmetics/authenticGfxPatches.h"
@@ -96,6 +97,7 @@ std::shared_ptr<SohModalWindow> mModalWindow;
 std::shared_ptr<Notification::Window> mNotificationWindow;
 std::shared_ptr<TimeDisplayWindow> mTimeDisplayWindow;
 std::shared_ptr<AnchorRoomWindow> mAnchorRoomWindow;
+std::shared_ptr<IvanCamWindow> mIvanCamWindow;
 
 UIWidgets::Colors GetMenuThemeColor() {
     return mSohMenu->GetMenuThemeColor();
@@ -202,6 +204,8 @@ void SetupGuiElements() {
     gui->AddGuiWindow(mTimeDisplayWindow);
     mAnchorRoomWindow = std::make_shared<AnchorRoomWindow>(CVAR_WINDOW("AnchorRoom"), "Anchor Room");
     gui->AddGuiWindow(mAnchorRoomWindow);
+    mIvanCamWindow = std::make_shared<IvanCamWindow>(CVAR_WINDOW("IvanCam"), true, "Ivan Cam", ImVec2(320, 240));
+    gui->AddGuiWindow(mIvanCamWindow);
 }
 
 void Destroy() {
@@ -234,6 +238,7 @@ void Destroy() {
     mInputViewerSettings = nullptr;
     mTimeSplitWindow = nullptr;
     mPlandomizerWindow = nullptr;
+    mIvanCamWindow = nullptr;
     mTimeDisplayWindow = nullptr;
     mAnchorRoomWindow = nullptr;
 }
