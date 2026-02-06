@@ -4154,6 +4154,9 @@ void Interface_DrawItemButtons(PlayState* play) {
                             (C_Right_BTN_Pos[1] + R_ITEM_BTN_WIDTH(3)) << 2, G_TX_RENDERTILE, 0, 0,
                             R_ITEM_BTN_DD(3) << 1, R_ITEM_BTN_DD(3) << 1);
 
+    // Ivan
+
+
     if ((pauseCtx->state < 8) || (pauseCtx->state >= 18)) {
         if ((play->pauseCtx.state != 0) || (play->pauseCtx.debugState != 0)) {
             // Start Button Texture, Color & Label
@@ -5061,6 +5064,8 @@ const char* digitTextures[] = { gCounterDigit0Tex, gCounterDigit1Tex, gCounterDi
                                 gCounterDigit2Tex, gCounterDigit3Tex, gCounterDigit4Tex, gCounterDigit5Tex,
                                 gCounterDigit6Tex, gCounterDigit7Tex, gCounterDigit8Tex };
 
+extern void Ivan_DrawInventory();
+
 void Interface_Draw(PlayState* play) {
     static s16 magicArrowEffectsR[] = { 255, 100, 255 };
     static s16 magicArrowEffectsG[] = { 0, 100, 255 };
@@ -5641,6 +5646,8 @@ void Interface_Draw(PlayState* play) {
                 Interface_DrawAmmoCount(play, 7, interfaceCtx->dpadRightAlpha);
             }
         }
+
+        Ivan_DrawInventory();
 
         // A Button
         Gfx_SetupDL_42Overlay(play->state.gfxCtx);
