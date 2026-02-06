@@ -762,13 +762,23 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
         uint16_t partnerButtons[7] = { BTN_CLEFT, BTN_CDOWN, BTN_CRIGHT, BTN_DUP, BTN_DDOWN, BTN_DLEFT, BTN_DRIGHT };
         uint8_t buttonMax = 3;
         if (CVarGetInteger(CVAR_ENHANCEMENT("DpadEquips"), 0) != 0) {
-            buttonMax = ARRAY_COUNT(gSaveContext.equips.cButtonSlots);
+            buttonMax = 7;
+        }
+
+        if (this->itemTimer <= 0) {
+            if (CHECK_BTN_ALL(sControlInput.press.button, BTN_CUP)) {
+                UseOcarina(this, play, 1);
+            } else if (CHECK_BTN_ALL(sControlInput.cur.button, BTN_CUP)) {
+                UseOcarina(this, play, 2);
+            } else if (CHECK_BTN_ALL(sControlInput.rel.button, BTN_CUP)) {
+                UseOcarina(this, play, 0);
+            }
         }
 
         if (this->usedItem == 0xFF && this->itemTimer <= 0) {
             for (uint8_t i = 0; i < buttonMax; i++) {
                 if (CHECK_BTN_ALL(sControlInput.press.button, partnerButtons[i])) {
-                    this->usedItem = gSaveContext.equips.buttonItems[i + 1];
+                    this->usedItem = gSaveContext.ship.ivanItems[i];
                     this->usedItemButton = i;
                     pressed = 1;
                 }

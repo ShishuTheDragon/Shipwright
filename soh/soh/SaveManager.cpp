@@ -799,6 +799,11 @@ void SaveManager::InitFileNormal() {
     gSaveContext.ship.pendingIceTrapCount = 0;
     gSaveContext.ship.maskMemory = PLAYER_MASK_NONE;
 
+    // Ivan specific
+    for (int i = 0; i < ARRAY_COUNT(gSaveContext.ship.ivanItems); i++) {
+        gSaveContext.ship.ivanItems[i] = ITEM_NONE;
+    }
+
     // Init with normal quest unless only an MQ rom is provided
     gSaveContext.ship.quest.id = OTRGlobals::Instance->HasOriginal() ? QUEST_NORMAL : QUEST_MASTER;
 
@@ -2151,6 +2156,9 @@ void SaveManager::LoadBaseVersion4() {
     SaveManager::Instance->LoadData("dogParams", gSaveContext.dogParams);
     SaveManager::Instance->LoadData("filenameLanguage", gSaveContext.ship.filenameLanguage);
     SaveManager::Instance->LoadData("maskMemory", gSaveContext.ship.maskMemory);
+    SaveManager::Instance->LoadArray("ivanItems", ARRAY_COUNT(gSaveContext.ship.ivanItems), [](size_t i) {
+        SaveManager::Instance->LoadData("", gSaveContext.ship.ivanItems[i], static_cast<uint8_t>(ITEM_NONE));
+    });
 }
 
 void SaveManager::SaveBase(SaveContext* saveContext, int sectionID, bool fullSave) {
@@ -2319,6 +2327,9 @@ void SaveManager::SaveBase(SaveContext* saveContext, int sectionID, bool fullSav
     SaveManager::Instance->SaveData("dogParams", saveContext->dogParams);
     SaveManager::Instance->SaveData("filenameLanguage", saveContext->ship.filenameLanguage);
     SaveManager::Instance->SaveData("maskMemory", saveContext->ship.maskMemory);
+    SaveManager::Instance->SaveArray("ivanItems", ARRAY_COUNT(saveContext->ship.ivanItems), [&](size_t i) {
+        SaveManager::Instance->SaveData("", saveContext->ship.ivanItems[i]);
+    });
 }
 
 // Load a string into a char array based on size and ensuring it is null terminated when overflowed
