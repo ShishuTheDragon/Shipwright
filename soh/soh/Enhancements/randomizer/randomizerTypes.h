@@ -6665,6 +6665,7 @@ typedef enum {
     RSK_LOCK_OVERWORLD_DOORS,
     RSK_SHUFFLE_GRASS,
     RSK_ROCS_FEATHER,
+    RSK_IVAN_IN_LOGIC,
     RSK_MAX
 } RandomizerSettingKey;
 

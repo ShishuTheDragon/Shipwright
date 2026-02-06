@@ -1277,6 +1277,7 @@ void Settings::CreateOptions() {
     OPT_U8(RSK_LOGIC_RULES, "Logic", {"Glitchless", "No Logic"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("LogicRules"), mOptionDescriptions[RSK_LOGIC_RULES], WIDGET_CVAR_COMBOBOX, RO_LOGIC_GLITCHLESS, false, nullptr, IMFLAG_LABEL_INLINE);
     OPT_BOOL(RSK_ALL_LOCATIONS_REACHABLE, "All Locations Reachable", {"Off", "On"}, OptionCategory::Setting, CVAR_RANDOMIZER_SETTING("AllLocationsReachable"), mOptionDescriptions[RSK_ALL_LOCATIONS_REACHABLE], WIDGET_CVAR_CHECKBOX, RO_GENERIC_ON, false, nullptr, IMFLAG_SAME_LINE);
     OPT_BOOL(RSK_SKULLS_SUNS_SONG, "Night Skulltula's Expect Sun's Song", CVAR_RANDOMIZER_SETTING("GsExpectSunsSong"), mOptionDescriptions[RSK_SKULLS_SUNS_SONG]);
+    OPT_BOOL(RSK_IVAN_IN_LOGIC, "Ivan in Logic", CVAR_RANDOMIZER_SETTING("IvanInLogic"), mOptionDescriptions[RSK_IVAN_IN_LOGIC]);
     OPT_U8(RSK_DAMAGE_MULTIPLIER, "Damage Multiplier", {"x1/2", "x1", "x2", "x4", "x8", "x16", "OHKO"}, OptionCategory::Setting, "", "", WIDGET_CVAR_SLIDER_INT, RO_DAMAGE_MULTIPLIER_DEFAULT);
     // Don't show any MQ options if both quests aren't available
     if (!(OTRGlobals::Instance->HasMasterQuest() && OTRGlobals::Instance->HasOriginal())) {
@@ -2174,6 +2175,7 @@ void Settings::CreateOptions() {
                                                                           &mOptions[RSK_LOGIC_RULES],
                                                                           &mOptions[RSK_ALL_LOCATIONS_REACHABLE],
                                                                           &mOptions[RSK_SKULLS_SUNS_SONG],
+                                                                          &mOptions[RSK_IVAN_IN_LOGIC],
                                                                           &mOptions[RSK_BIG_POE_COUNT],
                                                                       });
     // TODO: Exclude Locations Menus
@@ -2195,6 +2197,7 @@ void Settings::CreateOptions() {
                                                                       &mOptions[RSK_ALL_LOCATIONS_REACHABLE],
                                                                       &mOptions[RSK_STARTING_AGE],
                                                                       &mOptions[RSK_SKULLS_SUNS_SONG],
+                                                                      &mOptions[RSK_IVAN_IN_LOGIC],
                                                                       &mOptions[RSK_BIG_POE_COUNT],
                                                                       &mOptions[RSK_BLUE_FIRE_ARROWS],
                                                                       &mOptions[RSK_SUNLIGHT_ARROWS],
