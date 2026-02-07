@@ -322,9 +322,9 @@ bool Logic::CanUse(RandomizerGet itemName) {
         // Adult items
         // TODO: Uncomment those if we ever implement more item usability settings
         case RG_FAIRY_BOW:
-            return IsAdult || IvanCanUseAdultItems(); // || BowAsChild && (AmmoCanDrop || Get(LOGIC_BUY_ARROW));
+            return IsAdult || IvanCanUse(RG_FAIRY_BOW); // || BowAsChild && (AmmoCanDrop || Get(LOGIC_BUY_ARROW));
         case RG_MEGATON_HAMMER:
-            return IsAdult || IvanCanUseAdultItems(); // || HammerAsChild;
+            return IsAdult || IvanCanUse(RG_MEGATON_HAMMER); // || HammerAsChild;
         case RG_IRON_BOOTS:
             return IsAdult; // || IronBootsAsChild;
         case RG_HOVER_BOOTS:
@@ -360,9 +360,9 @@ bool Logic::CanUse(RandomizerGet itemName) {
 
         // Child items
         case RG_FAIRY_SLINGSHOT:
-            return IsChild || IvanCanUseChildItems(); // || SlingshotAsAdult && (AmmoCanDrop || Get(LOGIC_LOGIC_BUY_SEED));
+            return IsChild || IvanCanUse(RG_FAIRY_SLINGSHOT); // || SlingshotAsAdult && (AmmoCanDrop || Get(LOGIC_LOGIC_BUY_SEED));
         case RG_BOOMERANG:
-            return IsChild || IvanCanUseChildItems(); // || BoomerangAsAdult;
+            return IsChild || IvanCanUse(RG_BOOMERANG); // || BoomerangAsAdult;
         case RG_KOKIRI_SWORD:
             return IsChild; // || KokiriSwordAsAdult;
         case RG_NUTS:
@@ -2653,12 +2653,42 @@ bool Logic::StatueRoomMQKeyLogic() {
                                               : 7);
 }
 
-bool Logic::IvanCanUseChildItems() {
-    return ctx->GetOption(RSK_IVAN_IN_LOGIC);
-}
+bool Logic::IvanCanUse(RandomizerGet itemName) {
+    if (!ctx->GetOption(RSK_IVAN_IN_LOGIC))
+        return false;
 
-bool Logic::IvanCanUseAdultItems() {
-    return ctx->GetOption(RSK_IVAN_IN_LOGIC);
+    if (!HasItem(itemName))
+        return false;
+
+    bool allowChildItems = true;
+    bool allowAdultItems = true;
+    bool allowSharedItems = true;
+
+    switch (itemName) {
+        case RG_FAIRY_BOW:
+        case RG_MEGATON_HAMMER:
+            return allowAdultItems;
+
+        case RG_FAIRY_SLINGSHOT:
+        case RG_BOOMERANG:
+            return allowChildItems;
+
+        case RG_NUTS:
+            return allowSharedItems && Get(LOGIC_NUT_ACCESS);
+
+        case RG_PROGRESSIVE_BOMB_BAG:
+        case RG_BOMB_BAG:
+            return allowSharedItems;
+
+        case RG_PROGRESSIVE_BOMBCHU_BAG:
+        case RG_BOMBCHU_5:
+        case RG_BOMBCHU_10:
+        case RG_BOMBCHU_20:
+            return allowSharedItems && BombchuRefill() && BombchusEnabled();
+
+        default:
+            return false;
+    }
 }
 
 void Logic::Reset(bool resetSaveContext /*= true*/) {
