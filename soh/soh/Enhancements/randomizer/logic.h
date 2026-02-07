@@ -166,6 +166,8 @@ class Logic {
     bool OuterWestHandMQLogic();
     bool SpiritExplosiveKeyLogic();
     bool StatueRoomMQKeyLogic();
+    bool IvanCanUseChildItems();
+    bool IvanCanUseAdultItems();
 
   private:
     std::shared_ptr<Context> ctx;

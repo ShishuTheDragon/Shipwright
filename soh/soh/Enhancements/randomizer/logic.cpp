@@ -322,9 +322,9 @@ bool Logic::CanUse(RandomizerGet itemName) {
         // Adult items
         // TODO: Uncomment those if we ever implement more item usability settings
         case RG_FAIRY_BOW:
-            return IsAdult; // || BowAsChild && (AmmoCanDrop || Get(LOGIC_BUY_ARROW));
+            return IsAdult || IvanCanUseAdultItems(); // || BowAsChild && (AmmoCanDrop || Get(LOGIC_BUY_ARROW));
         case RG_MEGATON_HAMMER:
-            return IsAdult; // || HammerAsChild;
+            return IsAdult || IvanCanUseAdultItems(); // || HammerAsChild;
         case RG_IRON_BOOTS:
             return IsAdult; // || IronBootsAsChild;
         case RG_HOVER_BOOTS:
@@ -360,9 +360,9 @@ bool Logic::CanUse(RandomizerGet itemName) {
 
         // Child items
         case RG_FAIRY_SLINGSHOT:
-            return IsChild; // || SlingshotAsAdult && (AmmoCanDrop || Get(LOGIC_LOGIC_BUY_SEED));
+            return IsChild || IvanCanUseChildItems(); // || SlingshotAsAdult && (AmmoCanDrop || Get(LOGIC_LOGIC_BUY_SEED));
         case RG_BOOMERANG:
-            return IsChild; // || BoomerangAsAdult;
+            return IsChild || IvanCanUseChildItems(); // || BoomerangAsAdult;
         case RG_KOKIRI_SWORD:
             return IsChild; // || KokiriSwordAsAdult;
         case RG_NUTS:
@@ -2651,6 +2651,14 @@ bool Logic::StatueRoomMQKeyLogic() {
                                                   (HasItem(RG_CLIMB) || CanUse(RG_LONGSHOT))
                                               ? 6
                                               : 7);
+}
+
+bool Logic::IvanCanUseChildItems() {
+    return ctx->GetOption(RSK_IVAN_IN_LOGIC);
+}
+
+bool Logic::IvanCanUseAdultItems() {
+    return ctx->GetOption(RSK_IVAN_IN_LOGIC);
 }
 
 void Logic::Reset(bool resetSaveContext /*= true*/) {
