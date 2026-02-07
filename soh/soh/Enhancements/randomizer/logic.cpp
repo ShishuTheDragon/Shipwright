@@ -733,7 +733,7 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
         case RE_GERUDO_WARRIOR:
             return CanJumpslash() || CanUse(RG_FAIRY_BOW) ||
                    (ctx->GetTrickOption(RT_GF_WARRIOR_WITH_DIFFICULT_WEAPON) &&
-                    (CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_BOMBCHU_5)));
+                    (CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_BOMBCHU_5))) || IvanCanUse(RG_BOMBCHU_5);
         case RE_GIBDO:
         case RE_REDEAD:
             return CanJumpslash() || CanUse(RG_DINS_FIRE);
@@ -755,7 +755,7 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
             // stunning + bombs is possible but painful, as it loves to dodge the bombs and hookshot. it also dodges
             // chus but if you cook it so it detonates under the dodge it usually gets caught on landing
             return CanJumpslash() || CanUse(RG_FAIRY_BOW) || CanUse(RG_FAIRY_SLINGSHOT) ||
-                   (!timer && CanUse(RG_BOMBCHU_5));
+                   (!timer && CanUse(RG_BOMBCHU_5)) || IvanCanUse(RG_BOMBCHU_5);
         case RE_TORCH_SLUG:
             return CanJumpslash() || HasExplosives() || CanUse(RG_FAIRY_BOW);
         case RE_FREEZARD:
@@ -810,7 +810,8 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
         case RE_KING_DODONGO:
             return HasBossSoul(RG_KING_DODONGO_SOUL) && CanJumpslash() &&
                    (CanUse(RG_BOMB_BAG) || HasItem(RG_GORONS_BRACELET) ||
-                    (ctx->GetTrickOption(RT_DC_DODONGO_CHU) && IsAdult && CanUse(RG_BOMBCHU_5)));
+                    (ctx->GetTrickOption(RT_DC_DODONGO_CHU) && IsAdult && CanUse(RG_BOMBCHU_5)) ||
+                    IvanCanUse(RG_BOMBCHU_5));
         case RE_BARINADE:
             return HasBossSoul(RG_BARINADE_SOUL) && CanUse(RG_BOOMERANG) &&
                    (CanJumpslashExceptHammer() ||
@@ -878,7 +879,7 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                    CanUse(RG_ICE_ARROWS) || EffectiveHealth() * 2 > quantity;
         case RE_OCTOROK:
             return CanReflectNuts() || HookshotOrBoomerang() || CanUse(RG_FAIRY_BOW) || CanUse(RG_FAIRY_SLINGSHOT) ||
-                   CanUse(RG_BOMB_BAG) || (wallOrFloor && CanUse(RG_BOMBCHU_5));
+                   CanUse(RG_BOMB_BAG) || (wallOrFloor && CanUse(RG_BOMBCHU_5)) || IvanCanUse(RG_BOMBCHU_5);
         case RE_WALLTULA:
             switch (distance) {
                 case ED_CLOSE:
