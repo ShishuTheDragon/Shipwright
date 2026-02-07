@@ -1067,6 +1067,7 @@ bool Logic::CanGetEnemyDrop(RandomizerEnemy enemy, EnemyDistance distance, bool 
                     drop = drop || CanUse(RG_LONGSHOT);
                     [[fallthrough]];
                 case ED_FAR:
+                    drop = drop || IvanCanUse(RG_BOOMERANG);
                     break;
                     // RANDOTODO double check all jumpslash kills that might be out of jump/backflip range
             }
@@ -1077,7 +1078,7 @@ bool Logic::CanGetEnemyDrop(RandomizerEnemy enemy, EnemyDistance distance, bool 
         case RE_GUAY:
             return true;
         default:
-            return aboveLink || (distance <= ED_BOOMERANG && CanUse(RG_BOOMERANG));
+            return aboveLink || (distance <= ED_BOOMERANG && CanUse(RG_BOOMERANG)) || IvanCanUse(RG_BOOMERANG);
     }
 }
 
@@ -1267,7 +1268,10 @@ bool Logic::CanHitSwitch(EnemyDistance distance, bool inWater) {
             hit = hit || CanUse(RG_LONGSHOT);
             [[fallthrough]];
         case ED_FAR:
-            hit = hit || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+            hit = hit || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOOMERANG) ||
+                IvanCanUse(RG_BOMBCHU_5);
             break;
     }
     return hit;
@@ -1334,7 +1338,10 @@ bool Logic::CanBreakPots(EnemyDistance distance, bool wallOrFloor, bool inWater)
             hit = hit || CanUse(RG_LONGSHOT);
             [[fallthrough]];
         case ED_FAR:
-            hit = hit || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+            hit = hit || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOOMERANG) ||
+                IvanCanUse(RG_BOMBCHU_5);
             break;
     }
     return hit || (wallOrFloor && CanUse(RG_BOMBCHU_5));
@@ -1456,7 +1463,8 @@ bool Logic::CanGetNightTimeGS() {
 
 bool Logic::CanBreakUpperBeehives() {
     return HookshotOrBoomerang() || (ctx->GetTrickOption(RT_BOMBCHU_BEEHIVES) && CanUse(RG_BOMBCHU_5)) ||
-           (ctx->GetOption(RSK_SLINGBOW_BREAK_BEEHIVES) && (CanUse(RG_FAIRY_BOW) || CanUse(RG_FAIRY_SLINGSHOT)));
+           (ctx->GetOption(RSK_SLINGBOW_BREAK_BEEHIVES) && (CanUse(RG_FAIRY_BOW) || CanUse(RG_FAIRY_SLINGSHOT))) ||
+           IvanCanUse(RG_BOMBCHU_5);
 }
 
 bool Logic::CanBreakLowerBeehives() {
