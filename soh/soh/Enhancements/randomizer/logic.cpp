@@ -578,7 +578,10 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                     killed = killed || CanUse(RG_LONGSHOT) || (wallOrFloor && CanUse(RG_BOMBCHU_5));
                     [[fallthrough]];
                 case ED_FAR:
-                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOOMERANG) ||
+                             IvanCanUse(RG_BOMB_BAG) || IvanCanUse(RG_BOMBCHU_5);
                     break;
             }
             return killed;
@@ -614,7 +617,10 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                     killed = killed || CanUse(RG_LONGSHOT);
                     [[fallthrough]];
                 case ED_FAR:
-                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOMB_BAG) ||
+                             IvanCanUse(RG_BOMBCHU_5);
                     break;
             }
             return killed;
@@ -653,7 +659,10 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                     killed = killed || CanUse(RG_LONGSHOT);
                     [[fallthrough]];
                 case ED_FAR:
-                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOOMERANG) ||
+                             IvanCanUse(RG_BOMB_BAG) || IvanCanUse(RG_BOMBCHU_5);
                     break;
             }
             return killed;
@@ -696,7 +705,8 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                     [[fallthrough]];
                 case ED_LONGSHOT:
                 case ED_FAR:
-                    killed = killed || CanUse(RG_FAIRY_BOW);
+                    killed = killed || CanUse(RG_FAIRY_BOW) || IvanCanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOMBCHU_5);
                     break;
             }
             return killed;
@@ -783,7 +793,10 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                     killed = killed || CanUse(RG_LONGSHOT);
                     [[fallthrough]];
                 case ED_FAR:
-                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOMB_BAG) ||
+                             IvanCanUse(RG_BOMBCHU_5);
                     break;
             }
             return killed;
@@ -891,7 +904,10 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                     killed = killed || CanUse(RG_LONGSHOT);
                     [[fallthrough]];
                 case ED_FAR:
-                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOOMERANG) ||
+                             IvanCanUse(RG_BOMB_BAG) || IvanCanUse(RG_BOMBCHU_5);
                     break;
             }
             return killed;
