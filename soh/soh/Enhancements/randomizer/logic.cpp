@@ -322,9 +322,9 @@ bool Logic::CanUse(RandomizerGet itemName) {
         // Adult items
         // TODO: Uncomment those if we ever implement more item usability settings
         case RG_FAIRY_BOW:
-            return IsAdult; // || BowAsChild && (AmmoCanDrop || Get(LOGIC_BUY_ARROW));
+            return IsAdult || IvanCanUse(RG_FAIRY_BOW); // || BowAsChild && (AmmoCanDrop || Get(LOGIC_BUY_ARROW));
         case RG_MEGATON_HAMMER:
-            return IsAdult; // || HammerAsChild;
+            return IsAdult || IvanCanUse(RG_MEGATON_HAMMER); // || HammerAsChild;
         case RG_IRON_BOOTS:
             return IsAdult; // || IronBootsAsChild;
         case RG_HOVER_BOOTS:
@@ -360,9 +360,9 @@ bool Logic::CanUse(RandomizerGet itemName) {
 
         // Child items
         case RG_FAIRY_SLINGSHOT:
-            return IsChild; // || SlingshotAsAdult && (AmmoCanDrop || Get(LOGIC_LOGIC_BUY_SEED));
+            return IsChild || IvanCanUse(RG_FAIRY_SLINGSHOT); // || SlingshotAsAdult && (AmmoCanDrop || Get(LOGIC_LOGIC_BUY_SEED));
         case RG_BOOMERANG:
-            return IsChild; // || BoomerangAsAdult;
+            return IsChild || IvanCanUse(RG_BOOMERANG); // || BoomerangAsAdult;
         case RG_KOKIRI_SWORD:
             return IsChild; // || KokiriSwordAsAdult;
         case RG_NUTS:
@@ -578,7 +578,10 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                     killed = killed || CanUse(RG_LONGSHOT) || (wallOrFloor && CanUse(RG_BOMBCHU_5));
                     [[fallthrough]];
                 case ED_FAR:
-                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOOMERANG) ||
+                             IvanCanUse(RG_BOMB_BAG) || IvanCanUse(RG_BOMBCHU_5);
                     break;
             }
             return killed;
@@ -614,7 +617,10 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                     killed = killed || CanUse(RG_LONGSHOT);
                     [[fallthrough]];
                 case ED_FAR:
-                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOMB_BAG) ||
+                             IvanCanUse(RG_BOMBCHU_5);
                     break;
             }
             return killed;
@@ -653,7 +659,10 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                     killed = killed || CanUse(RG_LONGSHOT);
                     [[fallthrough]];
                 case ED_FAR:
-                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOOMERANG) ||
+                             IvanCanUse(RG_BOMB_BAG) || IvanCanUse(RG_BOMBCHU_5);
                     break;
             }
             return killed;
@@ -696,7 +705,8 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                     [[fallthrough]];
                 case ED_LONGSHOT:
                 case ED_FAR:
-                    killed = killed || CanUse(RG_FAIRY_BOW);
+                    killed = killed || CanUse(RG_FAIRY_BOW) || IvanCanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOMBCHU_5);
                     break;
             }
             return killed;
@@ -723,7 +733,7 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
         case RE_GERUDO_WARRIOR:
             return CanJumpslash() || CanUse(RG_FAIRY_BOW) ||
                    (ctx->GetTrickOption(RT_GF_WARRIOR_WITH_DIFFICULT_WEAPON) &&
-                    (CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_BOMBCHU_5)));
+                    (CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_BOMBCHU_5))) || IvanCanUse(RG_BOMBCHU_5);
         case RE_GIBDO:
         case RE_REDEAD:
             return CanJumpslash() || CanUse(RG_DINS_FIRE);
@@ -745,7 +755,7 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
             // stunning + bombs is possible but painful, as it loves to dodge the bombs and hookshot. it also dodges
             // chus but if you cook it so it detonates under the dodge it usually gets caught on landing
             return CanJumpslash() || CanUse(RG_FAIRY_BOW) || CanUse(RG_FAIRY_SLINGSHOT) ||
-                   (!timer && CanUse(RG_BOMBCHU_5));
+                   (!timer && CanUse(RG_BOMBCHU_5)) || IvanCanUse(RG_BOMBCHU_5);
         case RE_TORCH_SLUG:
             return CanJumpslash() || HasExplosives() || CanUse(RG_FAIRY_BOW);
         case RE_FREEZARD:
@@ -783,7 +793,10 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                     killed = killed || CanUse(RG_LONGSHOT);
                     [[fallthrough]];
                 case ED_FAR:
-                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOMB_BAG) ||
+                             IvanCanUse(RG_BOMBCHU_5);
                     break;
             }
             return killed;
@@ -797,7 +810,8 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
         case RE_KING_DODONGO:
             return HasBossSoul(RG_KING_DODONGO_SOUL) && CanJumpslash() &&
                    (CanUse(RG_BOMB_BAG) || HasItem(RG_GORONS_BRACELET) ||
-                    (ctx->GetTrickOption(RT_DC_DODONGO_CHU) && IsAdult && CanUse(RG_BOMBCHU_5)));
+                    (ctx->GetTrickOption(RT_DC_DODONGO_CHU) && IsAdult && CanUse(RG_BOMBCHU_5)) ||
+                    IvanCanUse(RG_BOMBCHU_5));
         case RE_BARINADE:
             return HasBossSoul(RG_BARINADE_SOUL) && CanUse(RG_BOOMERANG) &&
                    (CanJumpslashExceptHammer() ||
@@ -865,7 +879,7 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                    CanUse(RG_ICE_ARROWS) || EffectiveHealth() * 2 > quantity;
         case RE_OCTOROK:
             return CanReflectNuts() || HookshotOrBoomerang() || CanUse(RG_FAIRY_BOW) || CanUse(RG_FAIRY_SLINGSHOT) ||
-                   CanUse(RG_BOMB_BAG) || (wallOrFloor && CanUse(RG_BOMBCHU_5));
+                   CanUse(RG_BOMB_BAG) || (wallOrFloor && CanUse(RG_BOMBCHU_5)) || IvanCanUse(RG_BOMBCHU_5);
         case RE_WALLTULA:
             switch (distance) {
                 case ED_CLOSE:
@@ -891,7 +905,10 @@ bool Logic::CanKillEnemy(RandomizerEnemy enemy, EnemyDistance distance, bool wal
                     killed = killed || CanUse(RG_LONGSHOT);
                     [[fallthrough]];
                 case ED_FAR:
-                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+                    killed = killed || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                             IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOOMERANG) ||
+                             IvanCanUse(RG_BOMB_BAG) || IvanCanUse(RG_BOMBCHU_5);
                     break;
             }
             return killed;
@@ -1050,6 +1067,7 @@ bool Logic::CanGetEnemyDrop(RandomizerEnemy enemy, EnemyDistance distance, bool 
                     drop = drop || CanUse(RG_LONGSHOT);
                     [[fallthrough]];
                 case ED_FAR:
+                    drop = drop || IvanCanUse(RG_BOOMERANG);
                     break;
                     // RANDOTODO double check all jumpslash kills that might be out of jump/backflip range
             }
@@ -1060,7 +1078,7 @@ bool Logic::CanGetEnemyDrop(RandomizerEnemy enemy, EnemyDistance distance, bool 
         case RE_GUAY:
             return true;
         default:
-            return aboveLink || (distance <= ED_BOOMERANG && CanUse(RG_BOOMERANG));
+            return aboveLink || (distance <= ED_BOOMERANG && CanUse(RG_BOOMERANG)) || IvanCanUse(RG_BOOMERANG);
     }
 }
 
@@ -1249,7 +1267,10 @@ bool Logic::CanHitSwitch(EnemyDistance distance, bool inWater) {
             hit = hit || CanUse(RG_LONGSHOT);
             [[fallthrough]];
         case ED_FAR:
-            hit = hit || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+            hit = hit || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOOMERANG) ||
+                IvanCanUse(RG_BOMBCHU_5);
             break;
     }
     return hit;
@@ -1316,7 +1337,10 @@ bool Logic::CanBreakPots(EnemyDistance distance, bool wallOrFloor, bool inWater)
             hit = hit || CanUse(RG_LONGSHOT);
             [[fallthrough]];
         case ED_FAR:
-            hit = hit || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW);
+            hit = hit || CanUse(RG_FAIRY_SLINGSHOT) || CanUse(RG_FAIRY_BOW) ||
+                IvanCanUse(RG_FAIRY_SLINGSHOT) || IvanCanUse(RG_FAIRY_BOW) ||
+                IvanCanUse(RG_MEGATON_HAMMER) || IvanCanUse(RG_BOOMERANG) ||
+                IvanCanUse(RG_BOMBCHU_5);
             break;
     }
     return hit || (wallOrFloor && CanUse(RG_BOMBCHU_5));
@@ -1457,7 +1481,8 @@ bool Logic::CanGetNightTimeGS() {
 
 bool Logic::CanBreakUpperBeehives() {
     return HookshotOrBoomerang() || (ctx->GetTrickOption(RT_BOMBCHU_BEEHIVES) && CanUse(RG_BOMBCHU_5)) ||
-           (ctx->GetOption(RSK_SLINGBOW_BREAK_BEEHIVES) && (CanUse(RG_FAIRY_BOW) || CanUse(RG_FAIRY_SLINGSHOT)));
+           (ctx->GetOption(RSK_SLINGBOW_BREAK_BEEHIVES) && (CanUse(RG_FAIRY_BOW) || CanUse(RG_FAIRY_SLINGSHOT))) ||
+           IvanCanUse(RG_BOMBCHU_5);
 }
 
 bool Logic::CanBreakLowerBeehives() {
@@ -2691,6 +2716,44 @@ bool Logic::StatueRoomMQKeyLogic() {
                                                   (HasItem(RG_CLIMB) || CanUse(RG_LONGSHOT))
                                               ? 6
                                               : 7);
+}
+
+bool Logic::IvanCanUse(RandomizerGet itemName) {
+    if (!ctx->GetOption(RSK_IVAN_IN_LOGIC))
+        return false;
+
+    if (!HasItem(itemName))
+        return false;
+
+    bool allowChildItems = true;
+    bool allowAdultItems = true;
+    bool allowSharedItems = true;
+
+    switch (itemName) {
+        case RG_FAIRY_BOW:
+        case RG_MEGATON_HAMMER:
+            return allowAdultItems;
+
+        case RG_FAIRY_SLINGSHOT:
+        case RG_BOOMERANG:
+            return allowChildItems;
+
+        case RG_NUTS:
+            return allowSharedItems && Get(LOGIC_NUT_ACCESS);
+
+        case RG_PROGRESSIVE_BOMB_BAG:
+        case RG_BOMB_BAG:
+            return allowSharedItems;
+
+        case RG_PROGRESSIVE_BOMBCHU_BAG:
+        case RG_BOMBCHU_5:
+        case RG_BOMBCHU_10:
+        case RG_BOMBCHU_20:
+            return allowSharedItems && BombchuRefill() && BombchusEnabled();
+
+        default:
+            return false;
+    }
 }
 
 void Logic::Reset(bool resetSaveContext /*= true*/) {

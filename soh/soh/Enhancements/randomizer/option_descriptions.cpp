@@ -844,6 +844,8 @@ void Settings::CreateOptionDescriptions() {
                                                        "location is reachable. When disabled, only "
                                                        "required items and locations to beat the game "
                                                        "will be guaranteed reachable.";
+    mOptionDescriptions[RSK_IVAN_IN_LOGIC] =
+        "Ivan the Fairy (Coop Mode) will be considered in logic and may be required to beat the game.";
     mOptionDescriptions[RSK_SHUFFLE_BEAN_SOULS] =
         "Shuffle 10 bean souls which must be found to spawn corresponding soil / plant.";
     mOptionDescriptions[RSK_SHUFFLE_BOSS_SOULS] =

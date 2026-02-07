@@ -173,6 +173,7 @@ class Logic {
     bool OuterWestHandMQLogic();
     bool SpiritExplosiveKeyLogic();
     bool StatueRoomMQKeyLogic();
+    bool IvanCanUse(RandomizerGet itemName);
 
   private:
     std::shared_ptr<Context> ctx;
