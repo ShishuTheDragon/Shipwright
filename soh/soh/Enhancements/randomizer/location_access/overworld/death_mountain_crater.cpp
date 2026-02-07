@@ -39,7 +39,7 @@ void RegionTable_Init_DeathMountainCrater() {
     }, {
         //Exits
         ENTRANCE(RR_DMC_UPPER_NEARBY, (logic->HasItem(RG_CLIMB) || logic->CanUse(RG_HOOKSHOT)) && logic->Hearts() >= 3),
-        ENTRANCE(RR_DMC_LOWER_NEARBY, logic->Hearts() >= 3 && (logic->CanUse(RG_HOVER_BOOTS) || (ctx->GetTrickOption(RT_DMC_BOULDER_JS) && logic->IsAdult && logic->CanUse(RG_MEGATON_HAMMER)) || (ctx->GetTrickOption(RT_DMC_BOULDER_SKIP) && logic->IsAdult))),
+        ENTRANCE(RR_DMC_LOWER_NEARBY, logic->Hearts() >= 3 && (logic->CanUse(RG_HOVER_BOOTS) || (ctx->GetTrickOption(RT_DMC_BOULDER_JS) && logic->IsAdult && logic->CanUse(RG_MEGATON_HAMMER)) || (ctx->GetTrickOption(RT_DMC_BOULDER_SKIP) && logic->IsAdult)) || logic->IvanCanUse(RG_MEGATON_HAMMER)),
     });
 
     areaTable[RR_DMC_LOWER_NEARBY] = Region("DMC Lower Nearby", SCENE_DEATH_MOUNTAIN_CRATER, {}, {
