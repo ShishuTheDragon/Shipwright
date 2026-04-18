@@ -1404,12 +1404,21 @@ void Play_Draw(PlayState* play) {
 
         gsSPSetFB(gfxP++, gIvanFrameBuffer);
         gDPPipeSync(gfxP++);
+        gDPSetDepthImage(gfxP++, gIvanZBuffer);
+        gDPSetColorImage(gfxP++, G_IM_FMT_RGBA, G_IM_SIZ_16b, gScreenWidth, gIvanZBuffer);
+        gDPSetCycleType(gfxP++, G_CYC_FILL);
+        gDPSetRenderMode(gfxP++, G_RM_NOOP, G_RM_NOOP2);
+        gDPSetFillColor(gfxP++, (GPACK_ZDZ(G_MAXFBZ, 0) << 16) | GPACK_ZDZ(G_MAXFBZ, 0));
+        gDPFillRectangle(gfxP++, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+        gDPPipeSync(gfxP++);
+        gDPSetColorImage(gfxP++, G_IM_FMT_RGBA, G_IM_SIZ_16b, gScreenWidth, gIvanFrameBuffer);
         gDPSetCycleType(gfxP++, G_CYC_FILL);
         gDPSetRenderMode(gfxP++, G_RM_NOOP, G_RM_NOOP2);
         gDPSetFillColor(gfxP++, (GPACK_RGBA5551(0, 0, 255, 1) << 16) | GPACK_RGBA5551(0, 0, 255, 1));
         gDPFillRectangle(gfxP++, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
         gDPPipeSync(gfxP++);
         gDPSetCycleType(gfxP++, G_CYC_1CYCLE);
+        gDPSetDepthImage(gfxP++, gZBuffer);
         gsSPResetFB(gfxP++);
 
         WORK_DISP = gfxP;

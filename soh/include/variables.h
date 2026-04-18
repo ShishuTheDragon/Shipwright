@@ -241,6 +241,7 @@ extern "C"
 	extern __OSInode __osPfsInodeCache;
 	extern OSPifRam gPifMempakBuf;
 	extern u16 gZBuffer[SCREEN_HEIGHT][SCREEN_WIDTH]; // 0x25800 bytes
+	extern u16 gIvanZBuffer[SCREEN_HEIGHT][SCREEN_WIDTH]; // 0x25800 bytes
 	extern u64 gGfxSPTaskOutputBuffer[0x3000]; // 0x18000 bytes
 	extern u8 gGfxSPTaskYieldBuffer[OS_YIELD_DATA_SIZE]; // 0xC00 bytes
 	extern u8 gGfxSPTaskStack[0x400]; // 0x400 bytes
