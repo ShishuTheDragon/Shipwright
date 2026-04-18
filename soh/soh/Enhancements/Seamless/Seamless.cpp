@@ -259,7 +259,7 @@ extern "C" void SeamlessHook_DrawNextScene() {
             gSPDisplayList(POLY_OPA_DISP++, (Gfx*)spot05_room_0DL_002200);
             gSPDisplayList(POLY_OPA_DISP++, (Gfx*)spot05_room_0DL_003D88);
         } else if (play->sceneNum == SCENE_SACRED_FOREST_MEADOW) {
-            // gSPDisplayList(POLY_OPA_DISP++, (Gfx*)(spot10_room_8DL_002630));
+            gSPDisplayList(POLY_OPA_DISP++, (Gfx*)(spot10_room_8DL_002630));
             gSPDisplayList(POLY_OPA_DISP++, foxywoxy);
         }
     }
