@@ -62,4 +62,21 @@ void EnPartner_Draw(Actor* thisx, PlayState* play);
 }
 #endif
 
+#define IVAN_SPLIT_SCREEN_OFF     0
+#define IVAN_SPLIT_SCREEN_METHOD2 2
+
+extern EnPartner* gIvanActor;
+extern f32 gIvanCamYaw;
+extern f32 gIvanCamPitch;
+
+static inline f32 Actor_XZDistToNearestPlayer(Actor* actor) {
+    if (gIvanActor != NULL) {
+        f32 distToIvan = Actor_WorldDistXZToActor(actor, &gIvanActor->actor);
+        if (distToIvan < actor->xzDistToPlayer) {
+            return distToIvan;
+        }
+    }
+    return actor->xzDistToPlayer;
+}
+
 #endif

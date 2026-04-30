@@ -42,6 +42,11 @@ static std::map<int32_t, const char*> bunnyHoodEffectMap = {
     { BUNNY_HOOD_FAST_AND_JUMP, "Faster + Longer Jump" },
 };
 
+static const std::map<int32_t, const char*> ivanSplitScreenValues = {
+    { 0, "Off" },
+    { 2, "Method 2" },
+};
+
 static const std::map<int32_t, const char*> dekuStickCheat = {
     { DEKU_STICK_NORMAL, "Normal" },
     { DEKU_STICK_UNBREAKABLE, "Unbreakable" },
@@ -1671,6 +1676,15 @@ void SohMenu::AddMenuEnhancements() {
     AddWidget(path, "Render Every Room", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("IvanCoop.RenderEveryRoom"))
         .PreFunc([](WidgetInfo& info) { info.isHidden = CVarGetInteger(CVAR_ENHANCEMENT("IvanCoopModeEnabled"), 0) == 0; });
+    AddWidget(path, "Split Screen", WIDGET_CVAR_COMBOBOX)
+        .CVar(CVAR_ENHANCEMENT("IvanCoop.SplitScreen"))
+        .PreFunc([](WidgetInfo& info) { info.isHidden = CVarGetInteger(CVAR_ENHANCEMENT("IvanCoopModeEnabled"), 0) == 0; })
+        .Options(ComboboxOptions()
+            .ComboMap(ivanSplitScreenValues)
+            .DefaultIndex(0)
+            .Tooltip("Enables Ivan's split-screen mode.\n\n"
+                     " - Off: No split screen.\n"
+                     " - Method 2: Hook-based architecture (in development)."));
     path.column = SECTION_COLUMN_1;
     AddWidget(path, "Dogs Follow You Everywhere", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("DogFollowsEverywhere"))
