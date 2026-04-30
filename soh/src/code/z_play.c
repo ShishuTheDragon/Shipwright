@@ -1421,15 +1421,20 @@ void Play_Draw(PlayState* play) {
                 // P2: right half — restore clean view then override
                 play->view = savedView;
                 play->view.viewport.leftX = SCREEN_WIDTH / 2;
-                // Simple behind-the-back camera on Ivan
+                // Ivan camera controlled by P2 right stick
+                play->view.up.x = 0.0f;
+                play->view.up.y = 1.0f;
+                play->view.up.z = 0.0f;
                 Vec3f ivanPos = gIvanActor->actor.world.pos;
-                f32 ivanYawSin = Math_SinS(gIvanActor->actor.shape.rot.y);
-                f32 ivanYawCos = Math_CosS(gIvanActor->actor.shape.rot.y);
-                play->view.eye.x = ivanPos.x - ivanYawSin * 180.0f;
-                play->view.eye.y = ivanPos.y + 120.0f;
-                play->view.eye.z = ivanPos.z - ivanYawCos * 180.0f;
+                f32 camDist = 180.0f;
+                f32 lookAtHeight = 40.0f;
+                s16 yaw = (s16)gIvanCamYaw;
+                s16 pitch = (s16)gIvanCamPitch;
+                play->view.eye.x = ivanPos.x - Math_SinS(yaw) * Math_CosS(pitch) * camDist;
+                play->view.eye.y = ivanPos.y + lookAtHeight + Math_SinS(pitch) * camDist;
+                play->view.eye.z = ivanPos.z - Math_CosS(yaw) * Math_CosS(pitch) * camDist;
                 play->view.lookAt.x = ivanPos.x;
-                play->view.lookAt.y = ivanPos.y + 40.0f;
+                play->view.lookAt.y = ivanPos.y + lookAtHeight;
                 play->view.lookAt.z = ivanPos.z;
             }
         }

@@ -57,6 +57,8 @@ void EnPartner_Update(Actor* thisx, PlayState* play);
 void EnPartner_Draw(Actor* thisx, PlayState* play);
 
 extern EnPartner* gIvanActor;
+extern f32 gIvanCamYaw;
+extern f32 gIvanCamPitch;
 #ifdef __cplusplus
 }
 #endif
