@@ -9,6 +9,7 @@ extern "C" {
 #include "functions.h"
 #include "overlays/actors/ovl_Bg_Ice_Shelter/z_bg_ice_shelter.h"
 #include "objects/object_ice_objects/object_ice_objects.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 extern PlayState* gPlayState;
 }
 
@@ -58,7 +59,7 @@ void BgIceShelter_RandomizerDrawSetup(void* actor) {
     Actor* redIceActor = (Actor*)actor;
 
     // If not a randomized item or too far, don't draw
-    if (!BgIceShelter_RandomizerHoldsItem(redIceActor) || redIceActor->xzDistToPlayer > 1000.0f) {
+    if (!BgIceShelter_RandomizerHoldsItem(redIceActor) || Actor_XZDistToNearestPlayer(redIceActor) > 1000.0f) {
         return;
     }
 

@@ -486,6 +486,16 @@ void func_8002C124(TargetContext* targetCtx, PlayState* play) {
         spBC.x = (160 * (spBC.x * spB4)) * var1;
         spBC.x = CLAMP(spBC.x, -320.0f, 320.0f);
 
+        // In split-screen, the lock-on indicator is drawn during Link's draw pass
+        // using the full-screen OVERLAY_DISP (x: -160..160 = pixels 0..320).
+        // Remap from full-screen overlay space to Link's actual viewport region.
+        if (gSplitScreenActive) {
+            s32 leftEdge = OTRGetRectDimensionFromLeftEdge(0);
+            s32 rightEdge = SCREEN_WIDTH / 2;
+            f32 viewportWidth = (f32)(rightEdge - leftEdge);
+            spBC.x = (spBC.x / 2) - (viewportWidth / 2);
+        }
+
         spBC.y = (120 * (spBC.y * spB4)) * var1;
         spBC.y = CLAMP(spBC.y, -240.0f, 240.0f);
 
@@ -2847,12 +2857,22 @@ void Actor_DrawLensOverlay(GraphicsContext* gfxCtx) {
 
     s32 x = OTRGetRectDimensionFromLeftEdge(0) << 2;
     s32 w = OTRGetRectDimensionFromRightEdge(SCREEN_WIDTH) << 2;
+    s32 x2 = 0;
+
+    if (gSplitScreenActive) {
+        s32 leftEdge = OTRGetRectDimensionFromLeftEdge(0);
+        s32 rightEdge = SCREEN_WIDTH / 2;
+        s32 center = (leftEdge + rightEdge) / 2;
+
+        x2 = (center - 160) << 2;
+        w = rightEdge << 2;
+    }
 
     gDPSetTileSize(POLY_XLU_DISP++, G_TX_RENDERTILE, (SCREEN_WIDTH / 2 - LENS_MASK_WIDTH) << 2,
                    (SCREEN_HEIGHT / 2 - LENS_MASK_HEIGHT) << 2, (SCREEN_WIDTH / 2 + LENS_MASK_WIDTH - 1) << 2,
                    (SCREEN_HEIGHT / 2 + LENS_MASK_HEIGHT - 1) << 2);
-    gSPWideTextureRectangle(POLY_XLU_DISP++, x, 0, x + abs(x), SCREEN_HEIGHT << 2, G_TX_RENDERTILE, 0, 0, 0, 0);
-    gSPWideTextureRectangle(POLY_XLU_DISP++, 0, 0, w, SCREEN_HEIGHT << 2, G_TX_RENDERTILE, LENS_MASK_OFFSET_S << 5,
+    gSPWideTextureRectangle(POLY_XLU_DISP++, x, 0, x2, SCREEN_HEIGHT << 2, G_TX_RENDERTILE, 0, 0, 0, 0);
+    gSPWideTextureRectangle(POLY_XLU_DISP++, x2, 0, w, SCREEN_HEIGHT << 2, G_TX_RENDERTILE, LENS_MASK_OFFSET_S << 5,
                             LENS_MASK_OFFSET_T << 5, (1 << 10) * (SCREEN_WIDTH - 2 * LENS_MASK_OFFSET_S) / SCREEN_WIDTH,
                             (1 << 10) * (SCREEN_HEIGHT - 2 * LENS_MASK_OFFSET_T) / SCREEN_HEIGHT);
     gDPPipeSync(POLY_XLU_DISP++);
@@ -3048,6 +3068,14 @@ void func_800315AC(PlayState* play, ActorContext* actorCtx) {
 
     invisibleActorCounter = 0;
 
+    // For Ivan's render pass, lens effects don't apply: actors that self-manage
+    // visibility by checking lensActive in their draw functions would otherwise
+    // render fully visible (unmasked) on Ivan's viewport.
+    u8 savedLensActive = play->actorCtx.lensActive;
+    if (gSplitScreenPass != 0) {
+        play->actorCtx.lensActive = false;
+    }
+
     OPEN_DISPS(play->state.gfxCtx);
 
     actorListEntry = &actorCtx->actorLists[0];
@@ -3063,9 +3091,28 @@ void func_800315AC(PlayState* play, ActorContext* actorCtx) {
 
             HREG(66) = i;
 
+            // IvanSplitScreen: Ivan's projected position for culling (separate from projectedPos used for audio).
+            Vec3f ivanProjectedPos;
+            f32 ivanProjectedW;
+            bool hasIvanProjection = false;
+
             if ((HREG(64) != 1) || ((HREG(65) != -1) && (HREG(65) != HREG(66))) || (HREG(68) == 0)) {
-                SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, &actor->world.pos, &actor->projectedPos,
-                                             &actor->projectedW);
+                if (gSplitScreenPass == 0 || !gSplitScreenActive) {
+                    SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, &actor->world.pos, &actor->projectedPos,
+                                                 &actor->projectedW);
+                } else {
+                    // IvanSplitScreen: Project into Ivan's locals for culling. Only update projectedPos/W
+                    // if Ivan is closer, so audio loudness uses whichever viewport hears the sound louder.
+                    SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, &actor->world.pos, &ivanProjectedPos,
+                                                 &ivanProjectedW);
+                    hasIvanProjection = true;
+                    f32 linkDistSq = SQ(actor->projectedPos.x) + SQ(actor->projectedPos.y) + SQ(actor->projectedPos.z);
+                    f32 ivanDistSq = SQ(ivanProjectedPos.x) + SQ(ivanProjectedPos.y) + SQ(ivanProjectedPos.z);
+                    if (ivanDistSq < linkDistSq) {
+                        actor->projectedPos = ivanProjectedPos;
+                        actor->projectedW = ivanProjectedW;
+                    }
+                }
             }
 
             if ((HREG(64) != 1) || ((HREG(65) != -1) && (HREG(65) != HREG(66))) || (HREG(69) == 0)) {
@@ -3078,20 +3125,24 @@ void func_800315AC(PlayState* play, ActorContext* actorCtx) {
             bool shipShouldDraw = false;
             bool shipShouldUpdate = false;
             if ((HREG(64) != 1) || ((HREG(65) != -1) && (HREG(65) != HREG(66))) || (HREG(70) == 0)) {
+                // IvanSplitScreen: Use Ivan's projection for culling on Ivan's pass so that actors
+                // visible only in Ivan's viewport aren't incorrectly culled by Link's projection.
+                Vec3f* cullPos = (hasIvanProjection) ? &ivanProjectedPos : &actor->projectedPos;
+                f32 cullW = (hasIvanProjection) ? ivanProjectedW : actor->projectedW;
                 if (CVarGetInteger(CVAR_ENHANCEMENT("DisableDrawDistance"), 1) > 1 ||
                     CVarGetInteger(CVAR_ENHANCEMENT("WidescreenActorCulling"), 0)) {
-                    Ship_CalcShouldDrawAndUpdate(play, actor, &actor->projectedPos, actor->projectedW, &shipShouldDraw,
+                    Ship_CalcShouldDrawAndUpdate(play, actor, cullPos, cullW, &shipShouldDraw,
                                                  &shipShouldUpdate);
 
                     if (shipShouldUpdate) {
                         actor->flags |= ACTOR_FLAG_INSIDE_CULLING_VOLUME;
-                    } else {
+                    } else if (gSplitScreenPass == 0) {
                         actor->flags &= ~ACTOR_FLAG_INSIDE_CULLING_VOLUME;
                     }
                 } else {
-                    if (func_800314B0(play, actor)) {
+                    if (func_800314D4(play, actor, cullPos, cullW)) {
                         actor->flags |= ACTOR_FLAG_INSIDE_CULLING_VOLUME;
-                    } else {
+                    } else if (gSplitScreenPass == 0) {
                         actor->flags &= ~ACTOR_FLAG_INSIDE_CULLING_VOLUME;
                     }
                 }
@@ -3153,6 +3204,8 @@ void func_800315AC(PlayState* play, ActorContext* actorCtx) {
     if ((HREG(64) != 1) || (HREG(76) != 0)) {
         CollisionCheck_DrawCollision(play, &play->colChkCtx);
     }
+
+    play->actorCtx.lensActive = savedLensActive;
 
     CLOSE_DISPS(play->state.gfxCtx);
 }

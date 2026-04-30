@@ -24,10 +24,10 @@ static const s16 itemIconTexStep = 512 * 32 / itemIconSize;
 static const s16 itemSpacing = 16;
 static const s16 dPadSize = 32;
 static const s16 dPadTexStep = 512;
-static const s16 dPadCenterX = 64;
-static const s16 cButtonsCenterX = 256;
-static const s16 dPadCenterY = 208;
-static const s16 cButtonsCenterY = 208;
+static const s16 dPadCenterX = 186;
+static const s16 cButtonsCenterX = 348;
+static const s16 dPadCenterY = 216;
+static const s16 cButtonsCenterY = 216;
 static const s16 naviLabelYOffset = 4;
 static const s16 naviLabelXOffset = 8;
 
