@@ -20,6 +20,8 @@
      ACTOR_FLAG_CAN_PRESS_SWITCHES)
 
 EnPartner* gIvanActor = NULL;
+f32 gIvanCamYaw = 0.0f;
+f32 gIvanCamPitch = 0.0f;
 
 void EnPartner_Init(Actor* thisx, PlayState* play);
 void EnPartner_Destroy(Actor* thisx, PlayState* play);
@@ -139,6 +141,8 @@ void EnPartner_Init(Actor* thisx, PlayState* play) {
     thisx->room = -1;
 
     gIvanActor = this;
+    gIvanCamYaw = (f32)this->actor.shape.rot.y;
+    gIvanCamPitch = 0x1000;
 }
 
 void EnPartner_Destroy(Actor* thisx, PlayState* play) {
@@ -640,13 +644,25 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
 
     Input sControlInput = play->state.input[this->actor.params];
 
+    // Right stick camera control
+    f32 rsX = -sControlInput.cur.right_stick_x * 10.0f;
+    f32 rsY = sControlInput.cur.right_stick_y * 10.0f;
+    gIvanCamYaw += rsX;
+    gIvanCamPitch += rsY;
+    if (gIvanCamPitch > 0x32A4) {
+        gIvanCamPitch = 0x32A4;
+    }
+    if (gIvanCamPitch < -0x228C) {
+        gIvanCamPitch = -0x228C;
+    }
+
     f32 relX = sControlInput.cur.stick_x / 10.0f * (CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0) ? -1 : 1);
     f32 relY = sControlInput.cur.stick_y / 10.0f;
 
-    Vec3f camForward = { GET_ACTIVE_CAM(play)->at.x - GET_ACTIVE_CAM(play)->eye.x, 0.0f,
-                         GET_ACTIVE_CAM(play)->at.z - GET_ACTIVE_CAM(play)->eye.z };
-    camForward = Vec3fNormalize(camForward);
-
+    // Movement relative to Ivan's own camera
+    f32 ivanCamSin = Math_SinS((s16)gIvanCamYaw);
+    f32 ivanCamCos = Math_CosS((s16)gIvanCamYaw);
+    Vec3f camForward = { ivanCamSin, 0.0f, ivanCamCos };
     Vec3f camRight = { -camForward.z, 0.0f, camForward.x };
 
     this->actor.velocity.x = 0;
