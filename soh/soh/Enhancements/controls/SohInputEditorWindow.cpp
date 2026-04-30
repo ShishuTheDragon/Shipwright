@@ -1685,6 +1685,10 @@ void SohInputEditorWindow::DrawIvanTab() {
             DrawStickSection(portIndex, Ship::LEFT, 0);
         }
 
+        if (ImGui::CollapsingHeader("Additional (\"Right\") Stick")) {
+            DrawStickSection(portIndex, Ship::RIGHT, 1, CHIP_COLOR_N64_YELLOW);
+        }
+
         ImGui::PopStyleColor();
         ImGui::PopStyleColor();
         ImGui::PopStyleColor();
