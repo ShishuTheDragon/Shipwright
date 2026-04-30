@@ -53,6 +53,8 @@ void EnPartner_Init(Actor* thisx, PlayState* play);
 void EnPartner_Destroy(Actor* thisx, PlayState* play);
 void EnPartner_Update(Actor* thisx, PlayState* play);
 void EnPartner_Draw(Actor* thisx, PlayState* play);
+
+extern EnPartner* gIvanActor;
 #ifdef __cplusplus
 }
 #endif

@@ -13,6 +13,7 @@
 #include "soh/ResourceManagerHelpers.h"
 #include "soh/SaveManager.h"
 #include "soh/framebuffer_effects.h"
+#include <overlays/actors/ovl_En_Partner/z_en_partner.h>
 
 #include <libultraship/libultraship.h>
 
@@ -1400,6 +1401,36 @@ void Play_Draw(PlayState* play) {
     if ((HREG(80) != 10) || (HREG(82) != 0)) {
         GameInteractor_ExecuteOnPlayDrawBegin();
 
+        // Split-screen setup for Ivan coop
+        s32 splitScreenActive = (gIvanActor != NULL) && CVarGetInteger(CVAR_ENHANCEMENT("IvanCoopModeEnabled"), 0);
+        s32 numSplitPasses = splitScreenActive ? 2 : 1;
+        View savedView;
+        if (splitScreenActive) {
+            savedView = play->view;
+        }
+
+        for (s32 splitPass = 0; splitPass < numSplitPasses; splitPass++) {
+        if (splitScreenActive) {
+            if (splitPass == 0) {
+                // P1: left half
+                play->view.viewport.rightX = SCREEN_WIDTH / 2;
+            } else {
+                // P2: right half — restore clean view then override
+                play->view = savedView;
+                play->view.viewport.leftX = SCREEN_WIDTH / 2;
+                // Simple behind-the-back camera on Ivan
+                Vec3f ivanPos = gIvanActor->actor.world.pos;
+                f32 ivanYawSin = Math_SinS(gIvanActor->actor.shape.rot.y);
+                f32 ivanYawCos = Math_CosS(gIvanActor->actor.shape.rot.y);
+                play->view.eye.x = ivanPos.x - ivanYawSin * 180.0f;
+                play->view.eye.y = ivanPos.y + 120.0f;
+                play->view.eye.z = ivanPos.z - ivanYawCos * 180.0f;
+                play->view.lookAt.x = ivanPos.x;
+                play->view.lookAt.y = ivanPos.y + 40.0f;
+                play->view.lookAt.z = ivanPos.z;
+            }
+        }
+
         POLY_OPA_DISP = Play_SetFog(play, POLY_OPA_DISP);
         POLY_XLU_DISP = Play_SetFog(play, POLY_XLU_DISP);
 
@@ -1433,6 +1464,7 @@ void Play_Draw(PlayState* play) {
 
         gSPSegment(POLY_OPA_DISP++, 0x01, play->billboardMtx);
 
+        if (splitPass == 0) {
         if ((HREG(80) != 10) || (HREG(92) != 0)) {
             Gfx* gfxP;
             Gfx* sp1CC = POLY_OPA_DISP;
@@ -1500,6 +1532,7 @@ void Play_Draw(PlayState* play) {
 
             goto Play_Draw_DrawOverlayElements;
         }
+        } // end splitPass == 0 guard
 
         if ((HREG(80) != 10) || (HREG(83) != 0)) {
             if (play->skyboxId && (play->skyboxId != SKYBOX_UNSET_1D) && !play->envCtx.skyboxDisabled) {
@@ -1609,6 +1642,13 @@ void Play_Draw(PlayState* play) {
             DebugDisplay_DrawObjects(play);
         }
 
+        } // end split-screen for loop
+
+        // Restore full-screen viewport after split-screen drawing
+        if (splitScreenActive) {
+            play->view = savedView;
+        }
+
         if ((R_PAUSE_MENU_MODE == 1) || (gTrnsnUnkState == 1)) {
             Gfx* gfxP = OVERLAY_DISP;
 
@@ -1654,6 +1694,11 @@ void Play_Draw(PlayState* play) {
         GameInteractor_ExecuteOnPlayDrawEnd();
 
     Play_Draw_DrawOverlayElements:
+        // Restore full-screen viewport if split-screen was active (in case we got here via goto)
+        if (splitScreenActive) {
+            play->view = savedView;
+        }
+
         if ((HREG(80) != 10) || (HREG(89) != 0)) {
             Play_DrawOverlayElements(play);
         }

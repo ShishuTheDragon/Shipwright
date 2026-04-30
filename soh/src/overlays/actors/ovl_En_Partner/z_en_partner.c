@@ -19,6 +19,8 @@
     (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED | ACTOR_FLAG_HOOKSHOT_PULLS_PLAYER | \
      ACTOR_FLAG_CAN_PRESS_SWITCHES)
 
+EnPartner* gIvanActor = NULL;
+
 void EnPartner_Init(Actor* thisx, PlayState* play);
 void EnPartner_Destroy(Actor* thisx, PlayState* play);
 void EnPartner_Update(Actor* thisx, PlayState* play);
@@ -135,6 +137,8 @@ void EnPartner_Init(Actor* thisx, PlayState* play) {
     this->lightNodeNoGlow = LightContext_InsertLight(play, &play->lightCtx, &this->lightInfoNoGlow);
 
     thisx->room = -1;
+
+    gIvanActor = this;
 }
 
 void EnPartner_Destroy(Actor* thisx, PlayState* play) {
@@ -148,6 +152,10 @@ void EnPartner_Destroy(Actor* thisx, PlayState* play) {
     Collider_DestroyCylinder(play, &this->weaponCollider);
 
     ResourceMgr_UnregisterSkeleton(&this->skelAnime);
+
+    if (gIvanActor == this) {
+        gIvanActor = NULL;
+    }
 }
 
 void EnPartner_UpdateLights(EnPartner* this, PlayState* play) {
