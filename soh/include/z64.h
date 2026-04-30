@@ -95,8 +95,8 @@ typedef struct {
 
 typedef struct {
     /* 0x00000 */ u16 headMagic; // GFXPOOL_HEAD_MAGIC
-    /* 0x00008 */ Gfx polyOpaBuffer[0x2FC0];
-    /* 0x0BF08 */ Gfx polyXluBuffer[0x1000];
+    /* 0x00008 */ Gfx polyOpaBuffer[0x2FC0 * 2];
+    /* 0x0BF08 */ Gfx polyXluBuffer[0x1000 * 2];
     /* 0x0FF08 */ Gfx overlayBuffer[0x800];
     /* 0x11F08 */ Gfx workBuffer[0x100];
     /* 0x11308 */ Gfx unusedBuffer[0x40];
