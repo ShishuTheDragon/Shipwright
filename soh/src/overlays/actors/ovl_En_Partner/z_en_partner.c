@@ -53,6 +53,7 @@ static s16 Ivan_GetRegenRate(void) {
 #define IVAN_STAMINA_HAMMER          6
 #define IVAN_STAMINA_BEANS           40
 #define IVAN_STAMINA_SPELL           1   // per frame
+
 void EnPartner_Init(Actor* thisx, PlayState* play);
 void EnPartner_Destroy(Actor* thisx, PlayState* play);
 void EnPartner_Update(Actor* thisx, PlayState* play);
@@ -168,6 +169,10 @@ void EnPartner_Init(Actor* thisx, PlayState* play) {
     this->lightNodeNoGlow = LightContext_InsertLight(play, &play->lightCtx, &this->lightInfoNoGlow);
 
     thisx->room = -1;
+
+    gIvanActor = this;
+    gIvanCamYaw = (f32)this->actor.shape.rot.y;
+    gIvanCamPitch = 0;
 }
 
 void EnPartner_Destroy(Actor* thisx, PlayState* play) {
@@ -196,6 +201,10 @@ void EnPartner_Destroy(Actor* thisx, PlayState* play) {
     Collider_DestroyCylinder(play, &this->weaponCollider);
 
     ResourceMgr_UnregisterSkeleton(&this->skelAnime);
+
+    if (gIvanActor == this) {
+        gIvanActor = NULL;
+    }
 }
 
 void EnPartner_UpdateLights(EnPartner* this, PlayState* play) {
@@ -287,38 +296,39 @@ void UseBow(Actor* thisx, PlayState* play, u8 started, u8 arrowType) {
     EnPartner* this = (EnPartner*)thisx;
 
     if (started == 1) {
-        Player_PlaySfx(this, NA_SE_PL_CHANGE_ARMS);
-        this->canMove = 0;
-    } else if (started == 0) {
-        if (this->itemTimer <= 0) {
-            if (this->stamina >= arrowStaminaCosts[arrowType]) {
-                this->itemTimer = 10;
+        if (this->stamina >= arrowStaminaCosts[arrowType]) {
+            this->itemTimer = 10;
+            Player_PlaySfx(this, NA_SE_PL_CHANGE_ARMS);
 
-                s16 params = ARROW_NORMAL;
-                switch (arrowType) {
-                    case 1:
-                        params = ARROW_FIRE;
-                        break;
-                    case 2:
-                        params = ARROW_ICE;
-                        break;
-                    case 3:
-                        params = ARROW_LIGHT;
-                        break;
-                }
+            // Snap Ivan to camera yaw so the firing pose matches the shot direction
+            this->actor.world.rot.y = (s16)gIvanCamYaw;
+            this->actor.shape.rot.y = (s16)gIvanCamYaw;
 
-                Actor* newarrow = Actor_SpawnAsChild(
-                    &play->actorCtx, &this->actor, play, ACTOR_EN_ARROW, this->actor.world.pos.x,
-                    this->actor.world.pos.y + 7, this->actor.world.pos.z, 0, this->actor.world.rot.y, 0, params);
-
-                GET_PLAYER(play)->unk_A73 = 4;
-                newarrow->parent = NULL;
-                Ivan_UseStamina(this, arrowStaminaCosts[arrowType]);
-            } else {
-                Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
-                this->usedItem = 0xFF;
-                this->canMove = 1;
+            s16 params = ARROW_NORMAL;
+            switch (arrowType) {
+                case 1:
+                    params = ARROW_FIRE;
+                    break;
+                case 2:
+                    params = ARROW_ICE;
+                    break;
+                case 3:
+                    params = ARROW_LIGHT;
+                    break;
             }
+
+            Actor* newarrow = Actor_SpawnAsChild(
+                &play->actorCtx, &this->actor, play, ACTOR_EN_ARROW, this->actor.world.pos.x,
+                this->actor.world.pos.y + 7, this->actor.world.pos.z,
+                (s16)gIvanCamPitch, (s16)gIvanCamYaw, 0, params);
+
+            GET_PLAYER(play)->unk_A73 = 4;
+            newarrow->parent = NULL;
+            Ivan_UseStamina(this, arrowStaminaCosts[arrowType]);
+        } else {
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+            this->usedItem = 0xFF;
+            this->canMove = 1;
         }
     }
 }
@@ -327,22 +337,24 @@ void UseSlingshot(Actor* thisx, PlayState* play, u8 started) {
     EnPartner* this = (EnPartner*)thisx;
 
     if (started == 1) {
-        Player_PlaySfx(this, NA_SE_PL_CHANGE_ARMS);
-        this->canMove = 0;
-    } else if (started == 0) {
-        if (this->itemTimer <= 0) {
-            if (this->stamina >= IVAN_STAMINA_SLINGSHOT) {
-                this->itemTimer = 10;
-                Actor* newarrow = Actor_SpawnAsChild(
-                    &play->actorCtx, &this->actor, play, ACTOR_EN_ARROW, this->actor.world.pos.x,
-                    this->actor.world.pos.y + 7, this->actor.world.pos.z, 0, this->actor.world.rot.y, 0, ARROW_SEED);
-                GET_PLAYER(play)->unk_A73 = 4;
-                newarrow->parent = NULL;
-                Ivan_UseStamina(this, IVAN_STAMINA_SLINGSHOT);
-            } else {
-                Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
-                this->usedItem = 0xFF;
-            }
+        if (this->stamina >= IVAN_STAMINA_SLINGSHOT) {
+            this->itemTimer = 10;
+            Player_PlaySfx(this, NA_SE_PL_CHANGE_ARMS);
+
+            // Snap Ivan to camera yaw so the firing pose matches the shot direction
+            this->actor.world.rot.y = (s16)gIvanCamYaw;
+            this->actor.shape.rot.y = (s16)gIvanCamYaw;
+
+            Actor* newarrow = Actor_SpawnAsChild(
+                &play->actorCtx, &this->actor, play, ACTOR_EN_ARROW, this->actor.world.pos.x,
+                this->actor.world.pos.y + 7, this->actor.world.pos.z,
+                (s16)gIvanCamPitch, (s16)gIvanCamYaw, 0, ARROW_SEED);
+            GET_PLAYER(play)->unk_A73 = 4;
+            newarrow->parent = NULL;
+            Ivan_UseStamina(this, IVAN_STAMINA_SLINGSHOT);
+        } else {
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+            this->usedItem = 0xFF;
         }
     }
 }
@@ -541,6 +553,9 @@ void UseFaroresWind(EnPartner* this, PlayState* play, u8 started) {
     }
 
     if (started == 1 || started == 2) {
+        this->actor.world.rot.y = (s16)gIvanCamYaw;
+        this->actor.shape.rot.y = (s16)gIvanCamYaw;
+
         func_8002F974(&this->actor, NA_SE_EV_WIND_TRAP - SFX_FLAG);
 
         this->windEffect->actor.world.pos.x = this->actor.world.pos.x;
@@ -579,12 +594,19 @@ void UseNuts(Actor* thisx, PlayState* play, u8 started) {
         if (started == 1) {
             if (this->stamina >= IVAN_STAMINA_DEKU_NUT) {
                 this->itemTimer = 10;
+                this->usedItem = 0xFF;
+
+                // Snap Ivan to camera yaw so the firing pose matches the shot direction
+                this->actor.world.rot.y = (s16)gIvanCamYaw;
+                this->actor.shape.rot.y = (s16)gIvanCamYaw;
+
                 Actor_Spawn(&play->actorCtx, play, ACTOR_EN_ARROW, this->actor.world.pos.x, this->actor.world.pos.y + 7,
                             this->actor.world.pos.z, (s16)gIvanCamPitch, (s16)gIvanCamYaw, 0, ARROW_NUT);
 
                 Ivan_UseStamina(this, IVAN_STAMINA_DEKU_NUT);
             } else {
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+                this->usedItem = 0xFF;
             }
         }
     }
@@ -634,18 +656,22 @@ void UseBoomerang(Actor* thisx, PlayState* play, u8 started) {
                 this->itemTimer = 20;
                 Ivan_UseStamina(this, IVAN_STAMINA_BOOMERANG);
 
-            f32 posX = (Math_SinS(this->actor.shape.rot.y) * 1.0f) + this->actor.world.pos.x;
-            f32 posZ = (Math_CosS(this->actor.shape.rot.y) * 1.0f) + this->actor.world.pos.z;
-            s32 yaw = this->actor.shape.rot.y;
-            EnBoom* boomerang =
+                s16 yaw = (s16)gIvanCamYaw;
+                s16 pitch = (s16)gIvanCamPitch;
+                // Snap Ivan to camera yaw so the firing pose matches the throw direction
+                this->actor.world.rot.y = yaw;
+                this->actor.shape.rot.y = yaw;
+                f32 posX = (Math_SinS(yaw) * 1.0f) + this->actor.world.pos.x;
+                f32 posZ = (Math_CosS(yaw) * 1.0f) + this->actor.world.pos.z;
+                EnBoom* boomerang =
                 (EnBoom*)Actor_Spawn(&play->actorCtx, play, ACTOR_EN_BOOM, posX, this->actor.world.pos.y + 7.0f, posZ,
-                                     this->actor.focus.rot.x, yaw, 0, 0);
+                                         pitch, yaw, 0, 0);
 
-            this->boomerangActor = &boomerang->actor;
-            if (boomerang != NULL) {
-                boomerang->returnTimer = 20;
-                Audio_PlayActorSound2(&this->actor, NA_SE_IT_BOOMERANG_THROW);
-            }
+                this->boomerangActor = &boomerang->actor;
+                if (boomerang != NULL) {
+                    boomerang->returnTimer = 20;
+                    Audio_PlayActorSound2(&this->actor, NA_SE_IT_BOOMERANG_THROW);
+                }
             } else {
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
                 this->usedItem = 0xFF;
@@ -843,23 +869,39 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
 
     Input sControlInput = play->state.input[this->actor.params];
 
+    // Right stick camera control
+    f32 rsX = -sControlInput.cur.right_stick_x * 10.0f * (CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0) ? -1 : 1);
+    f32 rsY = sControlInput.cur.right_stick_y * 10.0f;
+    gIvanCamYaw += rsX;
+    gIvanCamPitch += rsY;
+    if (gIvanCamPitch > 0x32A4) {
+        gIvanCamPitch = 0x32A4;
+    }
+    if (gIvanCamPitch < -0x228C) {
+        gIvanCamPitch = -0x228C;
+    }
+
     f32 relX = sControlInput.cur.stick_x / 10.0f * (CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0) ? -1 : 1);
     f32 relY = sControlInput.cur.stick_y / 10.0f;
 
-    Vec3f camForward = { GET_ACTIVE_CAM(play)->at.x - GET_ACTIVE_CAM(play)->eye.x, 0.0f,
-                         GET_ACTIVE_CAM(play)->at.z - GET_ACTIVE_CAM(play)->eye.z };
-    camForward = Vec3fNormalize(camForward);
+    // Movement relative to Ivan's own camera (yaw + pitch)
+    f32 yawSin   = Math_SinS((s16)gIvanCamYaw);
+    f32 yawCos   = Math_CosS((s16)gIvanCamYaw);
+    f32 pitchSin = Math_SinS((s16)gIvanCamPitch);
+    f32 pitchCos = Math_CosS((s16)gIvanCamPitch);
 
-    Vec3f camRight = { -camForward.z, 0.0f, camForward.x };
+    // eye->lookAt direction matching z_play.c view calculation
+    Vec3f camForward = { yawSin * pitchCos, -pitchSin, yawCos * pitchCos };
+    // Right stays horizontal so strafing doesn't tilt with pitch
+    Vec3f camRight   = { -yawCos, 0.0f, yawSin };
 
     this->actor.velocity.x = 0;
     this->actor.velocity.y = 0;
     this->actor.velocity.z = 0;
 
-    this->actor.velocity.x += camRight.x * relX;
-    this->actor.velocity.z += camRight.z * relX;
-    this->actor.velocity.x += camForward.x * relY;
-    this->actor.velocity.z += camForward.z * relY;
+    this->actor.velocity.x += camRight.x * relX + camForward.x * relY;
+    this->actor.velocity.y +=                     camForward.y * relY;
+    this->actor.velocity.z += camRight.z * relX + camForward.z * relY;
 
     if (this->actor.velocity.x != 0 || this->actor.velocity.z != 0) {
         int16_t finalDir = Math_Atan2S(-this->actor.velocity.x, this->actor.velocity.z) - 0x4000;
@@ -1183,44 +1225,47 @@ void EnPartner_Draw(Actor* thisx, PlayState* play) {
         DrawOrb(this, play, this->usedSpell);
     }
 
-    // Bar layout: 4px per stamina unit, 1px border all around.
-    //   Background: (167,209)-(232,217)  66 x 9 px
-    //   Fill max:   (168,210)-(231,216)  64 x 7 px
-    #define IVAN_SBAR_X  168
-    #define IVAN_SBAR_Y  8
+    // Draw Ivan's stamina bar.
+    {
+        // Bar layout: 4px per stamina unit, 1px border all around.
+        //   Background: (167,209)-(232,217)  66 x 9 px
+        //   Fill max:   (168,210)-(231,216)  64 x 7 px
+        #define IVAN_SBAR_X  200
+        #define IVAN_SBAR_Y  4
 
-    OPEN_DISPS(play->state.gfxCtx);
+        OPEN_DISPS(play->state.gfxCtx);
 
-    // Restrict scissor to the right half so the bar never bleeds left.
-    gDPSetScissor(OVERLAY_DISP++, G_SC_NON_INTERLACE, SCREEN_WIDTH / 2, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        // Restrict scissor to the right half so the bar never bleeds left.
+        // gDPSetScissor(OVERLAY_DISP++, G_SC_NON_INTERLACE, SCREEN_WIDTH / 2, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    // Solid-color rect setup (same pipeline as the screen-fade rect in z_parameter.c).
-    gDPPipeSync(OVERLAY_DISP++);
-    gSPClearGeometryMode(OVERLAY_DISP++, G_ZBUFFER | G_SHADE | G_CULL_BOTH | G_FOG | G_LIGHTING |
-                         G_TEXTURE_GEN | G_TEXTURE_GEN_LINEAR | G_SHADING_SMOOTH | G_LOD);
-    gDPSetOtherMode(OVERLAY_DISP++,
-        G_AD_DISABLE | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TT_NONE | G_TL_TILE |
-        G_TD_CLAMP | G_TP_NONE | G_CYC_1CYCLE | G_PM_1PRIMITIVE,
-        G_AC_NONE | G_ZS_PIXEL | G_RM_CLD_SURF | G_RM_CLD_SURF2);
-    gDPSetCombineMode(OVERLAY_DISP++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
-
-    // Dark background (border + empty portion).
-    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 40, 40, 40, 200);
-    gDPFillRectangle(OVERLAY_DISP++,
-        IVAN_SBAR_X - 1, IVAN_SBAR_Y - 1,
-        IVAN_SBAR_X + Ivan_GetStaminaMax(), IVAN_SBAR_Y + 7);
-
-    // Yellow fill proportional to current stamina.
-    if (this->stamina > 0) {
+        // Solid-color rect setup (same pipeline as the screen-fade rect in z_parameter.c).
         gDPPipeSync(OVERLAY_DISP++);
-        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 250, 230, 0, 255);
+        gSPClearGeometryMode(OVERLAY_DISP++, G_ZBUFFER | G_SHADE | G_CULL_BOTH | G_FOG | G_LIGHTING |
+                             G_TEXTURE_GEN | G_TEXTURE_GEN_LINEAR | G_SHADING_SMOOTH | G_LOD);
+        gDPSetOtherMode(OVERLAY_DISP++,
+            G_AD_DISABLE | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TT_NONE | G_TL_TILE |
+            G_TD_CLAMP | G_TP_NONE | G_CYC_1CYCLE | G_PM_1PRIMITIVE,
+            G_AC_NONE | G_ZS_PIXEL | G_RM_CLD_SURF | G_RM_CLD_SURF2);
+        gDPSetCombineMode(OVERLAY_DISP++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+
+        // Dark background (border + empty portion).
+        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 40, 40, 40, 200);
         gDPFillRectangle(OVERLAY_DISP++,
-            IVAN_SBAR_X, IVAN_SBAR_Y,
-            IVAN_SBAR_X + this->stamina - 1, IVAN_SBAR_Y + 6);
+            IVAN_SBAR_X - 1, IVAN_SBAR_Y - 1,
+            IVAN_SBAR_X + Ivan_GetStaminaMax(), IVAN_SBAR_Y + 7);
+
+        // Yellow fill proportional to current stamina.
+        if (this->stamina > 0) {
+            gDPPipeSync(OVERLAY_DISP++);
+            gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 250, 230, 0, 255);
+            gDPFillRectangle(OVERLAY_DISP++,
+                IVAN_SBAR_X, IVAN_SBAR_Y,
+                IVAN_SBAR_X + this->stamina - 1, IVAN_SBAR_Y + 6);
+        }
+
+        CLOSE_DISPS(play->state.gfxCtx);
+
+        #undef IVAN_SBAR_X
+        #undef IVAN_SBAR_Y
     }
-
-    CLOSE_DISPS(play->state.gfxCtx);
-
-    #undef IVAN_SBAR_X
-    #undef IVAN_SBAR_Y
 }
