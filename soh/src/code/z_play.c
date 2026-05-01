@@ -24,6 +24,7 @@ TransitionUnk sTrnsnUnk;
 s32 gTrnsnUnkState;
 VisMono gPlayVisMono;
 Color_RGBA8_u32 gVisMonoColor;
+s32 gSplitScreenPass;
 
 FaultClient D_801614B8;
 
@@ -1410,6 +1411,7 @@ void Play_Draw(PlayState* play) {
         }
 
         for (s32 splitPass = 0; splitPass < numSplitPasses; splitPass++) {
+        gSplitScreenPass = splitPass;
         if (splitScreenActive) {
             if (splitPass == 0) {
                 // P1: left half
@@ -1648,6 +1650,7 @@ void Play_Draw(PlayState* play) {
         }
 
         } // end split-screen for loop
+        gSplitScreenPass = 0;
 
         // Restore full-screen viewport after split-screen drawing
         if (splitScreenActive) {
