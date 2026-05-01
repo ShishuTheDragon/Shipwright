@@ -2844,12 +2844,22 @@ void Actor_DrawLensOverlay(GraphicsContext* gfxCtx) {
 
     s32 x = OTRGetRectDimensionFromLeftEdge(0) << 2;
     s32 w = OTRGetRectDimensionFromRightEdge(SCREEN_WIDTH) << 2;
+    s32 x2 = 0;
+
+    if (gSplitScreenActive) {
+        s32 leftEdge = OTRGetRectDimensionFromLeftEdge(0);
+        s32 rightEdge = SCREEN_WIDTH / 2;
+        s32 center = (leftEdge + rightEdge) / 2;
+
+        x2 = (center - 160) << 2;
+        w = rightEdge << 2;
+    }
 
     gDPSetTileSize(POLY_XLU_DISP++, G_TX_RENDERTILE, (SCREEN_WIDTH / 2 - LENS_MASK_WIDTH) << 2,
                    (SCREEN_HEIGHT / 2 - LENS_MASK_HEIGHT) << 2, (SCREEN_WIDTH / 2 + LENS_MASK_WIDTH - 1) << 2,
                    (SCREEN_HEIGHT / 2 + LENS_MASK_HEIGHT - 1) << 2);
-    gSPWideTextureRectangle(POLY_XLU_DISP++, x, 0, x + abs(x), SCREEN_HEIGHT << 2, G_TX_RENDERTILE, 0, 0, 0, 0);
-    gSPWideTextureRectangle(POLY_XLU_DISP++, 0, 0, w, SCREEN_HEIGHT << 2, G_TX_RENDERTILE, LENS_MASK_OFFSET_S << 5,
+    gSPWideTextureRectangle(POLY_XLU_DISP++, x, 0, x2, SCREEN_HEIGHT << 2, G_TX_RENDERTILE, 0, 0, 0, 0);
+    gSPWideTextureRectangle(POLY_XLU_DISP++, x2, 0, w, SCREEN_HEIGHT << 2, G_TX_RENDERTILE, LENS_MASK_OFFSET_S << 5,
                             LENS_MASK_OFFSET_T << 5, (1 << 10) * (SCREEN_WIDTH - 2 * LENS_MASK_OFFSET_S) / SCREEN_WIDTH,
                             (1 << 10) * (SCREEN_HEIGHT - 2 * LENS_MASK_OFFSET_T) / SCREEN_HEIGHT);
     gDPPipeSync(POLY_XLU_DISP++);
