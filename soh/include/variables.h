@@ -203,6 +203,7 @@ extern "C"
 	extern PauseMapMarksData* gLoadedPauseMarkDataTable;
 	extern s32 gTrnsnUnkState;
 	extern Color_RGBA8_u32 gVisMonoColor;
+	extern s32 gSplitScreenPass;
 	extern PreNmiBuff* gAppNmiBufferPtr;
 	extern SchedContext gSchedContext;
 	extern PadMgr gPadMgr;

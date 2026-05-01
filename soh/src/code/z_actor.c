@@ -3082,13 +3082,13 @@ void func_800315AC(PlayState* play, ActorContext* actorCtx) {
 
                     if (shipShouldUpdate) {
                         actor->flags |= ACTOR_FLAG_INSIDE_CULLING_VOLUME;
-                    } else {
+                    } else if (gSplitScreenPass == 0) {
                         actor->flags &= ~ACTOR_FLAG_INSIDE_CULLING_VOLUME;
                     }
                 } else {
                     if (func_800314B0(play, actor)) {
                         actor->flags |= ACTOR_FLAG_INSIDE_CULLING_VOLUME;
-                    } else {
+                    } else if (gSplitScreenPass == 0) {
                         actor->flags &= ~ACTOR_FLAG_INSIDE_CULLING_VOLUME;
                     }
                 }
