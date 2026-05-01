@@ -3045,6 +3045,14 @@ void func_800315AC(PlayState* play, ActorContext* actorCtx) {
 
     invisibleActorCounter = 0;
 
+    // For Ivan's render pass, lens effects don't apply: actors that self-manage
+    // visibility by checking lensActive in their draw functions would otherwise
+    // render fully visible (unmasked) on Ivan's viewport.
+    u8 savedLensActive = play->actorCtx.lensActive;
+    if (gSplitScreenPass != 0) {
+        play->actorCtx.lensActive = false;
+    }
+
     OPEN_DISPS(play->state.gfxCtx);
 
     actorListEntry = &actorCtx->actorLists[0];
@@ -3150,6 +3158,8 @@ void func_800315AC(PlayState* play, ActorContext* actorCtx) {
     if ((HREG(64) != 1) || (HREG(76) != 0)) {
         CollisionCheck_DrawCollision(play, &play->colChkCtx);
     }
+
+    play->actorCtx.lensActive = savedLensActive;
 
     CLOSE_DISPS(play->state.gfxCtx);
 }
