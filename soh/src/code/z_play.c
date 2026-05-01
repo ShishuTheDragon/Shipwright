@@ -1651,7 +1651,13 @@ void Play_Draw(PlayState* play) {
 
         // Restore full-screen viewport after split-screen drawing
         if (splitScreenActive) {
+            Mtx* curViewingPtr = play->view.viewingPtr;
+            Mtx* curProjectionPtr = play->view.projectionPtr;
+            Mtx* curProjectionFlippedPtr = play->view.projectionFlippedPtr;
             play->view = savedView;
+            play->view.viewingPtr = curViewingPtr;
+            play->view.projectionPtr = curProjectionPtr;
+            play->view.projectionFlippedPtr = curProjectionFlippedPtr;
         }
 
         if ((R_PAUSE_MENU_MODE == 1) || (gTrnsnUnkState == 1)) {
@@ -1701,7 +1707,13 @@ void Play_Draw(PlayState* play) {
     Play_Draw_DrawOverlayElements:
         // Restore full-screen viewport if split-screen was active (in case we got here via goto)
         if (splitScreenActive) {
+            Mtx* curViewingPtr = play->view.viewingPtr;
+            Mtx* curProjectionPtr = play->view.projectionPtr;
+            Mtx* curProjectionFlippedPtr = play->view.projectionFlippedPtr;
             play->view = savedView;
+            play->view.viewingPtr = curViewingPtr;
+            play->view.projectionPtr = curProjectionPtr;
+            play->view.projectionFlippedPtr = curProjectionFlippedPtr;
         }
 
         if ((HREG(80) != 10) || (HREG(89) != 0)) {
