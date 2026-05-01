@@ -1465,6 +1465,15 @@ void Play_Draw(PlayState* play) {
         // The billboard is still a viewing matrix at this stage
         Matrix_Mult(&play->billboardMtxF, MTXMODE_APPLY);
         Matrix_Get(&play->viewProjectionMtxF);
+        // Widen the culling frustum for split screen: the half-width viewport creates a
+        // narrow 2:3 projection, but the renderer stretches to fill the actual half-window.
+        // Scale the X row to use the original 4:3 aspect so edge actors aren't culled.
+        if (splitScreenActive) {
+            play->viewProjectionMtxF.xx *= 0.5f;
+            play->viewProjectionMtxF.xy *= 0.5f;
+            play->viewProjectionMtxF.xz *= 0.5f;
+            play->viewProjectionMtxF.xw *= 0.5f;
+        }
         play->billboardMtxF.mf[0][3] = play->billboardMtxF.mf[1][3] = play->billboardMtxF.mf[2][3] =
             play->billboardMtxF.mf[3][0] = play->billboardMtxF.mf[3][1] = play->billboardMtxF.mf[3][2] = 0.0f;
         // This transpose is where the viewing matrix is properly converted into a billboard matrix
