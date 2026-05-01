@@ -1438,6 +1438,7 @@ void Play_Draw(PlayState* play) {
                 play->view.lookAt.x = ivanPos.x;
                 play->view.lookAt.y = ivanPos.y + lookAtHeight;
                 play->view.lookAt.z = ivanPos.z;
+                play->view.fovy = 60.0f;
             }
         }
 
@@ -1746,6 +1747,9 @@ Play_Draw_skip:
 
     if (play->view.unk_124 != 0) {
         Camera_Update(GET_ACTIVE_CAM(play));
+        if (gIvanActor != NULL) {
+            play->view.viewingPtr = Graph_Alloc(gfxCtx, sizeof(Mtx));
+        }
         func_800AB944(&play->view);
         play->view.unk_124 = 0;
         if (play->skyboxId && (play->skyboxId != SKYBOX_UNSET_1D) && !play->envCtx.skyboxDisabled) {
