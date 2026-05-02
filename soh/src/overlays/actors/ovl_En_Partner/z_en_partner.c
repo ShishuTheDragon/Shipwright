@@ -803,7 +803,11 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
 
     if (this->canMove == 1) {
         Actor_MoveXZGravity(&this->actor);
-        Actor_UpdateBgCheckInfo(play, &this->actor, 19.0f, 20.0f, 0.0f, 5);
+        Actor_UpdateBgCheckInfo(play, &this->actor, 19.0f, 20.0f, 19.0f, 7);
+        if (this->actor.bgCheckFlags & 0x10) {
+            this->yVelocity = 0.0f;
+            this->actor.velocity.y = 0.0f;
+        }
     }
 
     if (this->usedSpell != 0) {
