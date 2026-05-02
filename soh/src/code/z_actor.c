@@ -3079,8 +3079,23 @@ void func_800315AC(PlayState* play, ActorContext* actorCtx) {
             HREG(66) = i;
 
             if ((HREG(64) != 1) || ((HREG(65) != -1) && (HREG(65) != HREG(66))) || (HREG(68) == 0)) {
-                SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, &actor->world.pos, &actor->projectedPos,
-                                             &actor->projectedW);
+                if (gSplitScreenPass == 0 || !gSplitScreenActive) {
+                    SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, &actor->world.pos, &actor->projectedPos,
+                                                 &actor->projectedW);
+                } else {
+                    // IvanSplitScreen: On Ivan's pass, project into a temp and only update projectedPos
+                    // if Ivan is closer, so audio loudness uses whichever viewport hears the sound louder.
+                    Vec3f ivanProjectedPos;
+                    f32 ivanProjectedW;
+                    SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, &actor->world.pos, &ivanProjectedPos,
+                                                 &ivanProjectedW);
+                    f32 linkDistSq = SQ(actor->projectedPos.x) + SQ(actor->projectedPos.y) + SQ(actor->projectedPos.z);
+                    f32 ivanDistSq = SQ(ivanProjectedPos.x) + SQ(ivanProjectedPos.y) + SQ(ivanProjectedPos.z);
+                    if (ivanDistSq < linkDistSq) {
+                        actor->projectedPos = ivanProjectedPos;
+                        actor->projectedW = ivanProjectedW;
+                    }
+                }
             }
 
             if ((HREG(64) != 1) || ((HREG(65) != -1) && (HREG(65) != HREG(66))) || (HREG(69) == 0)) {
