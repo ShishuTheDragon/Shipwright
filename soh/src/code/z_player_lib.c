@@ -1131,6 +1131,11 @@ void Player_DrawImpl(PlayState* play, void** skeleton, Vec3s* jointTable, s32 dL
             if (Player_GetStrength() > PLAYER_STR_NONE) {
                 gSPDisplayList(POLY_OPA_DISP++, gLinkChildGoronBraceletDL);
             }
+            if (boots >= 1 && boots <= 2) {
+                Gfx** bootDLists = sBootDListGroups[boots - 1];
+                gSPDisplayList(POLY_OPA_DISP++, bootDLists[0]);
+                gSPDisplayList(POLY_OPA_DISP++, bootDLists[1]);
+            }
         }
     }
 
@@ -1979,6 +1984,14 @@ void Player_PostLimbDrawGameplay(PlayState* play, s32 limbIndex, Gfx** dList, Ve
             Vec3f* vec = &sLeftRightFootLimbModelFootPos[(gSaveContext.linkAge)];
 
             Actor_SetFeetPos(&this->actor, limbIndex, PLAYER_LIMB_L_FOOT, vec, PLAYER_LIMB_R_FOOT, vec);
+
+            if ((limbIndex == PLAYER_LIMB_R_FOOT || limbIndex == PLAYER_LIMB_L_FOOT) &&
+                LINK_IS_CHILD && this->currentBoots >= 1 && this->currentBoots <= 2) {
+                Matrix_Push();
+                Matrix_Translate(0.0f, -200.0f, 0.0f, MTXMODE_APPLY);
+                MATRIX_TOMTX(*play->flexLimbOverrideMTX - 1);
+                Matrix_Pop();
+            }
         }
     }
 }
