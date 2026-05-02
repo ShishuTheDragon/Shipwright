@@ -1407,6 +1407,7 @@ void Play_Draw(PlayState* play) {
         s32 splitScreenActive = (gIvanActor != NULL) && CVarGetInteger(CVAR_ENHANCEMENT("IvanCoopModeEnabled"), 0);
         s32 numSplitPasses = splitScreenActive ? 2 : 1;
         View savedView;
+        MtxF linkViewProjectionMtxF;
         if (splitScreenActive) {
             savedView = play->view;
         }
@@ -1475,6 +1476,11 @@ void Play_Draw(PlayState* play) {
         // The billboard is still a viewing matrix at this stage
         Matrix_Mult(&play->billboardMtxF, MTXMODE_APPLY);
         Matrix_Get(&play->viewProjectionMtxF);
+        // Save Link's unscaled view-projection matrix on pass 0 so it can be
+        // restored after the loop for use by update-phase code (Z-targeting etc.)
+        if (splitScreenActive && splitPass == 0) {
+            linkViewProjectionMtxF = play->viewProjectionMtxF;
+        }
         // Widen the culling frustum for split screen: the half-width viewport creates a
         // narrow 2:3 projection, but the renderer stretches to fill the actual half-window.
         // Scale the X row to use the original 4:3 aspect so edge actors aren't culled.
@@ -1685,6 +1691,10 @@ void Play_Draw(PlayState* play) {
             play->view.viewingPtr = curViewingPtr;
             play->view.projectionPtr = curProjectionPtr;
             play->view.projectionFlippedPtr = curProjectionFlippedPtr;
+            // Restore Link's view-projection matrix so that update-phase code
+            // (Z-targeting, NPC talk checks) uses Link's camera, not Ivan's stale
+            // projection left over from the last draw pass.
+            play->viewProjectionMtxF = linkViewProjectionMtxF;
         }
 
         if ((R_PAUSE_MENU_MODE == 1) || (gTrnsnUnkState == 1)) {
