@@ -1684,6 +1684,10 @@ void Play_Draw(PlayState* play) {
         // Draw the Z-targeting indicator during Link's pass so it uses Link's
         // camera and appears in Link's viewport, not Ivan's.
         if (splitScreenActive && splitPass == 0) {
+            // Set up OVERLAY_DISP's orthographic projection before drawing so
+            // the 2D lock-on triangles use the correct coordinate space.
+            SET_FULLSCREEN_VIEWPORT(&play->interfaceCtx.view);
+            func_800AB2C4(&play->interfaceCtx.view);
             MtxF scaledMtxF = play->viewProjectionMtxF;
             play->viewProjectionMtxF = linkViewProjectionMtxF;
             func_8002C124(&play->actorCtx.targetCtx, play);
