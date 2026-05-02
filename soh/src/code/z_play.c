@@ -1495,6 +1495,7 @@ void Play_Draw(PlayState* play) {
             Matrix_MtxFToMtx(MATRIX_CHECKFLOATS(&play->billboardMtxF), Graph_Alloc(gfxCtx, sizeof(Mtx)));
 
         gSPSegment(POLY_OPA_DISP++, 0x01, play->billboardMtx);
+        gSPSegment(POLY_XLU_DISP++, 0x01, play->billboardMtx);
 
         if (splitPass == 0) {
         if ((HREG(80) != 10) || (HREG(92) != 0)) {
