@@ -1678,6 +1678,15 @@ void Play_Draw(PlayState* play) {
             DebugDisplay_DrawObjects(play);
         }
 
+        // Draw the Z-targeting indicator during Link's pass so it uses Link's
+        // camera and appears in Link's viewport, not Ivan's.
+        if (splitScreenActive && splitPass == 0) {
+            MtxF scaledMtxF = play->viewProjectionMtxF;
+            play->viewProjectionMtxF = linkViewProjectionMtxF;
+            func_8002C124(&play->actorCtx.targetCtx, play);
+            play->viewProjectionMtxF = scaledMtxF;
+        }
+
         } // end split-screen for loop
         gSplitScreenPass = 0;
         gSplitScreenActive = 0;
