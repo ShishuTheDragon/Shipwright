@@ -3078,17 +3078,21 @@ void func_800315AC(PlayState* play, ActorContext* actorCtx) {
 
             HREG(66) = i;
 
+            // IvanSplitScreen: Ivan's projected position for culling (separate from projectedPos used for audio).
+            Vec3f ivanProjectedPos;
+            f32 ivanProjectedW;
+            bool hasIvanProjection = false;
+
             if ((HREG(64) != 1) || ((HREG(65) != -1) && (HREG(65) != HREG(66))) || (HREG(68) == 0)) {
                 if (gSplitScreenPass == 0 || !gSplitScreenActive) {
                     SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, &actor->world.pos, &actor->projectedPos,
                                                  &actor->projectedW);
                 } else {
-                    // IvanSplitScreen: On Ivan's pass, project into a temp and only update projectedPos
+                    // IvanSplitScreen: Project into Ivan's locals for culling. Only update projectedPos/W
                     // if Ivan is closer, so audio loudness uses whichever viewport hears the sound louder.
-                    Vec3f ivanProjectedPos;
-                    f32 ivanProjectedW;
                     SkinMatrix_Vec3fMtxFMultXYZW(&play->viewProjectionMtxF, &actor->world.pos, &ivanProjectedPos,
                                                  &ivanProjectedW);
+                    hasIvanProjection = true;
                     f32 linkDistSq = SQ(actor->projectedPos.x) + SQ(actor->projectedPos.y) + SQ(actor->projectedPos.z);
                     f32 ivanDistSq = SQ(ivanProjectedPos.x) + SQ(ivanProjectedPos.y) + SQ(ivanProjectedPos.z);
                     if (ivanDistSq < linkDistSq) {
@@ -3108,9 +3112,13 @@ void func_800315AC(PlayState* play, ActorContext* actorCtx) {
             bool shipShouldDraw = false;
             bool shipShouldUpdate = false;
             if ((HREG(64) != 1) || ((HREG(65) != -1) && (HREG(65) != HREG(66))) || (HREG(70) == 0)) {
+                // IvanSplitScreen: Use Ivan's projection for culling on Ivan's pass so that actors
+                // visible only in Ivan's viewport aren't incorrectly culled by Link's projection.
+                Vec3f* cullPos = (hasIvanProjection) ? &ivanProjectedPos : &actor->projectedPos;
+                f32 cullW = (hasIvanProjection) ? ivanProjectedW : actor->projectedW;
                 if (CVarGetInteger(CVAR_ENHANCEMENT("DisableDrawDistance"), 1) > 1 ||
                     CVarGetInteger(CVAR_ENHANCEMENT("WidescreenActorCulling"), 0)) {
-                    Ship_CalcShouldDrawAndUpdate(play, actor, &actor->projectedPos, actor->projectedW, &shipShouldDraw,
+                    Ship_CalcShouldDrawAndUpdate(play, actor, cullPos, cullW, &shipShouldDraw,
                                                  &shipShouldUpdate);
 
                     if (shipShouldUpdate) {
@@ -3119,7 +3127,7 @@ void func_800315AC(PlayState* play, ActorContext* actorCtx) {
                         actor->flags &= ~ACTOR_FLAG_INSIDE_CULLING_VOLUME;
                     }
                 } else {
-                    if (func_800314B0(play, actor)) {
+                    if (func_800314D4(play, actor, cullPos, cullW)) {
                         actor->flags |= ACTOR_FLAG_INSIDE_CULLING_VOLUME;
                     } else if (gSplitScreenPass == 0) {
                         actor->flags &= ~ACTOR_FLAG_INSIDE_CULLING_VOLUME;
