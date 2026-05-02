@@ -486,6 +486,16 @@ void func_8002C124(TargetContext* targetCtx, PlayState* play) {
         spBC.x = (160 * (spBC.x * spB4)) * var1;
         spBC.x = CLAMP(spBC.x, -320.0f, 320.0f);
 
+        // In split-screen, the lock-on indicator is drawn during Link's draw pass
+        // using the full-screen OVERLAY_DISP (x: -160..160 = pixels 0..320).
+        // Remap from full-screen overlay space to Link's actual viewport region.
+        if (gSplitScreenActive) {
+            s32 leftEdge = OTRGetRectDimensionFromLeftEdge(0);
+            s32 rightEdge = SCREEN_WIDTH / 2;
+            f32 viewportWidth = (f32)(rightEdge - leftEdge);
+            spBC.x = (spBC.x / 2) - (viewportWidth / 2);
+        }
+
         spBC.y = (120 * (spBC.y * spB4)) * var1;
         spBC.y = CLAMP(spBC.y, -240.0f, 240.0f);
 
