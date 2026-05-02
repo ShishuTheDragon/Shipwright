@@ -1440,6 +1440,16 @@ void Play_Draw(PlayState* play) {
                 play->view.lookAt.x = ivanPos.x;
                 play->view.lookAt.y = ivanPos.y + lookAtHeight;
                 play->view.lookAt.z = ivanPos.z;
+                // Collision check: pull eye toward lookAt if terrain is in the way
+                CollisionPoly* ivanCamPoly = NULL;
+                s32 ivanCamBgId = 0;
+                Vec3f ivanCamResult;
+                if (BgCheck_CameraLineTest1(&play->colCtx, &play->view.lookAt, &play->view.eye,
+                                            &ivanCamResult, &ivanCamPoly, 1, 1, 1, -1, &ivanCamBgId)) {
+                    play->view.eye.x = ivanCamResult.x + COLPOLY_GET_NORMAL(ivanCamPoly->normal.x);
+                    play->view.eye.y = ivanCamResult.y + COLPOLY_GET_NORMAL(ivanCamPoly->normal.y);
+                    play->view.eye.z = ivanCamResult.z + COLPOLY_GET_NORMAL(ivanCamPoly->normal.z);
+                }
                 play->view.fovy = 60.0f;
             }
         }
