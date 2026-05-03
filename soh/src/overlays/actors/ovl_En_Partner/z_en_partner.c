@@ -23,6 +23,10 @@
     (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED | ACTOR_FLAG_HOOKSHOT_PULLS_PLAYER | \
      ACTOR_FLAG_CAN_PRESS_SWITCHES)
 
+EnPartner* gIvanActor = NULL;
+f32 gIvanCamYaw = 0.0f;
+f32 gIvanCamPitch = 0.0f;
+
 void EnPartner_Init(Actor* thisx, PlayState* play);
 void EnPartner_Destroy(Actor* thisx, PlayState* play);
 void EnPartner_Update(Actor* thisx, PlayState* play);

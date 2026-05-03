@@ -7,6 +7,7 @@
 #include "z_obj_hamishi.h"
 #include "objects/gameplay_field_keep/gameplay_field_keep.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 
 #define FLAGS 0
 
@@ -189,7 +190,7 @@ void ObjHamishi_Update(Actor* thisx, PlayState* play) {
     } else {
         this->collider.base.acFlags &= ~AC_HIT;
 
-        if (this->actor.xzDistToPlayer < 600.0f) {
+        if (Actor_XZDistToNearestPlayer(&this->actor) < 600.0f) {
             CollisionCheck_SetAC(play, colChkCtx, &this->collider.base);
             CollisionCheck_SetOC(play, colChkCtx, &this->collider.base);
         }

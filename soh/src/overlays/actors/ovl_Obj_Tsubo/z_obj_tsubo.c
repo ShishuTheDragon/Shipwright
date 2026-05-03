@@ -9,6 +9,7 @@
 #include "objects/gameplay_dangeon_keep/gameplay_dangeon_keep.h"
 #include "objects/object_tsubo/object_tsubo.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 
 #define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_THROW_ONLY)
 
@@ -259,11 +260,11 @@ void ObjTsubo_Idle(ObjTsubo* this, PlayState* play) {
         SoundSource_PlaySfxAtFixedWorldPos(play, &this->actor.world.pos, 20, NA_SE_EV_POT_BROKEN);
         Actor_Kill(&this->actor);
     } else {
-        if (this->actor.xzDistToPlayer < 600.0f) {
+        if (Actor_XZDistToNearestPlayer(&this->actor) < 600.0f) {
             Collider_UpdateCylinder(&this->actor, &this->collider);
             this->collider.base.acFlags &= ~AC_HIT;
             CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
-            if (this->actor.xzDistToPlayer < 150.0f) {
+            if (Actor_XZDistToNearestPlayer(&this->actor) < 150.0f) {
                 CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
             }
         }

@@ -9,6 +9,7 @@
 #include "vt.h"
 #include "soh/ResourceManagerHelpers.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 
 #define FLAGS 0
 
@@ -698,7 +699,7 @@ void EnFish_OrdinaryUpdate(EnFish* this, PlayState* play) {
             Actor_UpdateBgCheckInfo(play, &this->actor, 17.5f, 4.0f, 0.0f, this->unk_250);
         }
 
-        if (this->actor.xzDistToPlayer < 70.0f) {
+        if (Actor_XZDistToNearestPlayer(&this->actor) < 70.0f) {
             CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
         }
 
