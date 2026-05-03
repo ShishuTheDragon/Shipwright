@@ -38,6 +38,7 @@ typedef struct EnPartner {
 
     u8 shouldDraw;
     s16 itemTimer;
+    s16 beanCooldownTimer;
 
     GetItemEntry entry;
     WeaponInfo stickWeaponInfo;

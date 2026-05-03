@@ -14,6 +14,7 @@
 #include <overlays/effects/ovl_Effect_Ss_HitMark/z_eff_ss_hitmark.h>
 #include "soh/OTRGlobals.h"
 #include "soh/ResourceManagerHelpers.h"
+#include "objects/gameplay_field_keep/gameplay_field_keep.h"
 
 #define FLAGS                                                                                                   \
     (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED | ACTOR_FLAG_HOOKSHOT_PULLS_PLAYER | \
@@ -98,6 +99,7 @@ void EnPartner_Init(Actor* thisx, PlayState* play) {
     this->canMove = 1;
     this->shouldDraw = 1;
     this->hookshotTarget = NULL;
+    this->beanCooldownTimer = 0;
     GET_PLAYER(play)->ivanFloating = 0;
 
     this->innerColor.r = 255.0f;
@@ -191,9 +193,14 @@ void EnPartner_SpawnSparkles(EnPartner* this, PlayState* play, s32 sparkleLife) 
     Color_RGBA8 primColor;
     Color_RGBA8 envColor;
 
-    sparklePos.x = Rand_CenteredFloat(6.0f) + this->actor.world.pos.x;
+    f32 diameter = 6.0f;
+    if (this->usedItem == ITEM_BEAN) {
+        diameter = 60.0f;
+    }
+
+    sparklePos.x = Rand_CenteredFloat(diameter) + this->actor.world.pos.x;
     sparklePos.y = (Rand_ZeroOne() * 6.0f) + this->actor.world.pos.y + 5;
-    sparklePos.z = Rand_CenteredFloat(6.0f) + this->actor.world.pos.z;
+    sparklePos.z = Rand_CenteredFloat(diameter) + this->actor.world.pos.z;
 
     primColor.r = this->innerColor.r;
     primColor.g = this->innerColor.g;
@@ -490,19 +497,35 @@ void UseLens(Actor* thisx, PlayState* play, u8 started) {
     }
 }
 
+#define Z_OBJ_BEAN_IVAN 64
+
 void UseBeans(Actor* thisx, PlayState* play, u8 started) {
     EnPartner* this = (EnPartner*)thisx;
 
     if (this->itemTimer <= 0) {
         if (started == 1) {
-            this->entry = ItemTable_Retrieve(GI_BEAN);
-            if (play->actorCtx.titleCtx.alpha <= 0) {
-                if (gSaveContext.rupees >= 100 && GiveItemEntryWithoutActor(play, this->entry)) {
-                    Rupees_ChangeBy(-100);
-                } else {
+            if (this->beanCooldownTimer <= 0) {
+                if (AMMO(ITEM_BEAN) <= 0) {
                     Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+                    this->usedItem = 0xFF;
+                    return;
                 }
+                Inventory_ChangeAmmo(ITEM_BEAN, -1);
+                this->beanCooldownTimer = 20 * 6;
             }
+            this->canMove = 0;
+            this->shouldDraw = 0;
+            this->hookshotTarget =
+                Actor_SpawnAsChild(&play->actorCtx, &this->actor, play, ACTOR_OBJ_BEAN,
+                    this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z,
+                    0, this->actor.world.rot.y, 0, Z_OBJ_BEAN_IVAN);
+        } else if (started == 0) {
+            Actor_Kill(this->hookshotTarget);
+            this->hookshotTarget = NULL;
+            this->shouldDraw = 1;
+            this->itemTimer = 10;
+        } else if (started == 2) {
+            this->hookshotTarget->shape.rot.y = this->actor.world.rot.y;
         }
     }
 }
@@ -690,6 +713,9 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
     if (this->shouldDraw == 1) {
         thisx->shape.shadowAlpha = 0xFF;
         EnPartner_SpawnSparkles(this, play, 12);
+    } else if (this->usedItem == ITEM_BEAN) {
+        thisx->shape.shadowAlpha = 0;
+        EnPartner_SpawnSparkles(this, play, 12);
     } else {
         thisx->shape.shadowAlpha = 0;
     }
@@ -760,6 +786,10 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
         if (this->itemTimer <= 0) {
             this->canMove = 1;
         }
+    }
+
+    if (this->beanCooldownTimer > 0) {
+        this->beanCooldownTimer--;
     }
 
     if (!Player_InCsMode(play)) {
