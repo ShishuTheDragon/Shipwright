@@ -8,6 +8,7 @@
 #include "objects/object_kibako2/object_kibako2.h"
 #include "overlays/effects/ovl_Effect_Ss_Kakera/z_eff_ss_kakera.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 
 #define FLAGS 0
 
@@ -153,7 +154,7 @@ void ObjKibako2_Idle(ObjKibako2* this, PlayState* play) {
         func_8003EBF8(play, &play->colCtx.dyna, this->dyna.bgId);
         this->dyna.actor.draw = NULL;
         this->actionFunc = ObjKibako2_Kill;
-    } else if (this->dyna.actor.xzDistToPlayer < 600.0f) {
+    } else if (Actor_XZDistToNearestPlayer(&this->dyna.actor) < 600.0f) {
         CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
     }
 }

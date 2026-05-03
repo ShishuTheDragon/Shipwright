@@ -7,6 +7,7 @@
 #include "z_bg_mizu_bwall.h"
 #include "overlays/actors/ovl_Bg_Mizu_Water/z_bg_mizu_water.h"
 #include "objects/object_mizu_objects/object_mizu_objects.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 
 #define FLAGS ACTOR_FLAG_UPDATE_CULLING_DISABLED
 
@@ -475,7 +476,7 @@ void BgMizuBwall_Idle(BgMizuBwall* this, PlayState* play) {
         Audio_PlaySoundGeneral(NA_SE_SY_CORRECT_CHIME, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
                                &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
         this->actionFunc = BgMizuBwall_Break;
-    } else if (this->dyna.actor.xzDistToPlayer < 600.0f) {
+    } else if (Actor_XZDistToNearestPlayer(&this->dyna.actor) < 600.0f) {
         CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
     }
 }

@@ -11,6 +11,7 @@
 #include "objects/object_kusa/object_kusa.h"
 #include "vt.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 
 #define FLAGS (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_THROW_ONLY)
 
@@ -335,11 +336,11 @@ void EnKusa_Main(EnKusa* this, PlayState* play) {
             this->collider.base.ocFlags1 |= OC1_TYPE_PLAYER;
         }
 
-        if (this->actor.xzDistToPlayer < 600.0f) {
+        if (Actor_XZDistToNearestPlayer(&this->actor) < 600.0f) {
             Collider_UpdateCylinder(&this->actor, &this->collider);
             CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
 
-            if (this->actor.xzDistToPlayer < 400.0f) {
+            if (Actor_XZDistToNearestPlayer(&this->actor) < 400.0f) {
                 CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
                 if (this->actor.xzDistToPlayer < 100.0f) {
                     Actor_OfferCarry(&this->actor, play);

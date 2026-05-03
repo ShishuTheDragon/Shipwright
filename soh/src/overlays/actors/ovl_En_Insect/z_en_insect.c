@@ -8,6 +8,7 @@
 #include "vt.h"
 #include "objects/gameplay_keep/gameplay_keep.h"
 #include "soh/ResourceManagerHelpers.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 
 #define FLAGS 0
 
@@ -774,7 +775,7 @@ void EnInsect_Update(Actor* thisx, PlayState* play) {
             } else {
                 EnInsect_SetupCaught(this);
             }
-        } else if (this->actor.xzDistToPlayer < 50.0f && this->actionFunc != EnInsect_Caught) {
+        } else if (Actor_XZDistToNearestPlayer(&this->actor) < 50.0f && this->actionFunc != EnInsect_Caught) {
             if (!(this->insectFlags & 0x20) && this->lifeTimer < 180) {
                 CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
             }

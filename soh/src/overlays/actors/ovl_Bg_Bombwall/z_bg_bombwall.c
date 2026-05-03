@@ -6,6 +6,7 @@
 
 #include "z_bg_bombwall.h"
 #include "objects/gameplay_field_keep/gameplay_field_keep.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 
 #define FLAGS ACTOR_FLAG_IGNORE_POINTLIGHTS
 
@@ -215,7 +216,7 @@ void func_8086ED70(BgBombwall* this, PlayState* play) {
         this->collider.base.acFlags &= ~AC_HIT;
         func_8086EDFC(this, play);
         Flags_SetSwitch(play, this->dyna.actor.params & 0x3F);
-    } else if (this->dyna.actor.xzDistToPlayer < 600.0f) {
+    } else if (Actor_XZDistToNearestPlayer(&this->dyna.actor) < 600.0f) {
         CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
     }
 }
