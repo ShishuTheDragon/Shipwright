@@ -8,6 +8,7 @@
 #include "objects/object_spot08_obj/object_spot08_obj.h"
 #include "overlays/effects/ovl_Effect_Ss_Kakera/z_eff_ss_kakera.h"
 #include "objects/gameplay_field_keep/gameplay_field_keep.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 
 #define FLAGS ACTOR_FLAG_IGNORE_POINTLIGHTS
 
@@ -189,7 +190,7 @@ void BgSpot08Bakudankabe_Update(Actor* thisx, PlayState* play) {
         SoundSource_PlaySfxAtFixedWorldPos(play, &this->dyna.actor.world.pos, 40, NA_SE_EV_WALL_BROKEN);
         Sfx_PlaySfxCentered(NA_SE_SY_CORRECT_CHIME);
         Actor_Kill(&this->dyna.actor);
-    } else if (this->dyna.actor.xzDistToPlayer < 800.0f) {
+    } else if (Actor_XZDistToNearestPlayer(&this->dyna.actor) < 800.0f) {
         CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
     }
 }

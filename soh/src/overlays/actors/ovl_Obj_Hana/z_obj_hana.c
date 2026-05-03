@@ -6,6 +6,7 @@
 
 #include "z_obj_hana.h"
 #include "objects/gameplay_field_keep/gameplay_field_keep.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 
 #define FLAGS 0
 
@@ -103,7 +104,7 @@ void ObjHana_Destroy(Actor* thisx, PlayState* play) {
 void ObjHana_Update(Actor* thisx, PlayState* play) {
     ObjHana* this = (ObjHana*)thisx;
 
-    if (sHanaParams[this->actor.params & 3].radius >= 0 && this->actor.xzDistToPlayer < 400.0f) {
+    if (sHanaParams[this->actor.params & 3].radius >= 0 && Actor_XZDistToNearestPlayer(&this->actor) < 400.0f) {
         CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
     }
 }

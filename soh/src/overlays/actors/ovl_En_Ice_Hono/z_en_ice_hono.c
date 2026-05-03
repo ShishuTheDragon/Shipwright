@@ -6,6 +6,7 @@
 
 #include "z_en_ice_hono.h"
 #include "objects/gameplay_keep/gameplay_keep.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 
 #define FLAGS 0
 
@@ -219,7 +220,7 @@ void EnIceHono_CapturableFlame(EnIceHono* this, PlayState* play) {
         Actor_OfferGetItem(&this->actor, play, GI_MAX, 60.0f, 100.0f);
     }
 
-    if (this->actor.xzDistToPlayer < 200.0f) {
+    if (Actor_XZDistToNearestPlayer(&this->actor) < 200.0f) {
         CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
     }
     func_8002F8F0(&this->actor, NA_SE_EV_FIRE_PILLAR_S - SFX_FLAG);

@@ -7,6 +7,7 @@
 #include "z_en_wood02.h"
 #include "objects/object_wood02/object_wood02.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 
 #define FLAGS 0
 
@@ -390,7 +391,7 @@ void EnWood02_Update(Actor* thisx, PlayState* play2) {
             this->actor.home.rot.y = 0;
         }
 
-        if (this->actor.xzDistToPlayer < 600.0f) {
+        if (Actor_XZDistToNearestPlayer(&this->actor) < 600.0f) {
             Collider_UpdateCylinder(&this->actor, &this->collider);
             CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
             CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);

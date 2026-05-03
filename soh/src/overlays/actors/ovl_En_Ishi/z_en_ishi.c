@@ -5,6 +5,7 @@
  */
 
 #include "z_en_ishi.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 #include "overlays/effects/ovl_Effect_Ss_Kakera/z_eff_ss_kakera.h"
 #include "objects/gameplay_field_keep/gameplay_field_keep.h"
 #include "soh/OTRGlobals.h"
@@ -372,11 +373,11 @@ void EnIshi_Wait(EnIshi* this, PlayState* play) {
         sFragmentSpawnFuncs[type](this, play);
         sDustSpawnFuncs[type](this, play);
         Actor_Kill(&this->actor);
-    } else if (this->actor.xzDistToPlayer < 600.0f) {
+    } else if (Actor_XZDistToNearestPlayer(&this->actor) < 600.0f) {
         Collider_UpdateCylinder(&this->actor, &this->collider);
         this->collider.base.acFlags &= ~AC_HIT;
         CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
-        if (this->actor.xzDistToPlayer < 400.0f) {
+        if (Actor_XZDistToNearestPlayer(&this->actor) < 400.0f) {
             CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
             if (this->actor.xzDistToPlayer < 90.0f) {
                 // GI_NONE in these cases allows the player to lift the actor

@@ -8,6 +8,7 @@
 #include "overlays/effects/ovl_Effect_Ss_Kakera/z_eff_ss_kakera.h"
 #include "objects/object_bombiwa/object_bombiwa.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 
 #define FLAGS 0
 
@@ -138,7 +139,7 @@ void ObjBombiwa_Update(Actor* thisx, PlayState* play) {
         Actor_Kill(&this->actor);
     } else {
         this->collider.base.acFlags &= ~AC_HIT;
-        if (this->actor.xzDistToPlayer < 800.0f) {
+        if (Actor_XZDistToNearestPlayer(&this->actor) < 800.0f) {
             CollisionCheck_SetAC(play, &play->colChkCtx, &this->collider.base);
             CollisionCheck_SetOC(play, &play->colChkCtx, &this->collider.base);
         }
