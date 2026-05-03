@@ -12,6 +12,8 @@
 
 #define FLAGS ACTOR_FLAG_IGNORE_POINTLIGHTS
 
+#define Z_OBJ_BEAN_IVAN 64
+
 void ObjBean_Init(Actor* thisx, PlayState* play);
 void ObjBean_Destroy(Actor* thisx, PlayState* play);
 void ObjBean_Update(Actor* thisx, PlayState* play);
@@ -465,42 +467,56 @@ void ObjBean_Grown(ObjBean* this) {
     }
 }
 
+void ObjBean_IvanIdle(ObjBean* this, PlayState* play) {
+    func_8002F974(&this->dyna.actor, NA_SE_PL_PLANT_MOVE - SFX_FLAG);
+}
+
 void ObjBean_Init(Actor* thisx, PlayState* play) {
     s32 path;
     s32 linkAge;
     ObjBean* this = (ObjBean*)thisx;
 
+    bool isIvan = this->dyna.actor.params == Z_OBJ_BEAN_IVAN;
+
     Actor_ProcessInitChain(&this->dyna.actor, sInitChain);
-    if (LINK_AGE_IN_YEARS == YEARS_ADULT) {
-        if (Flags_GetSwitch(play, this->dyna.actor.params & 0x3F) || (mREG(1) == 1)) {
-            path = (this->dyna.actor.params >> 8) & 0x1F;
-            if (path == 0x1F) {
-                osSyncPrintf(VT_COL(RED, WHITE));
-                // "No path data?"
-                osSyncPrintf("パスデータが無い？(%s %d)(arg_data %xH)\n", __FILE__, __LINE__, this->dyna.actor.params);
-                osSyncPrintf(VT_RST);
-                Actor_Kill(&this->dyna.actor);
-                return;
+    if (isIvan || LINK_AGE_IN_YEARS == YEARS_ADULT) {
+        if (isIvan || Flags_GetSwitch(play, this->dyna.actor.params & 0x3F) || (mREG(1) == 1)) {
+            if (isIvan) {
+                this->actionFunc = ObjBean_IvanIdle;
+                this->dyna.actor.scale.x /= 2.0f;
+                this->dyna.actor.scale.y /= 2.0f;
+                this->dyna.actor.scale.z /= 2.0f;
+                ObjBean_SetDrawMode(this, BEAN_STATE_DRAW_PLANT);
+            } else {
+                path = (this->dyna.actor.params >> 8) & 0x1F;
+                if (path == 0x1F) {
+                    osSyncPrintf(VT_COL(RED, WHITE));
+                    // "No path data?"
+                    osSyncPrintf("パスデータが無い？(%s %d)(arg_data %xH)\n", __FILE__, __LINE__, this->dyna.actor.params);
+                    osSyncPrintf(VT_RST);
+                    Actor_Kill(&this->dyna.actor);
+                    return;
+                }
+                if (play->setupPathList[path].count < 3) {
+                    osSyncPrintf(VT_COL(RED, WHITE));
+                    // "Incorrect number of path data"
+                    osSyncPrintf("パスデータ数が不正(%s %d)(arg_data %xH)\n", __FILE__, __LINE__, this->dyna.actor.params);
+                    osSyncPrintf(VT_RST);
+                    Actor_Kill(&this->dyna.actor);
+                    return;
+                }
+                ObjBean_SetupPathCount(this, play);
+                ObjBean_SetupPath(this, play);
+                ObjBean_Move(this);
+                ObjBean_SetupWaitForPlayer(this);
             }
-            if (play->setupPathList[path].count < 3) {
-                osSyncPrintf(VT_COL(RED, WHITE));
-                // "Incorrect number of path data"
-                osSyncPrintf("パスデータ数が不正(%s %d)(arg_data %xH)\n", __FILE__, __LINE__, this->dyna.actor.params);
-                osSyncPrintf(VT_RST);
-                Actor_Kill(&this->dyna.actor);
-                return;
-            }
-            ObjBean_SetupPathCount(this, play);
-            ObjBean_SetupPath(this, play);
-            ObjBean_Move(this);
-            ObjBean_SetupWaitForPlayer(this);
 
             ObjBean_InitDynaPoly(this, play, &gMagicBeanPlatformCol, DPM_UNK3);
             this->stateFlags |= BEAN_STATE_DYNAPOLY_SET;
             ObjBean_InitCollider(&this->dyna.actor, play);
             this->stateFlags |= BEAN_STATE_COLLIDER_SET;
 
-            ActorShape_Init(&this->dyna.actor.shape, 0.0f, ActorShadow_DrawCircle, 8.8f);
+            ActorShape_Init(&this->dyna.actor.shape, 0.0f, ActorShadow_DrawCircle, isIvan ? 4.4f : 8.8f);
             ObjBean_FindFloor(this, play);
             this->unk_1F6 = this->dyna.actor.home.rot.z & 3;
         } else {
@@ -873,6 +889,7 @@ void func_80B90A34(ObjBean* this, PlayState* play) {
 void ObjBean_Update(Actor* thisx, PlayState* play) {
     s32 pad;
     ObjBean* this = (ObjBean*)thisx;
+    bool isIvan = this->dyna.actor.params == Z_OBJ_BEAN_IVAN;
 
     if (this->timer > 0) {
         this->timer--;
@@ -881,7 +898,9 @@ void ObjBean_Update(Actor* thisx, PlayState* play) {
     this->actionFunc(this, play);
 
     if (this->stateFlags & BEAN_STATE_DRAW_PLANT) {
-        ObjBean_Move(this);
+        if (!isIvan) {
+            ObjBean_Move(this);
+        }
         if (this->dyna.actor.xzDistToPlayer < 150.0f) {
             this->collider.dim.radius = this->dyna.actor.scale.x * 640.0f + 0.5f;
             Collider_UpdateCylinder(&this->dyna.actor, &this->collider);
@@ -893,7 +912,7 @@ void ObjBean_Update(Actor* thisx, PlayState* play) {
         this->dyna.actor.shape.shadowDraw = ActorShadow_DrawCircle;
         this->dyna.actor.shape.shadowScale = this->dyna.actor.scale.x * 88.0f;
 
-        if (ObjBean_CheckForHorseTrample(this, play)) {
+        if (!isIvan && ObjBean_CheckForHorseTrample(this, play)) {
             osSyncPrintf(VT_FGCOL(CYAN));
             // "Horse and bean tree lift collision"
             osSyncPrintf("馬と豆の木リフト衝突！！！\n");
