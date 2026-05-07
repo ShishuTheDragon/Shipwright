@@ -385,7 +385,10 @@ void UseDekuStick(Actor* thisx, PlayState* play, u8 started) {
                 func_8002836C(play, &this->stickWeaponInfo.tip, &D_808547A4, &D_808547B0, &D_808547BC, &D_808547C0,
                               200.0f, 0, 8);
 
-                CollisionCheck_SetAT(play, &play->colChkCtx, &this->collider.base);
+                // update collider:
+                this->weaponCollider.info.toucher.dmgFlags = DMG_DEKU_STICK | DMG_MAGIC_FIRE;
+                Collider_UpdateCylinder(&this->actor, &this->weaponCollider);
+                CollisionCheck_SetAT(play, &play->colChkCtx, &this->weaponCollider.base);
 
                 if (this->damageTimer <= 0) {
                     Inventory_ChangeAmmo(ITEM_STICK, -1);
