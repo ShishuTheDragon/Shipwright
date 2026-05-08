@@ -1431,7 +1431,7 @@ void Play_Draw(PlayState* play) {
                 play->view.up.y = 1.0f;
                 play->view.up.z = 0.0f;
                 Vec3f ivanPos = gIvanActor->actor.world.pos;
-                f32 camDist = 180.0f;
+                f32 camDist = 90.0f;
                 f32 lookAtHeight = 40.0f;
                 s16 yaw = (s16)gIvanCamYaw;
                 s16 pitch = (s16)gIvanCamPitch;
