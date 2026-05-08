@@ -291,6 +291,10 @@ void UseBow(Actor* thisx, PlayState* play, u8 started, u8 arrowType) {
             if (this->stamina >= arrowStaminaCosts[arrowType]) {
                 this->itemTimer = 10;
 
+                // Snap Ivan to camera yaw so the firing pose matches the shot direction
+                this->actor.world.rot.y = (s16)gIvanCamYaw;
+                this->actor.shape.rot.y = (s16)gIvanCamYaw;
+
                 s16 params = ARROW_NORMAL;
                 switch (arrowType) {
                     case 1:
@@ -306,7 +310,8 @@ void UseBow(Actor* thisx, PlayState* play, u8 started, u8 arrowType) {
 
                 Actor* newarrow = Actor_SpawnAsChild(
                     &play->actorCtx, &this->actor, play, ACTOR_EN_ARROW, this->actor.world.pos.x,
-                    this->actor.world.pos.y + 7, this->actor.world.pos.z, 0, this->actor.world.rot.y, 0, params);
+                    this->actor.world.pos.y + 7, this->actor.world.pos.z,
+                    (s16)gIvanCamPitch, (s16)gIvanCamYaw, 0, params);
 
                 GET_PLAYER(play)->unk_A73 = 4;
                 newarrow->parent = NULL;
@@ -330,9 +335,15 @@ void UseSlingshot(Actor* thisx, PlayState* play, u8 started) {
         if (this->itemTimer <= 0) {
             if (this->stamina >= IVAN_STAMINA_SLINGSHOT) {
                 this->itemTimer = 10;
+
+                // Snap Ivan to camera yaw so the firing pose matches the shot direction
+                this->actor.world.rot.y = (s16)gIvanCamYaw;
+                this->actor.shape.rot.y = (s16)gIvanCamYaw;
+
                 Actor* newarrow = Actor_SpawnAsChild(
                     &play->actorCtx, &this->actor, play, ACTOR_EN_ARROW, this->actor.world.pos.x,
-                    this->actor.world.pos.y + 7, this->actor.world.pos.z, 0, this->actor.world.rot.y, 0, ARROW_SEED);
+                    this->actor.world.pos.y + 7, this->actor.world.pos.z,
+                    (s16)gIvanCamPitch, (s16)gIvanCamYaw, 0, ARROW_SEED);
                 GET_PLAYER(play)->unk_A73 = 4;
                 newarrow->parent = NULL;
                 Ivan_UseStamina(this, IVAN_STAMINA_SLINGSHOT);

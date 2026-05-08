@@ -351,11 +351,15 @@ s32 spawn_boomerang_ivan(EnPartner* this, PlayState* play) {
         return 0;
     }
 
-    f32 posX = (Math_SinS(this->actor.shape.rot.y) * 1.0f) + this->actor.world.pos.x;
-    f32 posZ = (Math_CosS(this->actor.shape.rot.y) * 1.0f) + this->actor.world.pos.z;
-    s32 yaw = this->actor.shape.rot.y;
+    s16 yaw = (s16)gIvanCamYaw;
+    s16 pitch = (s16)gIvanCamPitch;
+    // Snap Ivan to camera yaw so the firing pose matches the throw direction
+    this->actor.world.rot.y = yaw;
+    this->actor.shape.rot.y = yaw;
+    f32 posX = (Math_SinS(yaw) * 1.0f) + this->actor.world.pos.x;
+    f32 posZ = (Math_CosS(yaw) * 1.0f) + this->actor.world.pos.z;
     EnBoom* boomerang = (EnBoom*)Actor_Spawn(&play->actorCtx, play, ACTOR_EN_BOOM, posX, this->actor.world.pos.y + 7.0f,
-                                             posZ, this->actor.focus.rot.x, yaw, 0, 0);
+                                             posZ, pitch, yaw, 0, 0);
 
     this->boomerangActor = &boomerang->actor;
     if (boomerang != NULL) {
