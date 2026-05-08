@@ -15,6 +15,8 @@
 #include "soh/OTRGlobals.h"
 #include "soh/ResourceManagerHelpers.h"
 #include "objects/gameplay_field_keep/gameplay_field_keep.h"
+#include "overlays/actors/ovl_Demo_Effect/z_demo_effect.h"
+#include <assets/objects/object_efc_tw/object_efc_tw.h>
 
 #define FLAGS                                                                                                   \
     (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED | ACTOR_FLAG_HOOKSHOT_PULLS_PLAYER | \
@@ -421,6 +423,86 @@ void UseDekuStick(Actor* thisx, PlayState* play, u8 started) {
     }
 }
 
+extern void DemoEffect_TimewarpShrink(f32 size);
+
+void IvanWindEffect_UpdateShrink(DemoEffect* this, PlayState* play) {
+    f32 shrinkProgress;
+    f32 scale;
+
+    this->timeWarp.shrinkTimer += 20;
+
+    if (this->timeWarp.shrinkTimer <= 100) {
+        shrinkProgress = (100 - this->timeWarp.shrinkTimer) * 0.010f;
+        DemoEffect_TimewarpShrink(shrinkProgress);
+        return;
+    }
+
+    DemoEffect_TimewarpShrink(1.0f);
+    Actor_Kill(&this->actor);
+}
+
+void IvanWindEffect_UpdateIdle(DemoEffect* this, PlayState* play) {
+    SkelCurve_Update(play, &this->skelCurve);
+    if (this->actor.world.rot.z == 1) {
+        this->updateFunc = IvanWindEffect_UpdateShrink;
+        this->timeWarp.shrinkTimer = 0;
+    }
+}
+
+void IvanWindEffect_Init(DemoEffect* this, PlayState* play) {
+    SkelCurve_Init(play, &this->skelCurve, &gTimeWarpSkel, &gTimeWarpAnim);
+    SkelCurve_SetAnim(&this->skelCurve, &gTimeWarpAnim, 1.0f, 59.0f, 1.0f, 8.0f);
+    SkelCurve_Update(play, &this->skelCurve);
+    this->updateFunc = IvanWindEffect_UpdateIdle;
+    Actor_SetScale(&this->actor, 0.10f);
+    DemoEffect_TimewarpShrink(1.0f);
+}
+
+void UseFaroresWind(Actor* thisx, PlayState* play, u8 started) {
+    EnPartner* this = (EnPartner*)thisx;
+    Player* player = GET_PLAYER(play);
+
+    if (started == 1) {
+        this->windEffect = Actor_Spawn(&play->actorCtx, play,
+            ACTOR_DEMO_EFFECT,
+            this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z,
+            DEGF_TO_BINANG(90.0f), this->actor.world.rot.y, 0,
+            DEMO_EFFECT_TIMEWARP_TIMEBLOCK_LARGE);
+        this->windEffect->envXluColor[1] = 100;
+        this->windEffect->envXluColor[2] = 0;
+        this->windEffect->initUpdateFunc = IvanWindEffect_Init;
+    }
+
+    if (started == 1 || started == 2) {
+        func_8002F974(&this->actor, NA_SE_EV_WIND_TRAP - SFX_FLAG);
+
+        this->windEffect->actor.world.pos.x = this->actor.world.pos.x;
+        this->windEffect->actor.world.pos.y = this->actor.world.pos.y;
+        this->windEffect->actor.world.pos.z = this->actor.world.pos.z;
+        this->windEffect->actor.shape.rot.y = this->actor.world.rot.y;
+
+        Vec3f sp18;
+        Actor_WorldToActorCoords(&this->actor, &sp18, &player->actor.world.pos);
+
+        float max = 400.0f;
+
+        if ((fabsf(sp18.x) < 70.0f) && (fabsf(sp18.y) < 100.0f) &&
+            (sp18.z < max) && (sp18.z > 0) &&
+            (player->currentBoots != PLAYER_BOOTS_IRON)) {
+            float factor = (1.0f - (sp18.z / max));
+            factor = sqrtf(factor);
+            player->pushedSpeed = factor * 10.0f;
+            player->pushedYaw = this->actor.shape.rot.y;
+        }
+    }
+
+    if (started == 0) {
+        this->windEffect->actor.world.rot.z = 1;
+        this->windEffect = NULL;
+        this->itemTimer = 5;
+    }
+}
+
 void UseNuts(Actor* thisx, PlayState* play, u8 started) {
     EnPartner* this = (EnPartner*)thisx;
 
@@ -642,7 +724,7 @@ void UseItem(uint8_t usedItem, u8 started, Actor* thisx, PlayState* play) {
                 UseSpell(this, play, started, 2);
                 break;
             case ITEM_FARORES_WIND:
-                UseSpell(this, play, started, 3);
+                UseFaroresWind(this, play, started);
                 break;
             case ITEM_HAMMER:
                 UseHammer(this, play, started);
