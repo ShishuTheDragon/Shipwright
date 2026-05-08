@@ -148,7 +148,7 @@ void EnPartner_Init(Actor* thisx, PlayState* play) {
 
     gIvanActor = this;
     gIvanCamYaw = (f32)this->actor.shape.rot.y;
-    gIvanCamPitch = 0x1000;
+    gIvanCamPitch = 0;
 }
 
 void EnPartner_Destroy(Actor* thisx, PlayState* play) {
@@ -811,20 +811,24 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
     f32 relX = sControlInput.cur.stick_x / 10.0f * (CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0) ? -1 : 1);
     f32 relY = sControlInput.cur.stick_y / 10.0f;
 
-    // Movement relative to Ivan's own camera
-    f32 ivanCamSin = Math_SinS((s16)gIvanCamYaw);
-    f32 ivanCamCos = Math_CosS((s16)gIvanCamYaw);
-    Vec3f camForward = { ivanCamSin, 0.0f, ivanCamCos };
-    Vec3f camRight = { -camForward.z, 0.0f, camForward.x };
+    // Movement relative to Ivan's own camera (yaw + pitch)
+    f32 yawSin   = Math_SinS((s16)gIvanCamYaw);
+    f32 yawCos   = Math_CosS((s16)gIvanCamYaw);
+    f32 pitchSin = Math_SinS((s16)gIvanCamPitch);
+    f32 pitchCos = Math_CosS((s16)gIvanCamPitch);
+
+    // eye->lookAt direction matching z_play.c view calculation
+    Vec3f camForward = { yawSin * pitchCos, -pitchSin, yawCos * pitchCos };
+    // Right stays horizontal so strafing doesn't tilt with pitch
+    Vec3f camRight   = { -yawCos, 0.0f, yawSin };
 
     this->actor.velocity.x = 0;
     this->actor.velocity.y = 0;
     this->actor.velocity.z = 0;
 
-    this->actor.velocity.x += camRight.x * relX;
-    this->actor.velocity.z += camRight.z * relX;
-    this->actor.velocity.x += camForward.x * relY;
-    this->actor.velocity.z += camForward.z * relY;
+    this->actor.velocity.x += camRight.x * relX + camForward.x * relY;
+    this->actor.velocity.y +=                     camForward.y * relY;
+    this->actor.velocity.z += camRight.z * relX + camForward.z * relY;
 
     if (this->actor.velocity.x != 0 || this->actor.velocity.z != 0) {
         int16_t finalDir = Math_Atan2S(-this->actor.velocity.x, this->actor.velocity.z) - 0x4000;
