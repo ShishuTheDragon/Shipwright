@@ -9,6 +9,7 @@
 extern "C" {
 #include "overlays/actors/ovl_En_Wonder_Item/z_en_wonder_item.h"
 #include "overlays/actors/ovl_En_Heishi1/z_en_heishi1.h"
+#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 extern PlayState* gPlayState;
 extern Vec3f sTagPointsFree[9];
 extern Vec3f sTagPointsOrdered[9];
@@ -172,7 +173,7 @@ void EnWonderItem_RandomizerDrawSetup(void* refActor) {
             Actor_Kill(&wonderActor->actor);
         }
         return;
-    } else if (wonderActor->actor.xzDistToPlayer > 1000.0f) {
+    } else if (Actor_XZDistToNearestPlayer(&wonderActor->actor) > 1000.0f) {
         return;
     }
 
