@@ -45,6 +45,7 @@ typedef struct EnPartner {
 
     EnBoom* boomerangActor;
     Actor* hookshotTarget;
+    struct DemoEffect* windEffect;
 } EnPartner;
 
 #ifdef __cplusplus
