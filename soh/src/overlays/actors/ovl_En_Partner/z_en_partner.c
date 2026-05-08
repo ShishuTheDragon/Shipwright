@@ -458,11 +458,27 @@ void IvanWindEffect_Init(DemoEffect* this, PlayState* play) {
     DemoEffect_TimewarpShrink(1.0f);
 }
 
+void EndFaroresWind(EnPartner* this, PlayState* play) {
+    this->windEffect->actor.world.rot.z = 1;
+    this->windEffect = NULL;
+    gSaveContext.magicState = MAGIC_STATE_RESET;
+
+    this->itemTimer = 5;
+
+    this->usedItem = 0xFF;
+}
+
 void UseFaroresWind(Actor* thisx, PlayState* play, u8 started) {
     EnPartner* this = (EnPartner*)thisx;
     Player* player = GET_PLAYER(play);
 
     if (started == 1) {
+        if (gSaveContext.magic <= 0) {
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+            this->usedItem = 0xFF;
+            return;
+        }
+
         this->windEffect = Actor_Spawn(&play->actorCtx, play,
             ACTOR_DEMO_EFFECT,
             this->actor.world.pos.x, this->actor.world.pos.y, this->actor.world.pos.z,
@@ -471,6 +487,7 @@ void UseFaroresWind(Actor* thisx, PlayState* play, u8 started) {
         this->windEffect->envXluColor[1] = 100;
         this->windEffect->envXluColor[2] = 0;
         this->windEffect->initUpdateFunc = IvanWindEffect_Init;
+        this->magicTimer = 0;
     }
 
     if (started == 1 || started == 2) {
@@ -494,12 +511,23 @@ void UseFaroresWind(Actor* thisx, PlayState* play, u8 started) {
             player->pushedSpeed = factor * 10.0f;
             player->pushedYaw = this->actor.shape.rot.y;
         }
+
+        gSaveContext.magicState = MAGIC_STATE_METER_FLASH_1;
+        this->magicTimer--;
+        if (this->magicTimer <= 0) {
+            if (gSaveContext.magic <= 0) {
+                gSaveContext.magic = 0;
+                EndFaroresWind(this, play);
+                return;
+            }
+            gSaveContext.magic--;
+            this->magicTimer = 20;
+        }
     }
 
     if (started == 0) {
-        this->windEffect->actor.world.rot.z = 1;
-        this->windEffect = NULL;
-        this->itemTimer = 5;
+        EndFaroresWind(this, play);
+        return;
     }
 }
 
