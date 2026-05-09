@@ -532,6 +532,11 @@ s32 Player_IsChildWithHylianShield(Player* this) {
 s32 Player_ActionToModelGroup(Player* this, s32 actionParam) {
     s32 modelGroup = sActionModelGroups[actionParam];
 
+    if ((actionParam == PLAYER_IA_SWORD_MASTER) && (gSaveContext.linkAge == LINK_AGE_CHILD)) {
+        // Use two-handed sword animations when child can wield the Master Sword
+        return PLAYER_MODELGROUP_BGS;
+    }
+
     if ((modelGroup == PLAYER_MODELGROUP_SWORD_AND_SHIELD) && Player_IsChildWithHylianShield(this)) {
         // child, using kokiri sword with hylian shield equipped
         return PLAYER_MODELGROUP_CHILD_HYLIAN_SHIELD;
@@ -864,6 +869,10 @@ s32 Player_GetMeleeWeaponHeld(Player* this) {
 }
 
 s32 Player_HoldsTwoHandedWeapon(Player* this) {
+    if ((this->heldItemAction == PLAYER_IA_SWORD_MASTER) && (gSaveContext.linkAge == LINK_AGE_CHILD)) {
+        return 1;
+    }
+
     if ((this->heldItemAction >= PLAYER_IA_SWORD_BIGGORON) && (this->heldItemAction <= PLAYER_IA_HAMMER)) {
         return 1;
     } else {
@@ -1377,6 +1386,14 @@ s32 Player_OverrideLimbDrawGameplayDefault(PlayState* play, s32 limbIndex, Gfx**
     if (!Player_OverrideLimbDrawGameplayCommon(play, limbIndex, dList, pos, rot, thisx)) {
         if (limbIndex == PLAYER_LIMB_L_HAND) {
             Gfx** dLists = this->leftHandDLists;
+
+            if ((gSaveContext.linkAge == LINK_AGE_CHILD) && (sLeftHandType == PLAYER_MODELTYPE_LH_BGS)) {
+                // Force adult Master Sword grip DL for child two-handed Master Sword
+                Gfx* overrideDl = (sDListsLodOffset >= 2) ? gLinkAdultLeftHandHoldingMasterSwordFarDL
+                                                          : gLinkAdultLeftHandHoldingMasterSwordNearDL;
+                *dList = ResourceMgr_LoadGfxByName(overrideDl);
+                return false;
+            }
 
             if ((sLeftHandType == PLAYER_MODELTYPE_LH_BGS) && (gSaveContext.swordHealth <= 0.0f)) {
                 dLists += 4;
