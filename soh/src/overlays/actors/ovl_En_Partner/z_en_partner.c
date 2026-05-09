@@ -557,11 +557,19 @@ void UseNuts(Actor* thisx, PlayState* play, u8 started) {
         if (started == 1) {
             if (AMMO(ITEM_NUT) > 0) {
                 this->itemTimer = 10;
+                this->usedItem = 0xFF;
+
+                // Snap Ivan to camera yaw so the firing pose matches the shot direction
+                this->actor.world.rot.y = (s16)gIvanCamYaw;
+                this->actor.shape.rot.y = (s16)gIvanCamYaw;
+
                 Actor_Spawn(&play->actorCtx, play, ACTOR_EN_ARROW, this->actor.world.pos.x, this->actor.world.pos.y + 7,
-                            this->actor.world.pos.z, 0x1000, this->actor.world.rot.y, 0, ARROW_NUT);
+                            this->actor.world.pos.z, (s16)gIvanCamPitch, (s16)gIvanCamYaw, 0, ARROW_NUT);
+
                 Inventory_ChangeAmmo(ITEM_NUT, -1);
             } else {
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+                this->usedItem = 0xFF;
             }
         }
     }
