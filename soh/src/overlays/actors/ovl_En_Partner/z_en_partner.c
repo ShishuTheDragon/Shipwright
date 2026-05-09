@@ -273,6 +273,9 @@ void UseBow(Actor* thisx, PlayState* play, u8 started, u8 arrowType) {
                 GET_PLAYER(play)->unk_A73 = 4;
                 newarrow->parent = NULL;
                 Inventory_ChangeAmmo(ITEM_BOW, -1);
+            } else {
+                Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+                this->canMove = 1;
             }
         }
     }
@@ -363,6 +366,7 @@ void UseBombchus(Actor* thisx, PlayState* play, u8 started) {
                 Inventory_ChangeAmmo(ITEM_BOMBCHU, -1);
             } else {
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+                this->canMove = 1;
             }
         }
     }
@@ -957,9 +961,11 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
             UseItem(this->usedItem, 2, this, play);
         }
     } else {
-        UseItem(this->usedItem, 0, this, play);
-        this->usedItem = 0xFF;
-        this->itemTimer = 10;
+        if (this->usedItem != 0xFF) {
+            UseItem(this->usedItem, 0, this, play);
+            this->usedItem = 0xFF;
+            this->itemTimer = 10;
+        }
     }
 
     if (CHECK_BTN_ALL(sControlInput.press.button, BTN_Z) && this->canMove) {
