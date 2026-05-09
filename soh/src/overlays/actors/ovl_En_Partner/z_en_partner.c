@@ -245,21 +245,22 @@ void UseBow(Actor* thisx, PlayState* play, u8 started, u8 arrowType) {
 
                 this->itemTimer = 10;
 
-                Actor* newarrow = Actor_SpawnAsChild(
-                    &play->actorCtx, &this->actor, play, ACTOR_EN_ARROW, this->actor.world.pos.x,
-                    this->actor.world.pos.y + 7, this->actor.world.pos.z, 0, this->actor.world.rot.y, 0, ARROW_NORMAL);
-
+                s16 params = ARROW_NORMAL;
                 switch (arrowType) {
                     case 1:
-                        newarrow->params = ARROW_FIRE;
+                        params = ARROW_FIRE;
                         break;
                     case 2:
-                        newarrow->params = ARROW_ICE;
+                        params = ARROW_ICE;
                         break;
                     case 3:
-                        newarrow->params = ARROW_LIGHT;
+                        params = ARROW_LIGHT;
                         break;
                 }
+
+                Actor* newarrow = Actor_SpawnAsChild(
+                    &play->actorCtx, &this->actor, play, ACTOR_EN_ARROW, this->actor.world.pos.x,
+                    this->actor.world.pos.y + 7, this->actor.world.pos.z, 0, this->actor.world.rot.y, 0, params);
 
                 GET_PLAYER(play)->unk_A73 = 4;
                 newarrow->parent = NULL;
