@@ -5,6 +5,7 @@
 #include <libultraship/libultra.h>
 #include "global.h"
 #include <soh/resource/type/scenecommand/SetMesh.h>
+#include <soh/resource/type/scenecommand/SetActorList.h>
 
 extern "C" PlayState* gPlayState;
 extern "C" uintptr_t gSegments[NUM_SEGMENTS];
@@ -15,6 +16,7 @@ extern "C" Actor* Actor_Spawn(ActorContext* actorCtx, PlayState* play, s16 actor
 
 #define MAX_ROOMS 40
 Room allRooms[MAX_ROOMS];
+bool loadedActors[MAX_ROOMS];
 
 extern "C" s32 OTRfunc_8009728C(PlayState* play, RoomContext* roomCtx, s32 roomNum);
 
@@ -36,9 +38,11 @@ static void DrawStuff(Actor* thisx, PlayState* play) {
 static bool needsLoading = false;
 
 static void OnSceneInit(int) {
-    memset(&allRooms, 0, sizeof(allRooms));
+    memset(allRooms, 0, sizeof(allRooms));
     for (s8 i = 0; i < MAX_ROOMS; i++)
         allRooms[i].num = -1;
+
+    memset(loadedActors, 0, sizeof(loadedActors));
 
     needsLoading = true;
 }
@@ -47,9 +51,15 @@ static void AfterSceneCommands(int) {
     PlayState* play = gPlayState;
     RoomContext* roomCtx = &play->roomCtx;
 
-    if (!needsLoading)
+    if (roomCtx->status != 0)
         return;
-    assert(roomCtx->status == 0);
+
+    if (!needsLoading) {
+        // The curRoom was changed.
+        play->numSetupActors = 0;
+        return;
+    }
+
     needsLoading = false;
 
     s8 alreadyLoaded = roomCtx->curRoom.num;
@@ -83,9 +93,54 @@ static void AfterSceneCommands(int) {
     actor->room = -1;
 }
 
+static void OnSceneSpawnActors() {
+    auto play = gPlayState;
+    if (play->sceneNum != SCENE_LOST_WOODS)
+        return;
+
+
+    RoomContext* roomCtx = &play->roomCtx;
+    s8 alreadyLoaded = roomCtx->curRoom.num;
+    loadedActors[alreadyLoaded] = true;
+
+    for (s8 roomNum = 0; roomNum < play->numRooms; roomNum++) {
+        if (loadedActors[roomNum])
+            continue;
+
+        auto roomData = std::static_pointer_cast<SOH::Scene>(ResourceMgr_GetResourceByNameHandlingMQ(play->roomList[roomNum].fileName));
+        for (auto cmd : roomData->commands) {
+            if (cmd->cmdId == SOH::SceneCommandID::EndMarker)
+                break;
+            if (cmd->cmdId == SOH::SceneCommandID::SetActorList) {
+                auto cmdActor = (SOH::SetActorList*)cmd.get();
+                play->numSetupActors = cmdActor->numActors;
+                play->setupActorList = (ActorEntry*)cmdActor->GetRawPointer();
+                loadedActors[roomNum] = true;
+            }
+        }
+        break;
+    }
+}
+
+static void OnActorSpawn(void* actorUnk) {
+    auto play = gPlayState;
+    if (play->sceneNum != SCENE_LOST_WOODS)
+        return;
+
+    Actor* actor = (Actor*)actorUnk;
+
+    if (actor->id == ACTOR_EN_HOLL) {
+        actor->room = 2;
+    }
+
+    actor->room = -1;
+}
+
 static void RegisterLostWoodsMultiViewSupport() {
     COND_ID_HOOK(OnSceneInit, SCENE_LOST_WOODS, true, OnSceneInit);
     COND_ID_HOOK(AfterSceneCommands, SCENE_LOST_WOODS, true, AfterSceneCommands);
+    COND_HOOK(OnSceneSpawnActors, true, OnSceneSpawnActors);
+    COND_HOOK(OnActorSpawn, true, OnActorSpawn);
 }
 
 static RegisterShipInitFunc initFunc(RegisterLostWoodsMultiViewSupport);

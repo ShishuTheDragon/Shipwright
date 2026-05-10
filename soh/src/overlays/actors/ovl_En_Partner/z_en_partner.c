@@ -26,6 +26,8 @@ EnPartner* gIvanActor = NULL;
 f32 gIvanCamYaw = 0.0f;
 f32 gIvanCamPitch = 0.0f;
 
+s8 gIvanRoom = -1;
+
 void EnPartner_Init(Actor* thisx, PlayState* play);
 void EnPartner_Destroy(Actor* thisx, PlayState* play);
 void EnPartner_Update(Actor* thisx, PlayState* play);
@@ -147,6 +149,8 @@ void EnPartner_Init(Actor* thisx, PlayState* play) {
     gIvanActor = this;
     gIvanCamYaw = (f32)this->actor.shape.rot.y;
     gIvanCamPitch = 0;
+
+    gIvanRoom = play->roomCtx.curRoom.num;
 }
 
 void EnPartner_Destroy(Actor* thisx, PlayState* play) {

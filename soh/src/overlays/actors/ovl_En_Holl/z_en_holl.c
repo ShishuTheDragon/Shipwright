@@ -95,6 +95,8 @@ void EnHoll_ChooseAction(EnHoll* this) {
 void EnHoll_Init(Actor* thisx, PlayState* play) {
     EnHoll* this = (EnHoll*)thisx;
 
+    // Actor_Kill(thisx);
+
     Actor_ProcessInitChain(&this->actor, sInitChain);
     EnHoll_ChooseAction(this);
     this->resetBgCoverAlpha = 0;
@@ -323,6 +325,8 @@ void EnHoll_Update(Actor* thisx, PlayState* play) {
 #include "overlays/ovl_En_Holl/ovl_En_Holl.h"
 
 void EnHoll_Draw(Actor* thisx, PlayState* play) {
+    return;
+
     EnHoll* this = (EnHoll*)thisx;
     Gfx* gfxP;
     u32 setupDlIdx;

@@ -823,6 +823,7 @@ void ActorViewer_AddTagForActor(Actor* actor) {
 
     std::vector<std::string> parts;
 
+    parts.push_back(fmt::format("{}", actor->room));
     if (CVarGetInteger(CVAR_ACTOR_NAME_TAGS("DisplayID"), 0)) {
         parts.push_back(GetActorDebugName(actor->id));
     }
