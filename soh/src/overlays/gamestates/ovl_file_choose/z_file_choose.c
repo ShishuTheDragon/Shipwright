@@ -233,9 +233,11 @@ void FileChoose_SplitNumber(u16 value, s16* hundreds, s16* tens, s16* ones) {
 void FileChoose_StartFadeIn(GameState* thisx) {
     FileChooseContext* this = (FileChooseContext*)thisx;
 
-    FileChoose_FadeInMenuElements(&this->state);
-    sScreenFillAlpha -= 40;
-    this->windowPosX -= 20;
+    while (this->windowPosX > -94) {
+        FileChoose_FadeInMenuElements(&this->state);
+        sScreenFillAlpha -= 40;
+        this->windowPosX -= 20;
+    }
 
     if (this->windowPosX <= -94) {
         this->windowPosX = -94;
@@ -252,8 +254,10 @@ void FileChoose_StartFadeIn(GameState* thisx) {
 void FileChoose_FinishFadeIn(GameState* thisx) {
     FileChooseContext* this = (FileChooseContext*)thisx;
 
-    this->controlsAlpha += VREG(1);
-    FileChoose_FadeInMenuElements(&this->state);
+    while (this->titleAlpha[0] < 255) {
+        this->controlsAlpha += VREG(1);
+        FileChoose_FadeInMenuElements(&this->state);
+    }
 
     if (this->titleAlpha[0] >= 255) {
         this->titleAlpha[0] = 255;
@@ -2297,22 +2301,24 @@ void FileChoose_FadeMainToSelect(GameState* thisx) {
     FileChooseContext* this = (FileChooseContext*)thisx;
     s16 i;
 
-    for (i = 0; i < 3; i++) {
-        if (i != this->buttonIndex) {
-            this->fileButtonAlpha[i] -= 25;
-            this->actionButtonAlpha[FS_BTN_ACTION_COPY] = this->actionButtonAlpha[FS_BTN_ACTION_ERASE] =
-                this->optionButtonAlpha = this->fileButtonAlpha[i];
+    while (this->actionTimer) {
+        for (i = 0; i < 3; i++) {
+            if (i != this->buttonIndex) {
+                this->fileButtonAlpha[i] -= 25;
+                this->actionButtonAlpha[FS_BTN_ACTION_COPY] = this->actionButtonAlpha[FS_BTN_ACTION_ERASE] =
+                    this->optionButtonAlpha = this->fileButtonAlpha[i];
 
-            if (Save_GetSaveMetaInfo(i)->valid) {
-                this->nameAlpha[i] = this->nameBoxAlpha[i] = this->fileButtonAlpha[i];
-                this->connectorAlpha[i] -= 31;
+                if (Save_GetSaveMetaInfo(i)->valid) {
+                    this->nameAlpha[i] = this->nameBoxAlpha[i] = this->fileButtonAlpha[i];
+                    this->connectorAlpha[i] -= 31;
+                }
             }
         }
-    }
 
-    this->titleAlpha[0] -= 31;
-    this->titleAlpha[1] += 31;
-    this->actionTimer--;
+        this->titleAlpha[0] -= 31;
+        this->titleAlpha[1] += 31;
+        this->actionTimer--;
+    }
 
     if (this->actionTimer == 0) {
         this->actionTimer = 8;
@@ -2349,14 +2355,16 @@ void FileChoose_MoveSelectedFileToTop(GameState* thisx) {
 void FileChoose_FadeInFileInfo(GameState* thisx) {
     FileChooseContext* this = (FileChooseContext*)thisx;
 
-    this->fileInfoAlpha[this->buttonIndex] += 25;
-    this->nameBoxAlpha[this->buttonIndex] -= 50;
+    while (this->actionTimer) {
+        this->fileInfoAlpha[this->buttonIndex] += 25;
+        this->nameBoxAlpha[this->buttonIndex] -= 50;
 
-    if (this->nameBoxAlpha[this->buttonIndex] <= 0) {
-        this->nameBoxAlpha[this->buttonIndex] = 0;
+        if (this->nameBoxAlpha[this->buttonIndex] <= 0) {
+            this->nameBoxAlpha[this->buttonIndex] = 0;
+        }
+
+        this->actionTimer--;
     }
-
-    this->actionTimer--;
 
     if (this->actionTimer == 0) {
         this->fileInfoAlpha[this->buttonIndex] = 200;
@@ -2486,7 +2494,9 @@ void FileChoose_MoveSelectedFileToSlot(GameState* thisx) {
 void FileChoose_FadeOut(GameState* thisx) {
     FileChooseContext* this = (FileChooseContext*)thisx;
 
-    sScreenFillAlpha += VREG(10);
+    while (sScreenFillAlpha < 255) {
+        sScreenFillAlpha += VREG(10);
+    }
 
     if (sScreenFillAlpha >= 255) {
         sScreenFillAlpha = 255;
