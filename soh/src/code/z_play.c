@@ -487,6 +487,9 @@ void Play_Init(GameState* thisx) {
     } else if ((gEntranceTable[((void)0, gSaveContext.entranceIndex)].scene == SCENE_KOKIRI_FOREST) && LINK_IS_ADULT &&
                !IS_CUTSCENE_LAYER) {
         gSaveContext.sceneSetupIndex = (Flags_GetEventChkInf(EVENTCHKINF_USED_FOREST_TEMPLE_BLUE_WARP)) ? 3 : 2;
+    } else if ((gEntranceTable[((void)0, gSaveContext.entranceIndex)].scene == SCENE_GERUDOS_FORTRESS) && !LINK_IS_ADULT &&
+               !IS_CUTSCENE_LAYER) {
+        gSaveContext.sceneSetupIndex += 2;
     }
 
     Play_SpawnScene(
