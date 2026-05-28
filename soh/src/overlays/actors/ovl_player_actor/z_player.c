@@ -9769,6 +9769,32 @@ static AnimSfxEntry sRollAnimSfxList[] = {
     { 0, -ANIMSFX_DATA(ANIMSFX_TYPE_LANDING, 18) },
 };
 
+// Return 0 if super roll is not allowed atm
+// Return 1 if super roll with normal rules apply
+// Return 2 or more if super roll should apply but with double acceleration
+static int ShouldSuperRoll(PlayState* play) {
+    Player* this = GET_PLAYER(play);
+
+    if (this->heldItemAction != PLAYER_IA_NONE || this->currentMask != PLAYER_MASK_GORON) {
+        return 0;
+    }
+
+    switch (play->sceneNum) {
+        case SCENE_HYRULE_FIELD:
+        case SCENE_LON_LON_RANCH:
+            return 2;
+
+        case SCENE_MARKET_ENTRANCE_DAY:
+        case SCENE_MARKET_ENTRANCE_NIGHT:
+        case SCENE_MARKET_DAY:
+        case SCENE_MARKET_NIGHT:
+        case SCENE_KAKARIKO_VILLAGE:
+        case SCENE_DEATH_MOUNTAIN_TRAIL:
+            return 1;
+    }
+    return 1;
+}
+
 void Player_Action_Roll(Player* this, PlayState* play) {
     Actor* ocCollidedActor;
     s32 interruptResult;
@@ -9779,6 +9805,10 @@ void Player_Action_Roll(Player* this, PlayState* play) {
     s16 yawTarget;
 
     this->stateFlags2 |= PLAYER_STATE2_DISABLE_ROTATION_Z_TARGET;
+
+    if (ShouldSuperRoll(play)) {
+        this->stateFlags3 |= PLAYER_STATE3_MIDAIR;
+    }
 
     ocCollidedActor = NULL;
     animDone = LinkAnimation_Update(play, &this->skelAnime);
@@ -9837,7 +9867,12 @@ void Player_Action_Roll(Player* this, PlayState* play) {
 
             if ((this->skelAnime.curFrame < 15.0f) || !Player_ActionHandler_7(this, play)) {
                 if (this->skelAnime.curFrame >= 20.0f) {
-                    func_8083A060(this, play);
+                    if (ShouldSuperRoll(play) && CHECK_BTN_ALL(sControlInput->cur.button, BTN_A)) {
+                        Player_SetupRoll(this, play);
+                        this->skelAnime.curFrame = 2.0f;
+                    } else {
+                        func_8083A060(this, play);
+                    }
 
                     return;
                 }
@@ -9853,7 +9888,12 @@ void Player_Action_Roll(Player* this, PlayState* play) {
                     speedTarget = 3.0f;
                 }
 
-                func_8083DF68(this, speedTarget, this->actor.shape.rot.y);
+                if (ShouldSuperRoll(play)) {
+                    Math_AsymStepToF(&this->linearVelocity, speedTarget * 5, 0.5f * ShouldSuperRoll(play), 1.5f);
+                    Math_ScaledStepToS(&this->yaw, yawTarget, 500);
+                } else {
+                    func_8083DF68(this, speedTarget, this->actor.shape.rot.y);
+                }
 
                 if (func_8084269C(play, this)) {
                     func_8002F8F0(&this->actor, NA_SE_PL_ROLL_DUST - SFX_FLAG);
