@@ -6438,10 +6438,10 @@ void func_8083C148(Player* this, PlayState* play) {
 s32 Player_ActionHandler_Roll(Player* this, PlayState* play) {
     if (!Player_UpdateHostileLockOn(this) && !sUpperBodyIsBusy && !(this->stateFlags1 & PLAYER_STATE1_ON_HORSE) &&
         CHECK_BTN_ALL(sControlInput->press.button, BTN_A)) {
-        if (Player_TryRoll(this, play)) {
-            return true;
-        } else if ((this->putAwayCooldownTimer == 0) && (this->heldItemAction >= PLAYER_IA_SWORD_MASTER)) {
+        if (this->heldItemAction >= PLAYER_IA_SWORD_MASTER) {
             Player_UseItem(play, this, ITEM_NONE);
+        } else if (Player_TryRoll(this, play)) {
+            return true;
         } else {
             this->stateFlags2 ^= PLAYER_STATE2_NAVI_ACTIVE;
         }
@@ -11071,7 +11071,7 @@ void Player_UpdateInterface(PlayState* play, Player* this) {
                                                  ((play->roomCtx.curRoom.behaviorType1 != ROOM_BEHAVIOR_TYPE1_2) &&
                                                   !(this->stateFlags1 & PLAYER_STATE1_SHIELDING) &&
                                                   (controlStickDirection == PLAYER_STICK_DIR_FORWARD))))))) {
-                        doAction = DO_ACTION_ATTACK;
+                        doAction = (this->heldItemAction >= PLAYER_IA_SWORD_MASTER) ? DO_ACTION_PUTAWAY : DO_ACTION_ATTACK;
                     } else if ((play->roomCtx.curRoom.behaviorType1 != ROOM_BEHAVIOR_TYPE1_2) &&
                                Player_IsZTargeting(this) && (controlStickDirection >= PLAYER_STICK_DIR_LEFT)) {
                         doAction = DO_ACTION_JUMP;
