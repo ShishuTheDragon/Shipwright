@@ -8869,6 +8869,10 @@ void Player_Action_80842180(Player* this, PlayState* play) {
                 sp2C *= 1.5f;
             }
 
+            if (this->itemAction == PLAYER_IA_NONE) {
+                sp2C *= 1.5f;
+            }
+
             if (CVarGetFloat(CVAR_CHEAT("SpeedModifier.Value"), 1.0f) != 1.0f) {
                 if (CVarGetInteger(CVAR_CHEAT("SpeedModifier.SpeedToggle"), 0)) {
                     if (gWalkSpeedToggle) {
