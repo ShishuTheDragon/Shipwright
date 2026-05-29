@@ -506,6 +506,9 @@ ItemObtainability Randomizer::GetItemObtainabilityFromRandomizerGet(RandomizerGe
                        ? (Flags_GetRandomizerInf(RAND_INF_HAS_INFINITE_MAGIC_METER) ? CANT_OBTAIN_ALREADY_HAVE
                                                                                     : CAN_OBTAIN)
                        : (gSaveContext.magicLevel < 2 ? CAN_OBTAIN : CANT_OBTAIN_ALREADY_HAVE);
+        case RG_PROGRESSIVE_IVAN_STAMINA:
+            return gSaveContext.ship.quest.data.randomizer.ivanStaminaUpgrade < 5
+                ? CAN_OBTAIN : CANT_OBTAIN_ALREADY_HAVE;
         case RG_FISHING_POLE:
             return !Flags_GetRandomizerInf(RAND_INF_FISHING_POLE_FOUND) ? CAN_OBTAIN : CANT_OBTAIN_ALREADY_HAVE;
 
@@ -1329,6 +1332,11 @@ extern "C" u16 Randomizer_Item_Give(PlayState* play, GetItemEntry giEntry) {
             break;
         case RG_PROGRESSIVE_BOMBCHU_BAG:
             OTRGlobals::Instance->gRandoContext->HandleGetBombchuBag();
+            break;
+        case RG_PROGRESSIVE_IVAN_STAMINA:
+            if (gSaveContext.ship.quest.data.randomizer.ivanStaminaUpgrade < 5) {
+                gSaveContext.ship.quest.data.randomizer.ivanStaminaUpgrade++;
+            }
             break;
         case RG_MASTER_SWORD:
             if (!CHECK_OWNED_EQUIP(EQUIP_TYPE_SWORD, EQUIP_INV_SWORD_MASTER)) {
