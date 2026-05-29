@@ -234,7 +234,7 @@ typedef struct ShipSaveContextData {
     u8 filenameLanguage;
     //TODO: Move non-rando specific flags to a new sohInf and move the remaining randomizerInf to ShipRandomizerSaveContextData
     u16 randomizerInf[(RAND_INF_MAX + 15) / 16];
-    u8 ivanItems[7];
+    u8 ivanItems[10]; // CLeft=0, CDown=1, CRight=2, ZL=3, ZR=4, CUp=5, DUp=6, DDown=7, DLeft=8, DRight=9
 } ShipSaveContextData;
 
 #pragma endregion

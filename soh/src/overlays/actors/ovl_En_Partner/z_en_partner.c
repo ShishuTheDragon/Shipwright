@@ -993,20 +993,11 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
         uint8_t released = 0;
         uint8_t current = 0;
 
-        uint16_t partnerButtons[7] = { BTN_CLEFT, BTN_CDOWN, BTN_CRIGHT, BTN_DUP, BTN_DDOWN, BTN_DLEFT, BTN_DRIGHT };
-        uint8_t buttonMax = 3;
+        // Order: CLeft, CDown, CRight, ZL, ZR, CUp (always), DUp, DDown, DLeft, DRight (DpadEquips only)
+        uint16_t partnerButtons[10] = { BTN_CLEFT, BTN_CDOWN, BTN_CRIGHT, BTN_ZL, BTN_ZR, BTN_CUP, BTN_DUP, BTN_DDOWN, BTN_DLEFT, BTN_DRIGHT };
+        uint8_t buttonMax = 6;
         if (CVarGetInteger(CVAR_ENHANCEMENT("DpadEquips"), 0) != 0) {
-            buttonMax = 7;
-        }
-
-        if (this->itemTimer <= 0) {
-            if (CHECK_BTN_ALL(sControlInput.press.button, BTN_CUP)) {
-                UseOcarina(this, play, 1);
-            } else if (CHECK_BTN_ALL(sControlInput.cur.button, BTN_CUP)) {
-                UseOcarina(this, play, 2);
-            } else if (CHECK_BTN_ALL(sControlInput.rel.button, BTN_CUP)) {
-                UseOcarina(this, play, 0);
-            }
+            buttonMax = 10;
         }
 
         if (this->usedItem == 0xFF && this->itemTimer <= 0) {
@@ -1212,13 +1203,13 @@ void EnPartner_Draw(Actor* thisx, PlayState* play) {
         // Bar layout: 4px per stamina unit, 1px border all around.
         //   Background: (167,209)-(232,217)  66 x 9 px
         //   Fill max:   (168,210)-(231,216)  64 x 7 px
-        #define IVAN_SBAR_X  168
-        #define IVAN_SBAR_Y  8
+        #define IVAN_SBAR_X  200
+        #define IVAN_SBAR_Y  4
 
         OPEN_DISPS(play->state.gfxCtx);
 
         // Restrict scissor to the right half so the bar never bleeds left.
-        gDPSetScissor(OVERLAY_DISP++, G_SC_NON_INTERLACE, SCREEN_WIDTH / 2, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        // gDPSetScissor(OVERLAY_DISP++, G_SC_NON_INTERLACE, SCREEN_WIDTH / 2, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         // Solid-color rect setup (same pipeline as the screen-fade rect in z_parameter.c).
         gDPPipeSync(OVERLAY_DISP++);
