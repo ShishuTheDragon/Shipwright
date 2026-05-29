@@ -175,7 +175,6 @@ void GenerateItemPool() {
     AddItemToPool(RG_GREG_RUPEE, 1, 1, 1, 1);
     AddItemToPool(RG_PROGRESSIVE_HOOKSHOT, 2, 2, 2, 2);
     AddItemToPool(RG_HYLIAN_SHIELD, 1, 1, 1, 1);
-    AddItemToPool(RG_DOUBLE_DEFENSE, 2, 1, 0, 0);
     AddItemToPool(RG_BIGGORON_SWORD, 2, 1, 1, 0);
     bool isScrubs = ctx->GetOption(RSK_SHUFFLE_SCRUBS).Is(RO_SCRUBS_ALL);
     AddFixedItemToPool(RG_DEKU_SHIELD, isScrubs ? 1 : 2);
@@ -891,7 +890,7 @@ void GenerateItemPool() {
             switch (ctx->GetOption(RSK_ITEM_POOL).Get()) {
                 case RO_ITEM_POOL_PLENTIFUL:
                 case RO_ITEM_POOL_MINIMAL:
-                    AddFixedItemToPool(RG_HEART_CONTAINER, maxHearts - startingHearts, false);
+                    AddFixedItemToPool(RG_PIECE_OF_HEART, (maxHearts - startingHearts) * 4, false);
                     break;
                 case RO_ITEM_POOL_BALANCED: {
                     int heartsToPlace = maxHearts - startingHearts;
