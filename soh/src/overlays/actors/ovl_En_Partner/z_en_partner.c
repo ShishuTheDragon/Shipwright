@@ -22,6 +22,37 @@
     (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED | ACTOR_FLAG_HOOKSHOT_PULLS_PLAYER | \
      ACTOR_FLAG_CAN_PRESS_SWITCHES)
 
+EnPartner* gIvanActor = NULL;
+f32 gIvanCamYaw = 0.0f;
+f32 gIvanCamPitch = 0.0f;
+
+// Ivan stamina system
+#define IVAN_STAMINA_MAX             20
+#define IVAN_STAMINA_REGEN_COOLDOWN  40  // frames of no-use before regen starts
+#define IVAN_STAMINA_REGEN_RATE      1   // stamina restored per frame during regen
+
+static s16 Ivan_GetStaminaMax(void) {
+    u8 upgrade = gSaveContext.ship.quest.data.randomizer.ivanStaminaUpgrade;
+    return IVAN_STAMINA_MAX + (s16)(upgrade * 20);
+}
+static s16 Ivan_GetRegenRate(void) {
+    u8 upgrade = gSaveContext.ship.quest.data.randomizer.ivanStaminaUpgrade;
+    return IVAN_STAMINA_REGEN_RATE + (s16)upgrade;
+}
+
+#define IVAN_STAMINA_ARROW_NORMAL    6
+#define IVAN_STAMINA_ARROW_FIRE      12
+#define IVAN_STAMINA_ARROW_ICE       12
+#define IVAN_STAMINA_ARROW_LIGHT     18
+#define IVAN_STAMINA_SLINGSHOT       3
+#define IVAN_STAMINA_BOMB            6
+#define IVAN_STAMINA_BOMBCHU         18
+#define IVAN_STAMINA_DEKU_STICK      1   // per frame
+#define IVAN_STAMINA_DEKU_NUT        3
+#define IVAN_STAMINA_BOOMERANG       6
+#define IVAN_STAMINA_HAMMER          6
+#define IVAN_STAMINA_BEANS           40
+#define IVAN_STAMINA_SPELL           1   // per frame
 void EnPartner_Init(Actor* thisx, PlayState* play);
 void EnPartner_Destroy(Actor* thisx, PlayState* play);
 void EnPartner_Update(Actor* thisx, PlayState* play);
@@ -96,6 +127,8 @@ void EnPartner_Init(Actor* thisx, PlayState* play) {
     this->shouldDraw = 1;
     this->hookshotTarget = NULL;
     this->beanCooldownTimer = 0;
+    this->stamina = Ivan_GetStaminaMax();
+    this->staminaRegenCooldown = 0;
 
     this->innerColor.r = 255.0f;
     this->innerColor.g = 255.0f;
@@ -235,7 +268,20 @@ void CenterIvanOnLink(Actor* thisx, PlayState* play) {
     this->actor.world.pos.y += Player_GetHeight(GET_PLAYER(play)) + 5.0f;
 }
 
-static u8 magicArrowCosts[] = { 0, 4, 4, 8 };
+static s16 arrowStaminaCosts[] = {
+    IVAN_STAMINA_ARROW_NORMAL,
+    IVAN_STAMINA_ARROW_FIRE,
+    IVAN_STAMINA_ARROW_ICE,
+    IVAN_STAMINA_ARROW_LIGHT,
+};
+
+static void Ivan_UseStamina(EnPartner* this, s16 cost) {
+    this->stamina -= cost;
+    if (this->stamina < 0) {
+        this->stamina = 0;
+    }
+    this->staminaRegenCooldown = IVAN_STAMINA_REGEN_COOLDOWN;
+}
 
 void UseBow(Actor* thisx, PlayState* play, u8 started, u8 arrowType) {
     EnPartner* this = (EnPartner*)thisx;
@@ -245,13 +291,7 @@ void UseBow(Actor* thisx, PlayState* play, u8 started, u8 arrowType) {
         this->canMove = 0;
     } else if (started == 0) {
         if (this->itemTimer <= 0) {
-            if (AMMO(ITEM_BOW) > 0) {
-                if (arrowType >= 1 && !Magic_RequestChange(play, magicArrowCosts[arrowType], MAGIC_CONSUME_NOW)) {
-                    Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
-                    this->canMove = 1;
-                    return;
-                }
-
+            if (this->stamina >= arrowStaminaCosts[arrowType]) {
                 this->itemTimer = 10;
 
                 s16 params = ARROW_NORMAL;
@@ -273,9 +313,10 @@ void UseBow(Actor* thisx, PlayState* play, u8 started, u8 arrowType) {
 
                 GET_PLAYER(play)->unk_A73 = 4;
                 newarrow->parent = NULL;
-                Inventory_ChangeAmmo(ITEM_BOW, -1);
+                Ivan_UseStamina(this, arrowStaminaCosts[arrowType]);
             } else {
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+                this->usedItem = 0xFF;
                 this->canMove = 1;
             }
         }
@@ -290,16 +331,17 @@ void UseSlingshot(Actor* thisx, PlayState* play, u8 started) {
         this->canMove = 0;
     } else if (started == 0) {
         if (this->itemTimer <= 0) {
-            if (AMMO(ITEM_SLINGSHOT) > 0) {
+            if (this->stamina >= IVAN_STAMINA_SLINGSHOT) {
                 this->itemTimer = 10;
                 Actor* newarrow = Actor_SpawnAsChild(
                     &play->actorCtx, &this->actor, play, ACTOR_EN_ARROW, this->actor.world.pos.x,
                     this->actor.world.pos.y + 7, this->actor.world.pos.z, 0, this->actor.world.rot.y, 0, ARROW_SEED);
                 GET_PLAYER(play)->unk_A73 = 4;
                 newarrow->parent = NULL;
-                Inventory_ChangeAmmo(ITEM_SLINGSHOT, -1);
+                Ivan_UseStamina(this, IVAN_STAMINA_SLINGSHOT);
             } else {
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+                this->usedItem = 0xFF;
             }
         }
     }
@@ -310,13 +352,14 @@ void UseBombs(Actor* thisx, PlayState* play, u8 started) {
 
     if (this->itemTimer <= 0) {
         if (started == 1) {
-            if (AMMO(ITEM_BOMB) > 0 && play->actorCtx.actorLists[ACTORCAT_EXPLOSIVE].length < 3) {
+            if (this->stamina >= IVAN_STAMINA_BOMB && play->actorCtx.actorLists[ACTORCAT_EXPLOSIVE].length < 3) {
                 this->itemTimer = 10;
                 Actor_Spawn(&play->actorCtx, play, ACTOR_EN_BOM, this->actor.world.pos.x, this->actor.world.pos.y + 7,
                             this->actor.world.pos.z, 0, 0, 0, 0);
-                Inventory_ChangeAmmo(ITEM_BOMB, -1);
+                Ivan_UseStamina(this, IVAN_STAMINA_BOMB);
             } else {
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+                this->usedItem = 0xFF;
             }
         }
     }
@@ -328,6 +371,11 @@ void UseHammer(Actor* thisx, PlayState* play, u8 started) {
     EnPartner* this = (EnPartner*)thisx;
 
     if (this->itemTimer <= 0) {
+        if (this->stamina < IVAN_STAMINA_HAMMER) {
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+            this->usedItem = 0xFF;
+            return;
+        }
         if (started == 1) {
             // camera shake:
             Player_RequestQuake(play, 32967, 2, 30);
@@ -347,6 +395,7 @@ void UseHammer(Actor* thisx, PlayState* play, u8 started) {
             CollisionCheck_SetAT(play, &play->colChkCtx, &this->weaponCollider.base);
 
             // cooldown and lag:
+            Ivan_UseStamina(this, IVAN_STAMINA_HAMMER);
             this->itemTimer = 10;
             this->canMove = 0;
             this->usedItem = 0xFF;
@@ -359,14 +408,15 @@ void UseBombchus(Actor* thisx, PlayState* play, u8 started) {
 
     if (this->itemTimer <= 0) {
         if (started == 1) {
-            if (AMMO(ITEM_BOMBCHU) > 0) {
+            if (this->stamina >= IVAN_STAMINA_BOMBCHU) {
                 this->itemTimer = 10;
                 EnBom* bomb = Actor_Spawn(&play->actorCtx, play, ACTOR_EN_BOM, this->actor.world.pos.x,
                                           this->actor.world.pos.y + 7, this->actor.world.pos.z, 0, 0, 0, 0);
                 bomb->timer = 0;
-                Inventory_ChangeAmmo(ITEM_BOMBCHU, -1);
+                Ivan_UseStamina(this, IVAN_STAMINA_BOMBCHU);
             } else {
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+                this->usedItem = 0xFF;
                 this->canMove = 1;
             }
         }
@@ -384,15 +434,16 @@ void UseDekuStick(Actor* thisx, PlayState* play, u8 started) {
 
     if (this->itemTimer <= 0) {
         if (started == 1) {
-            if (AMMO(ITEM_STICK) > 0) {
+            if (this->stamina >= IVAN_STAMINA_DEKU_STICK) {
                 Player_PlaySfx(this, NA_SE_EV_FLAME_IGNITION);
             } else {
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+                this->usedItem = 0xFF;
             }
         }
 
         if (started == 2) {
-            if (AMMO(ITEM_STICK) > 0) {
+            if (this->stamina >= IVAN_STAMINA_DEKU_STICK) {
                 this->stickWeaponInfo.tip = this->actor.world.pos;
                 this->stickWeaponInfo.tip.y += 7.0f;
 
@@ -404,12 +455,7 @@ void UseDekuStick(Actor* thisx, PlayState* play, u8 started) {
                 Collider_UpdateCylinder(&this->actor, &this->weaponCollider);
                 CollisionCheck_SetAT(play, &play->colChkCtx, &this->weaponCollider.base);
 
-                if (this->damageTimer <= 0) {
-                    Inventory_ChangeAmmo(ITEM_STICK, -1);
-                    this->damageTimer = 20;
-                } else {
-                    this->damageTimer--;
-                }
+                Ivan_UseStamina(this, IVAN_STAMINA_DEKU_STICK);
             }
         }
     }
@@ -475,7 +521,7 @@ DemoEffect* IvanWindEffect_Spawn(EnPartner* ivan, PlayState* play) {
 void EndFaroresWind(EnPartner* this, PlayState* play) {
     IvanWindEffect_SetupFadeOut(this->windEffect);
     this->windEffect = NULL;
-    gSaveContext.magicState = MAGIC_STATE_RESET;
+
     this->itemTimer = 5;
     this->usedItem = 0xFF;
 }
@@ -484,7 +530,7 @@ void UseFaroresWind(EnPartner* this, PlayState* play, u8 started) {
     Player* player = GET_PLAYER(play);
 
     if (started == 1) {
-        if (gSaveContext.magic <= 0 || gSaveContext.magicState != MAGIC_STATE_IDLE) {
+        if (this->stamina <= 0) {
             Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
             this->usedItem = 0xFF;
             return;
@@ -513,17 +559,11 @@ void UseFaroresWind(EnPartner* this, PlayState* play, u8 started) {
             player->pushedYaw = this->actor.shape.rot.y;
         }
 
-        gSaveContext.magicState = MAGIC_STATE_METER_FLASH_1;
-        this->magicTimer--;
-        if (this->magicTimer <= 0) {
-            if (gSaveContext.magic <= 0) {
-                gSaveContext.magic = 0;
-                EndFaroresWind(this, play);
-                return;
-            }
-            gSaveContext.magic--;  // Note: after the `if` statement so that the last tick of magic
-            this->magicTimer = 20; // gives the full count of frames
+        if (this->stamina <= 0) {
+            EndFaroresWind(this, play);
+            return;
         }
+        Ivan_UseStamina(this, IVAN_STAMINA_SPELL);
     }
 
     if (started == 0) {
@@ -537,11 +577,12 @@ void UseNuts(Actor* thisx, PlayState* play, u8 started) {
 
     if (this->itemTimer <= 0) {
         if (started == 1) {
-            if (AMMO(ITEM_NUT) > 0) {
+            if (this->stamina >= IVAN_STAMINA_DEKU_NUT) {
                 this->itemTimer = 10;
                 Actor_Spawn(&play->actorCtx, play, ACTOR_EN_ARROW, this->actor.world.pos.x, this->actor.world.pos.y + 7,
-                            this->actor.world.pos.z, 0x1000, this->actor.world.rot.y, 0, ARROW_NUT);
-                Inventory_ChangeAmmo(ITEM_NUT, -1);
+                            this->actor.world.pos.z, (s16)gIvanCamPitch, (s16)gIvanCamYaw, 0, ARROW_NUT);
+
+                Ivan_UseStamina(this, IVAN_STAMINA_DEKU_NUT);
             } else {
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
             }
@@ -589,7 +630,9 @@ void UseBoomerang(Actor* thisx, PlayState* play, u8 started) {
 
     if (this->itemTimer <= 0) {
         if (started == 1) {
-            this->itemTimer = 20;
+            if (this->stamina >= IVAN_STAMINA_BOOMERANG) {
+                this->itemTimer = 20;
+                Ivan_UseStamina(this, IVAN_STAMINA_BOOMERANG);
 
             f32 posX = (Math_SinS(this->actor.shape.rot.y) * 1.0f) + this->actor.world.pos.x;
             f32 posZ = (Math_CosS(this->actor.shape.rot.y) * 1.0f) + this->actor.world.pos.z;
@@ -602,6 +645,10 @@ void UseBoomerang(Actor* thisx, PlayState* play, u8 started) {
             if (boomerang != NULL) {
                 boomerang->returnTimer = 20;
                 Audio_PlayActorSound2(&this->actor, NA_SE_IT_BOOMERANG_THROW);
+            }
+            } else {
+                Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+                this->usedItem = 0xFF;
             }
         }
     }
@@ -631,12 +678,12 @@ void UseBeans(Actor* thisx, PlayState* play, u8 started) {
     if (this->itemTimer <= 0) {
         if (started == 1) {
             if (this->beanCooldownTimer <= 0) {
-                if (AMMO(ITEM_BEAN) <= 0) {
+                if (this->stamina < IVAN_STAMINA_BEANS) {
                     Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
                     this->usedItem = 0xFF;
                     return;
                 }
-                Inventory_ChangeAmmo(ITEM_BEAN, -1);
+                Ivan_UseStamina(this, IVAN_STAMINA_BEANS);
                 this->beanCooldownTimer = 20 * 6;
             }
             this->canMove = 0;
@@ -659,16 +706,16 @@ void UseBeans(Actor* thisx, PlayState* play, u8 started) {
 void UseSpell(Actor* thisx, PlayState* play, u8 started, u8 spellType) {
     EnPartner* this = (EnPartner*)thisx;
 
-    if (gSaveContext.magic > 0) {
+    if (this->stamina > 0 || this->usedSpell != 0) {
         if (this->itemTimer <= 0 && this->usedSpell == 0) {
             if (started == 1) {
                 this->usedSpell = spellType;
+                this->magicTimer = 0;
             }
         }
 
         if (started == 0 && this->usedSpell != 0) {
             this->itemTimer = 10;
-            gSaveContext.magicState = MAGIC_STATE_RESET;
 
             switch (this->usedSpell) {
                 case 1:
@@ -681,9 +728,6 @@ void UseSpell(Actor* thisx, PlayState* play, u8 started, u8 spellType) {
 
         if (started == 2) {
             if (this->usedSpell != 0) {
-                Vec3f spE4[3];
-                Vec3f newBasePos[3];
-
                 switch (this->usedSpell) {
                     case 1: // Din's
                         GET_PLAYER(play)->ivanDamageMultiplier = 2;
@@ -693,18 +737,10 @@ void UseSpell(Actor* thisx, PlayState* play, u8 started, u8 spellType) {
                         break;
                 }
 
-                gSaveContext.magicState = MAGIC_STATE_METER_FLASH_1;
-                this->magicTimer--;
-                if (this->magicTimer <= 0) {
-                    gSaveContext.magic--;
-                    this->magicTimer = 20;
-                    if (gSaveContext.magic <= 0) {
-                        gSaveContext.magic = 0;
-
-                        this->itemTimer = 10;
-                        this->usedSpell = 0;
-                        gSaveContext.magicState = MAGIC_STATE_RESET;
-                    }
+                Ivan_UseStamina(this, IVAN_STAMINA_SPELL);
+                if (this->stamina <= 0) {
+                    this->itemTimer = 10;
+                    this->usedSpell = 0;
                 }
             }
         }
@@ -929,6 +965,15 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
         this->beanCooldownTimer--;
     }
 
+    if (this->staminaRegenCooldown > 0) {
+        this->staminaRegenCooldown--;
+    } else if (this->stamina < Ivan_GetStaminaMax()) {
+        this->stamina += Ivan_GetRegenRate();
+        if (this->stamina > Ivan_GetStaminaMax()) {
+            this->stamina = Ivan_GetStaminaMax();
+        }
+    }
+
     if (!IsStuckInCutscene(play)) {
         uint8_t pressed = 0;
         uint8_t released = 0;
@@ -1137,4 +1182,45 @@ void EnPartner_Draw(Actor* thisx, PlayState* play) {
     if (this->usedSpell > 0) {
         DrawOrb(this, play, this->usedSpell);
     }
+
+    // Bar layout: 4px per stamina unit, 1px border all around.
+    //   Background: (167,209)-(232,217)  66 x 9 px
+    //   Fill max:   (168,210)-(231,216)  64 x 7 px
+    #define IVAN_SBAR_X  168
+    #define IVAN_SBAR_Y  8
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    // Restrict scissor to the right half so the bar never bleeds left.
+    gDPSetScissor(OVERLAY_DISP++, G_SC_NON_INTERLACE, SCREEN_WIDTH / 2, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Solid-color rect setup (same pipeline as the screen-fade rect in z_parameter.c).
+    gDPPipeSync(OVERLAY_DISP++);
+    gSPClearGeometryMode(OVERLAY_DISP++, G_ZBUFFER | G_SHADE | G_CULL_BOTH | G_FOG | G_LIGHTING |
+                         G_TEXTURE_GEN | G_TEXTURE_GEN_LINEAR | G_SHADING_SMOOTH | G_LOD);
+    gDPSetOtherMode(OVERLAY_DISP++,
+        G_AD_DISABLE | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TT_NONE | G_TL_TILE |
+        G_TD_CLAMP | G_TP_NONE | G_CYC_1CYCLE | G_PM_1PRIMITIVE,
+        G_AC_NONE | G_ZS_PIXEL | G_RM_CLD_SURF | G_RM_CLD_SURF2);
+    gDPSetCombineMode(OVERLAY_DISP++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+
+    // Dark background (border + empty portion).
+    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 40, 40, 40, 200);
+    gDPFillRectangle(OVERLAY_DISP++,
+        IVAN_SBAR_X - 1, IVAN_SBAR_Y - 1,
+        IVAN_SBAR_X + Ivan_GetStaminaMax(), IVAN_SBAR_Y + 7);
+
+    // Yellow fill proportional to current stamina.
+    if (this->stamina > 0) {
+        gDPPipeSync(OVERLAY_DISP++);
+        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 250, 230, 0, 255);
+        gDPFillRectangle(OVERLAY_DISP++,
+            IVAN_SBAR_X, IVAN_SBAR_Y,
+            IVAN_SBAR_X + this->stamina - 1, IVAN_SBAR_Y + 6);
+    }
+
+    CLOSE_DISPS(play->state.gfxCtx);
+
+    #undef IVAN_SBAR_X
+    #undef IVAN_SBAR_Y
 }

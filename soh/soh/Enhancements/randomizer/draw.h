@@ -32,6 +32,7 @@ void Randomizer_DrawSkeletonKey(PlayState* play, GetItemEntry* getItemEntry);
 void Randomizer_DrawMysteryItem(PlayState* play, GetItemEntry* getItemEntry);
 void Randomizer_DrawBombchuBagInLogic(PlayState* play, GetItemEntry* getItemEntry);
 void Randomizer_DrawBombchuBag(PlayState* play, GetItemEntry* getItemEntry);
+void Randomizer_DrawIvanStamina(PlayState* play, GetItemEntry* getItemEntry);
 void Randomizer_DrawOverworldKey(PlayState* play, GetItemEntry* getItemEntry);
 void Randomizer_DrawRocsFeather(PlayState* play, GetItemEntry* getItemEntry);
 

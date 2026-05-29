@@ -38,6 +38,7 @@ extern "C" {
 #include "objects/object_tw/object_tw.h"
 #include "objects/object_ganon2/object_ganon2.h"
 #include "objects/object_gi_shield_1/object_gi_shield_1.h"
+#include "objects/object_gi_magicpot/object_gi_magicpot.h"
 extern PlayState* gPlayState;
 extern SaveContext gSaveContext;
 }
@@ -1343,6 +1344,18 @@ extern "C" void Randomizer_DrawBombchuBagInLogic(PlayState* play, GetItemEntry* 
         gSPDisplayList(POLY_OPA_DISP++, (Gfx*)gGiBombchuDL);
         CLOSE_DISPS(play->state.gfxCtx);
     }
+}
+
+extern "C" void Randomizer_DrawIvanStamina(PlayState* play, GetItemEntry* getItemEntry) {
+    OPEN_DISPS(play->state.gfxCtx);
+    Gfx_SetupDL_25Opa(play->state.gfxCtx);
+    gSPMatrix(POLY_OPA_DISP++, Matrix_NewMtx(play->state.gfxCtx, (char*)__FILE__, __LINE__),
+              G_MTX_MODELVIEW | G_MTX_LOAD);
+    gSPGrayscale(POLY_OPA_DISP++, true);
+    gDPSetGrayscaleColor(POLY_OPA_DISP++, 255, 220, 0, 255);
+    gSPDisplayList(POLY_OPA_DISP++, (Gfx*)gGiMagicJarLargeDL);
+    gSPGrayscale(POLY_OPA_DISP++, false);
+    CLOSE_DISPS(play->state.gfxCtx);
 }
 
 extern "C" void Randomizer_DrawOverworldKey(PlayState* play, GetItemEntry* getItemEntry) {
