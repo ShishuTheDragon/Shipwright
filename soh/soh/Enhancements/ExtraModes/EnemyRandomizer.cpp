@@ -746,38 +746,6 @@ void RegisterEnemyRandomizer() {
         *should = false;
     });
 
-    COND_VB_SHOULD(VB_BIRI_SPAWN_JELLYFISH_UPON_DEATH, ENEMY_RANDOMIZER_ENABLED, {
-        EnVali* vali = va_arg(args, EnVali*);
-        PlayState* play = va_arg(args, PlayState*);
-
-        s16 actorId = ACTOR_EN_BILI;
-        s16 posX = vali->actor.world.pos.x;
-        s16 posY = vali->actor.world.pos.y;
-        s16 posZ = vali->actor.world.pos.z;
-        s16 rotX = 0;
-        s16 rotY = vali->actor.world.rot.y;
-        s16 rotZ = 0;
-        s16 params = 0;
-
-        for (s32 i = 0; i < 3; i++) {
-            // Offset small jellyfish with Enemy Randomizer, otherwise it gets
-            // stuck in a loop spawning more big jellyfish with seeded spawns.
-            if (CVarGetInteger(CVAR_ENHANCEMENT("RandomizedEnemies"), 0)) {
-                rotY += rand() % 50;
-            }
-
-            if (!GetRandomizedEnemy(play, &actorId, &posX, &posY, &posZ, &rotX, &rotY, &rotZ, &params)) {
-                assert(false);
-            }
-
-            Actor_Spawn(&play->actorCtx, play, actorId, posX, posY, posZ, rotX, rotY, rotZ, params);
-
-            rotY += 0x10000 / 3;
-        }
-
-        *should = false;
-    });
-
     COND_VB_SHOULD(VB_ENCOUNT1_SPAWN_STALCHILD_OR_WOLFOS, ENEMY_RANDOMIZER_ENABLED, {
         EnEncount1* encount1 = va_arg(args, EnEncount1*);
         PlayState* play = va_arg(args, PlayState*);
