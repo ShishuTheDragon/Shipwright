@@ -36,6 +36,10 @@ typedef struct EnPartner {
     u8 damageTimer;
     s16 magicTimer;
 
+    s16 stamina;
+    s16 staminaRegenCooldown;
+    s16 staminaRegenTimer;
+
     u8 shouldDraw;
     s16 itemTimer;
     s16 beanCooldownTimer;
