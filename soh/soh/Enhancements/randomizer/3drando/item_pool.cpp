@@ -225,6 +225,7 @@ void GenerateItemPool() {
                                               std::max(0, 2 + infiniteProgressive - startMagic),
                                               std::max(0, 1 + infiniteProgressive - startMagic),
                                               std::max(0, 1 + infiniteProgressive - startMagic));
+    AddItemToPool(RG_PROGRESSIVE_IVAN_STAMINA, 4, 4, 4, 4);
     //clang-format on
 
     int extraWallets =(ctx->GetOption(RSK_SHUFFLE_CHILD_WALLET) ? 1 : 0) + (ctx->GetOption(RSK_INCLUDE_TYCOON_WALLET) ? 1 : 0);

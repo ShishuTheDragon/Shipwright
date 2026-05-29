@@ -353,6 +353,14 @@ static void InitTrickNames() {
         Text{ "Progressive Magic Powder", "Poudre magique (prog.)",
               "Zauberpulver (prog.)" }, // "Medidor de carga progresivo"
     };
+    trickNameTable[RG_PROGRESSIVE_IVAN_STAMINA] = {
+        Text{ "Progressive Stamina Potion", "Potion d'endurance (prog.)",
+              "Ausdauertrank (prog.)" },
+        Text{ "Progressive Energy Crystal", "Cristal d'énergie (prog.)",
+              "Energiekristall (prog.)" },
+        Text{ "Progressive Endurance Shard", "Fragment d'endurance (prog.)",
+              "Ausdauersplitter (prog.)" },
+    };
     trickNameTable[RG_PROGRESSIVE_OCARINA] = {
         Text{ "Progressive Memento", "Souvenir (prog.)", "Souvenir (prog.)" },   // "Silbato progresivo"
         Text{ "Progressive Whistle", "Siffler (prog.)", "Pfeife (prog.)" },      // "Silbido progresivo"
