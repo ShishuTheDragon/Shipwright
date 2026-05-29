@@ -33,12 +33,10 @@ typedef struct EnPartner {
     u8 usedItem;
     u8 usedItemButton;
     u8 usedSpell;
-    u8 damageTimer;
     s16 magicTimer;
 
     s16 stamina;
     s16 staminaRegenCooldown;
-    s16 staminaRegenTimer;
 
     u8 shouldDraw;
     s16 itemTimer;
