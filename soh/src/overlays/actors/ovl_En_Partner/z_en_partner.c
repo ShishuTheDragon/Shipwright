@@ -32,6 +32,15 @@ f32 gIvanCamPitch = 0.0f;
 #define IVAN_STAMINA_REGEN_COOLDOWN  40  // frames of no-use before regen starts
 #define IVAN_STAMINA_REGEN_RATE      1   // stamina restored per frame during regen
 
+static s16 Ivan_GetStaminaMax(void) {
+    u8 upgrade = gSaveContext.ship.quest.data.randomizer.ivanStaminaUpgrade;
+    return IVAN_STAMINA_MAX + (s16)(upgrade * 20);
+}
+static s16 Ivan_GetRegenRate(void) {
+    u8 upgrade = gSaveContext.ship.quest.data.randomizer.ivanStaminaUpgrade;
+    return IVAN_STAMINA_REGEN_RATE + (s16)upgrade;
+}
+
 #define IVAN_STAMINA_ARROW_NORMAL    6
 #define IVAN_STAMINA_ARROW_FIRE      12
 #define IVAN_STAMINA_ARROW_ICE       12
@@ -122,7 +131,7 @@ void EnPartner_Init(Actor* thisx, PlayState* play) {
     this->shouldDraw = 1;
     this->hookshotTarget = NULL;
     this->beanCooldownTimer = 0;
-    this->stamina = IVAN_STAMINA_MAX;
+    this->stamina = Ivan_GetStaminaMax();
     this->staminaRegenCooldown = 0;
     GET_PLAYER(play)->ivanFloating = 0;
 
@@ -947,10 +956,10 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
 
     if (this->staminaRegenCooldown > 0) {
         this->staminaRegenCooldown--;
-    } else if (this->stamina < IVAN_STAMINA_MAX) {
-        this->stamina += IVAN_STAMINA_REGEN_RATE;
-        if (this->stamina > IVAN_STAMINA_MAX) {
-            this->stamina = IVAN_STAMINA_MAX;
+    } else if (this->stamina < Ivan_GetStaminaMax()) {
+        this->stamina += Ivan_GetRegenRate();
+        if (this->stamina > Ivan_GetStaminaMax()) {
+            this->stamina = Ivan_GetStaminaMax();
         }
     }
 
@@ -1188,7 +1197,7 @@ void EnPartner_Draw(Actor* thisx, PlayState* play) {
     gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 40, 40, 40, 200);
     gDPFillRectangle(OVERLAY_DISP++,
         IVAN_SBAR_X - 1, IVAN_SBAR_Y - 1,
-        IVAN_SBAR_X + IVAN_STAMINA_MAX, IVAN_SBAR_Y + 7);
+        IVAN_SBAR_X + Ivan_GetStaminaMax(), IVAN_SBAR_Y + 7);
 
     // Yellow fill proportional to current stamina.
     if (this->stamina > 0) {
