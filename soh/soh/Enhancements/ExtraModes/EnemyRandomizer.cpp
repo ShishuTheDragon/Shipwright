@@ -869,43 +869,6 @@ void RegisterEnemyRandomizer() {
         *should = false;
     });
 
-    COND_VB_SHOULD(VB_BIRI_SPAWN_JELLYFISH_UPON_DEATH, ENEMY_RANDOMIZER_ENABLED, {
-        EnVali* vali = va_arg(args, EnVali*);
-        PlayState* play = va_arg(args, PlayState*);
-
-        s16 actorId = ACTOR_EN_BILI;
-        s16 posX = static_cast<s16>(vali->actor.world.pos.x);
-        s16 posY = static_cast<s16>(vali->actor.world.pos.y);
-        s16 posZ = static_cast<s16>(vali->actor.world.pos.z);
-        s16 rotX = 0;
-        s16 rotY = vali->actor.world.rot.y;
-        s16 rotZ = 0;
-        s16 params = 0;
-
-        s16 homePosX = static_cast<s16>(vali->actor.home.pos.x);
-        s16 homePosY = static_cast<s16>(vali->actor.home.pos.y);
-        s16 homePosZ = static_cast<s16>(vali->actor.home.pos.z);
-
-        s16 homeRotX = vali->actor.home.rot.x;
-        s16 homeRotY = vali->actor.home.rot.y;
-        s16 homeRotZ = vali->actor.home.rot.z;
-
-        for (s32 i = 0; i < 3; i++) {
-            // use the home pos & rot to make it consistent
-            if (!GetRandomizedEnemy(play, &actorId, &homePosX, &homePosY, &homePosZ, &homeRotX, &homeRotY, &homeRotZ,
-                                    &params, i * 1000, true)) {
-                assert(false);
-            }
-
-            Actor_Spawn(&play->actorCtx, play, actorId, static_cast<f32>(posX), static_cast<f32>(posY),
-                        static_cast<f32>(posZ), rotX, rotY, rotZ, params);
-
-            rotY += 0x10000 / 3;
-        }
-
-        *should = false;
-    });
-
     COND_VB_SHOULD(VB_ENCOUNT1_SPAWN_STALCHILD_OR_WOLFOS, ENEMY_RANDOMIZER_ENABLED, {
         EnEncount1* encount1 = va_arg(args, EnEncount1*);
         PlayState* play = va_arg(args, PlayState*);
