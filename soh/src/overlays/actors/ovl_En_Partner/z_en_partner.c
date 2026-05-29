@@ -535,6 +535,9 @@ void UseFaroresWind(Actor* thisx, PlayState* play, u8 started) {
     }
 
     if (started == 1 || started == 2) {
+        this->actor.world.rot.y = (s16)gIvanCamYaw;
+        this->actor.shape.rot.y = (s16)gIvanCamYaw;
+
         func_8002F974(&this->actor, NA_SE_EV_WIND_TRAP - SFX_FLAG);
 
         this->windEffect->actor.world.pos.x = this->actor.world.pos.x;
