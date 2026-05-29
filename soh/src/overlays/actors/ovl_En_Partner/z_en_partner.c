@@ -278,43 +278,39 @@ void UseBow(Actor* thisx, PlayState* play, u8 started, u8 arrowType) {
     EnPartner* this = (EnPartner*)thisx;
 
     if (started == 1) {
-        Player_PlaySfx(this, NA_SE_PL_CHANGE_ARMS);
-        this->canMove = 0;
-    } else if (started == 0) {
-        if (this->itemTimer <= 0) {
-            if (this->stamina >= arrowStaminaCosts[arrowType]) {
-                this->itemTimer = 10;
+        if (this->stamina >= arrowStaminaCosts[arrowType]) {
+            this->itemTimer = 10;
+            Player_PlaySfx(this, NA_SE_PL_CHANGE_ARMS);
 
-                // Snap Ivan to camera yaw so the firing pose matches the shot direction
-                this->actor.world.rot.y = (s16)gIvanCamYaw;
-                this->actor.shape.rot.y = (s16)gIvanCamYaw;
+            // Snap Ivan to camera yaw so the firing pose matches the shot direction
+            this->actor.world.rot.y = (s16)gIvanCamYaw;
+            this->actor.shape.rot.y = (s16)gIvanCamYaw;
 
-                s16 params = ARROW_NORMAL;
-                switch (arrowType) {
-                    case 1:
-                        params = ARROW_FIRE;
-                        break;
-                    case 2:
-                        params = ARROW_ICE;
-                        break;
-                    case 3:
-                        params = ARROW_LIGHT;
-                        break;
-                }
-
-                Actor* newarrow = Actor_SpawnAsChild(
-                    &play->actorCtx, &this->actor, play, ACTOR_EN_ARROW, this->actor.world.pos.x,
-                    this->actor.world.pos.y + 7, this->actor.world.pos.z,
-                    (s16)gIvanCamPitch, (s16)gIvanCamYaw, 0, params);
-
-                GET_PLAYER(play)->unk_A73 = 4;
-                newarrow->parent = NULL;
-                Ivan_UseStamina(this, arrowStaminaCosts[arrowType]);
-            } else {
-                Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
-                this->usedItem = 0xFF;
-                this->canMove = 1;
+            s16 params = ARROW_NORMAL;
+            switch (arrowType) {
+                case 1:
+                    params = ARROW_FIRE;
+                    break;
+                case 2:
+                    params = ARROW_ICE;
+                    break;
+                case 3:
+                    params = ARROW_LIGHT;
+                    break;
             }
+
+            Actor* newarrow = Actor_SpawnAsChild(
+                &play->actorCtx, &this->actor, play, ACTOR_EN_ARROW, this->actor.world.pos.x,
+                this->actor.world.pos.y + 7, this->actor.world.pos.z,
+                (s16)gIvanCamPitch, (s16)gIvanCamYaw, 0, params);
+
+            GET_PLAYER(play)->unk_A73 = 4;
+            newarrow->parent = NULL;
+            Ivan_UseStamina(this, arrowStaminaCosts[arrowType]);
+        } else {
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+            this->usedItem = 0xFF;
+            this->canMove = 1;
         }
     }
 }
@@ -323,28 +319,24 @@ void UseSlingshot(Actor* thisx, PlayState* play, u8 started) {
     EnPartner* this = (EnPartner*)thisx;
 
     if (started == 1) {
-        Player_PlaySfx(this, NA_SE_PL_CHANGE_ARMS);
-        this->canMove = 0;
-    } else if (started == 0) {
-        if (this->itemTimer <= 0) {
-            if (this->stamina >= IVAN_STAMINA_SLINGSHOT) {
-                this->itemTimer = 10;
+        if (this->stamina >= IVAN_STAMINA_SLINGSHOT) {
+            this->itemTimer = 10;
+            Player_PlaySfx(this, NA_SE_PL_CHANGE_ARMS);
 
-                // Snap Ivan to camera yaw so the firing pose matches the shot direction
-                this->actor.world.rot.y = (s16)gIvanCamYaw;
-                this->actor.shape.rot.y = (s16)gIvanCamYaw;
+            // Snap Ivan to camera yaw so the firing pose matches the shot direction
+            this->actor.world.rot.y = (s16)gIvanCamYaw;
+            this->actor.shape.rot.y = (s16)gIvanCamYaw;
 
-                Actor* newarrow = Actor_SpawnAsChild(
-                    &play->actorCtx, &this->actor, play, ACTOR_EN_ARROW, this->actor.world.pos.x,
-                    this->actor.world.pos.y + 7, this->actor.world.pos.z,
-                    (s16)gIvanCamPitch, (s16)gIvanCamYaw, 0, ARROW_SEED);
-                GET_PLAYER(play)->unk_A73 = 4;
-                newarrow->parent = NULL;
-                Ivan_UseStamina(this, IVAN_STAMINA_SLINGSHOT);
-            } else {
-                Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
-                this->usedItem = 0xFF;
-            }
+            Actor* newarrow = Actor_SpawnAsChild(
+                &play->actorCtx, &this->actor, play, ACTOR_EN_ARROW, this->actor.world.pos.x,
+                this->actor.world.pos.y + 7, this->actor.world.pos.z,
+                (s16)gIvanCamPitch, (s16)gIvanCamYaw, 0, ARROW_SEED);
+            GET_PLAYER(play)->unk_A73 = 4;
+            newarrow->parent = NULL;
+            Ivan_UseStamina(this, IVAN_STAMINA_SLINGSHOT);
+        } else {
+            Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+            this->usedItem = 0xFF;
         }
     }
 }
