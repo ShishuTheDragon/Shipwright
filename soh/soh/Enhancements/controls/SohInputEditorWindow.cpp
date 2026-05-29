@@ -57,6 +57,8 @@ void SohInputEditorWindow::InitElement() {
     addButtonName(BTN_DDOWN, "D-pad down");
     addButtonName(BTN_DLEFT, "D-pad left");
     addButtonName(BTN_DRIGHT, "D-pad right");
+    addButtonName(BTN_ZL, "ZL");
+    addButtonName(BTN_ZR, "ZR");
     addButtonName(0, "None");
 }
 
@@ -1672,6 +1674,11 @@ void SohInputEditorWindow::DrawIvanTab() {
             DrawButtonLine(StringHelper::Sprintf("%s", ICON_FA_ARROW_DOWN).c_str(), portIndex, BTN_DDOWN);
             DrawButtonLine(StringHelper::Sprintf("%s", ICON_FA_ARROW_LEFT).c_str(), portIndex, BTN_DLEFT);
             DrawButtonLine(StringHelper::Sprintf("%s", ICON_FA_ARROW_RIGHT).c_str(), portIndex, BTN_DRIGHT);
+        }
+
+        if (ImGui::CollapsingHeader("ZL / ZR", NULL, ImGuiTreeNodeFlags_DefaultOpen)) {
+            DrawButtonLine("ZL", portIndex, BTN_ZL);
+            DrawButtonLine("ZR", portIndex, BTN_ZR);
         }
 
         if (ImGui::CollapsingHeader("Analog Stick", NULL, ImGuiTreeNodeFlags_DefaultOpen)) {

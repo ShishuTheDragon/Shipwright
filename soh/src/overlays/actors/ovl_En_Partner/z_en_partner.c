@@ -928,20 +928,11 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
         uint8_t released = 0;
         uint8_t current = 0;
 
-        uint16_t partnerButtons[7] = { BTN_CLEFT, BTN_CDOWN, BTN_CRIGHT, BTN_DUP, BTN_DDOWN, BTN_DLEFT, BTN_DRIGHT };
-        uint8_t buttonMax = 3;
+        // Order: CLeft, CDown, CRight, ZL, ZR, CUp (always), DUp, DDown, DLeft, DRight (DpadEquips only)
+        uint16_t partnerButtons[10] = { BTN_CLEFT, BTN_CDOWN, BTN_CRIGHT, BTN_ZL, BTN_ZR, BTN_CUP, BTN_DUP, BTN_DDOWN, BTN_DLEFT, BTN_DRIGHT };
+        uint8_t buttonMax = 6;
         if (CVarGetInteger(CVAR_ENHANCEMENT("DpadEquips"), 0) != 0) {
-            buttonMax = 7;
-        }
-
-        if (this->itemTimer <= 0) {
-            if (CHECK_BTN_ALL(sControlInput.press.button, BTN_CUP)) {
-                UseOcarina(this, play, 1);
-            } else if (CHECK_BTN_ALL(sControlInput.cur.button, BTN_CUP)) {
-                UseOcarina(this, play, 2);
-            } else if (CHECK_BTN_ALL(sControlInput.rel.button, BTN_CUP)) {
-                UseOcarina(this, play, 0);
-            }
+            buttonMax = 10;
         }
 
         if (this->usedItem == 0xFF && this->itemTimer <= 0) {
