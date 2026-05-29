@@ -1184,44 +1184,48 @@ void EnPartner_Draw(Actor* thisx, PlayState* play) {
         DrawOrb(this, play, this->usedSpell);
     }
 
-    // Bar layout: 4px per stamina unit, 1px border all around.
-    //   Background: (167,209)-(232,217)  66 x 9 px
-    //   Fill max:   (168,210)-(231,216)  64 x 7 px
-    #define IVAN_SBAR_X  168
-    #define IVAN_SBAR_Y  8
+    // Draw stamina bar on Ivan's half of the split screen.
+    // Only emit overlay commands once (Ivan's pass = pass 1).
+    if (!gSplitScreenActive || gSplitScreenPass == 1) {
+        // Bar layout: 4px per stamina unit, 1px border all around.
+        //   Background: (167,209)-(232,217)  66 x 9 px
+        //   Fill max:   (168,210)-(231,216)  64 x 7 px
+        #define IVAN_SBAR_X  200
+        #define IVAN_SBAR_Y  4
 
-    OPEN_DISPS(play->state.gfxCtx);
+        OPEN_DISPS(play->state.gfxCtx);
 
-    // Restrict scissor to the right half so the bar never bleeds left.
-    gDPSetScissor(OVERLAY_DISP++, G_SC_NON_INTERLACE, SCREEN_WIDTH / 2, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        // Restrict scissor to the right half so the bar never bleeds left.
+        // gDPSetScissor(OVERLAY_DISP++, G_SC_NON_INTERLACE, SCREEN_WIDTH / 2, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    // Solid-color rect setup (same pipeline as the screen-fade rect in z_parameter.c).
-    gDPPipeSync(OVERLAY_DISP++);
-    gSPClearGeometryMode(OVERLAY_DISP++, G_ZBUFFER | G_SHADE | G_CULL_BOTH | G_FOG | G_LIGHTING |
-                         G_TEXTURE_GEN | G_TEXTURE_GEN_LINEAR | G_SHADING_SMOOTH | G_LOD);
-    gDPSetOtherMode(OVERLAY_DISP++,
-        G_AD_DISABLE | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TT_NONE | G_TL_TILE |
-        G_TD_CLAMP | G_TP_NONE | G_CYC_1CYCLE | G_PM_1PRIMITIVE,
-        G_AC_NONE | G_ZS_PIXEL | G_RM_CLD_SURF | G_RM_CLD_SURF2);
-    gDPSetCombineMode(OVERLAY_DISP++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
-
-    // Dark background (border + empty portion).
-    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 40, 40, 40, 200);
-    gDPFillRectangle(OVERLAY_DISP++,
-        IVAN_SBAR_X - 1, IVAN_SBAR_Y - 1,
-        IVAN_SBAR_X + Ivan_GetStaminaMax(), IVAN_SBAR_Y + 7);
-
-    // Yellow fill proportional to current stamina.
-    if (this->stamina > 0) {
+        // Solid-color rect setup (same pipeline as the screen-fade rect in z_parameter.c).
         gDPPipeSync(OVERLAY_DISP++);
-        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 250, 230, 0, 255);
+        gSPClearGeometryMode(OVERLAY_DISP++, G_ZBUFFER | G_SHADE | G_CULL_BOTH | G_FOG | G_LIGHTING |
+                             G_TEXTURE_GEN | G_TEXTURE_GEN_LINEAR | G_SHADING_SMOOTH | G_LOD);
+        gDPSetOtherMode(OVERLAY_DISP++,
+            G_AD_DISABLE | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TT_NONE | G_TL_TILE |
+            G_TD_CLAMP | G_TP_NONE | G_CYC_1CYCLE | G_PM_1PRIMITIVE,
+            G_AC_NONE | G_ZS_PIXEL | G_RM_CLD_SURF | G_RM_CLD_SURF2);
+        gDPSetCombineMode(OVERLAY_DISP++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+
+        // Dark background (border + empty portion).
+        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 40, 40, 40, 200);
         gDPFillRectangle(OVERLAY_DISP++,
-            IVAN_SBAR_X, IVAN_SBAR_Y,
-            IVAN_SBAR_X + this->stamina - 1, IVAN_SBAR_Y + 6);
+            IVAN_SBAR_X - 1, IVAN_SBAR_Y - 1,
+            IVAN_SBAR_X + Ivan_GetStaminaMax(), IVAN_SBAR_Y + 7);
+
+        // Yellow fill proportional to current stamina.
+        if (this->stamina > 0) {
+            gDPPipeSync(OVERLAY_DISP++);
+            gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 250, 230, 0, 255);
+            gDPFillRectangle(OVERLAY_DISP++,
+                IVAN_SBAR_X, IVAN_SBAR_Y,
+                IVAN_SBAR_X + this->stamina - 1, IVAN_SBAR_Y + 6);
+        }
+
+        CLOSE_DISPS(play->state.gfxCtx);
+
+        #undef IVAN_SBAR_X
+        #undef IVAN_SBAR_Y
     }
-
-    CLOSE_DISPS(play->state.gfxCtx);
-
-    #undef IVAN_SBAR_X
-    #undef IVAN_SBAR_Y
 }
