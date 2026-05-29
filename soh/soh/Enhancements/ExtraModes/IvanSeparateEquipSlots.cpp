@@ -1,5 +1,6 @@
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/ShipInit.hpp"
+#include "soh/OTRGlobals.h"
 
 #include "textures/parameter_static/parameter_static.h"
 #include "soh_assets.h"
@@ -34,10 +35,13 @@ enum class IvanItemIndex : u8 {
     CLeft = 0,
     CDown = 1,
     CRight = 2,
-    DPadUp = 3,
-    DPadDown = 4,
-    DPadLeft = 5,
-    DPadRight = 6,
+    ZL = 3,
+    ZR = 4,
+    CUp = 5,
+    DPadUp = 6,
+    DPadDown = 7,
+    DPadLeft = 8,
+    DPadRight = 9,
 };
 
 static Gfx* Gfx_WideTextureRectCentered(Gfx* displayListHead, Vec3s center, s16 size, s16 texStep) {
@@ -70,34 +74,6 @@ static bool IsAmmoItem(s16 itemId) {
     }
 }
 
-static Gfx* DrawAmmoCountAt(Gfx* displayListHead, s16 itemId, s16 x, s16 y, s16 alpha) {
-    if (!IsAmmoItem(itemId)) {
-        return displayListHead;
-    }
-
-    if ((itemId >= ITEM_BOW_ARROW_FIRE) && (itemId <= ITEM_BOW_ARROW_LIGHT)) {
-        itemId = ITEM_BOW;
-    }
-
-    s16 ammo = AMMO(itemId);
-    if (ammo < 0) {
-        ammo = 0;
-    }
-
-    s16 tens = ammo / 10;
-    s16 ones = ammo % 10;
-
-    gDPSetPrimColor(displayListHead++, 0, 0, 255, 255, 255, alpha);
-    if (tens != 0) {
-        displayListHead = Gfx_TextureIA8(displayListHead, (u8*)_gAmmoDigit0Tex[tens], 8, 8, x, y, 8, 8, 1 << 10,
-                                         1 << 10);
-    }
-    displayListHead = Gfx_TextureIA8(displayListHead, (u8*)_gAmmoDigit0Tex[ones], 8, 8, x + 6, y, 8, 8, 1 << 10,
-                                     1 << 10);
-
-    return displayListHead;
-}
-
 void OnKaleidoUpdate() {
     auto play = gPlayState;
 
@@ -115,6 +91,9 @@ void OnKaleidoUpdate() {
                     { BTN_CLEFT, IvanItemIndex::CLeft },
                     { BTN_CDOWN, IvanItemIndex::CDown },
                     { BTN_CRIGHT, IvanItemIndex::CRight },
+                    { BTN_ZL, IvanItemIndex::ZL },
+                    { BTN_ZR, IvanItemIndex::ZR },
+                    { BTN_CUP, IvanItemIndex::CUp },
                     { BTN_DUP, IvanItemIndex::DPadUp },
                     { BTN_DDOWN, IvanItemIndex::DPadDown },
                     { BTN_DLEFT, IvanItemIndex::DPadLeft },
@@ -185,7 +164,7 @@ extern "C" void Ivan_DrawInventory() {
     OVERLAY_DISP = Gfx_WideTextureRectCentered(OVERLAY_DISP, { dPadCenterX, dPadCenterY, 0 }, dPadSize, dPadTexStep);
 
     for (size_t i = 0; i < 4; i++) {
-        auto item = gSaveContext.ship.ivanItems[i + 3];
+        auto item = gSaveContext.ship.ivanItems[(u8)IvanItemIndex::DPadUp + i];
         if (item == ITEM_NONE) {
             continue;
         }
@@ -197,9 +176,6 @@ extern "C" void Ivan_DrawInventory() {
                             G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
         gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
         OVERLAY_DISP = Gfx_WideTextureRectCentered(OVERLAY_DISP, dpadCenters[i], itemIconSize, itemIconTexStep);
-        OVERLAY_DISP =
-            DrawAmmoCountAt(OVERLAY_DISP, item, dpadCenters[i].x - (itemIconSize / 2),
-                            dpadCenters[i].y - (itemIconSize / 2), 255);
     }
 
     for (size_t i = 0; i < 3; i++) {
@@ -215,25 +191,40 @@ extern "C" void Ivan_DrawInventory() {
                             G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
         gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
         OVERLAY_DISP = Gfx_WideTextureRectCentered(OVERLAY_DISP, centers[i], itemIconSize, itemIconTexStep);
-        OVERLAY_DISP =
-            DrawAmmoCountAt(OVERLAY_DISP, item, centers[i].x - (itemIconSize / 2),
-                            centers[i].y - (itemIconSize / 2), 255);
     }
 
+    // C-Up item (index CUp=5): show at centers[3] (C-Up HUD position)
     {
-        s16 cUpLeftX = centers[3].x - (cButtonSize / 2);
-        s16 cUpLeftY = centers[3].y - (cButtonSize / 2);
+        auto item = gSaveContext.ship.ivanItems[(u8)IvanItemIndex::CUp];
+        if (item != ITEM_NONE) {
+            gDPPipeSync(OVERLAY_DISP++);
+            void* texture = gItemIcons[item];
+            gDPLoadTextureBlock(OVERLAY_DISP++, texture, G_IM_FMT_RGBA, G_IM_SIZ_32b, 32, 32, 0,
+                                G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP,
+                                G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
+            gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
+            OVERLAY_DISP = Gfx_WideTextureRectCentered(OVERLAY_DISP, centers[3], itemIconSize, itemIconTexStep);
+        }
+    }
 
-        gDPPipeSync(OVERLAY_DISP++);
-        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
-        gDPSetCombineLERP(OVERLAY_DISP++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0,
-                          PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
-        gDPLoadTextureBlock_4b(OVERLAY_DISP++, (void*)gNaviCUpENGTex, G_IM_FMT_IA, 32, 8, 0,
-                               G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK,
-                               G_TX_NOLOD, G_TX_NOLOD);
-        gSPWideTextureRectangle(OVERLAY_DISP++, (cUpLeftX - naviLabelXOffset) << 2, (cUpLeftY + naviLabelYOffset) << 2,
-                                (cUpLeftX - naviLabelXOffset + 32) << 2, (cUpLeftY + naviLabelYOffset + 8) << 2,
-                                G_TX_RENDERTILE, (31 << 5), 0, -(1 << 10), 1 << 10);
+    // ZL (index 3) and ZR (index 4): outside the D-pad/C-button clusters at the same height
+    {
+        Vec3s zlCenter = { (s16)(dPadCenterX - itemSpacing), itemSpacing / 2, 0 };
+        Vec3s zrCenter = { (s16)(cButtonsCenterX + itemSpacing), itemSpacing / 2, 0 };
+        Vec3s zlzrCenters[2] = { zlCenter, zrCenter };
+        for (size_t i = 0; i < 2; i++) {
+            auto item = gSaveContext.ship.ivanItems[(u8)IvanItemIndex::ZL + i];
+            if (item == ITEM_NONE) {
+                continue;
+            }
+            gDPPipeSync(OVERLAY_DISP++);
+            void* texture = gItemIcons[item];
+            gDPLoadTextureBlock(OVERLAY_DISP++, texture, G_IM_FMT_RGBA, G_IM_SIZ_32b, 32, 32, 0,
+                                G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP,
+                                G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
+            gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, 255);
+            OVERLAY_DISP = Gfx_WideTextureRectCentered(OVERLAY_DISP, zlzrCenters[i], itemIconSize, itemIconTexStep);
+        }
     }
 
     gDPPipeSync(OVERLAY_DISP++);
