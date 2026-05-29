@@ -200,26 +200,27 @@ void GenerateItemPool() {
     }
 
     int infiniteProgressive = ctx->GetOption(RSK_INFINITE_UPGRADES).Is(RO_INF_UPGRADES_PROGRESSIVE) ? 1 : 0;
-    AddItemToPool(RG_PROGRESSIVE_BOW, 4 + infiniteProgressive, 
-                                      3 + infiniteProgressive, 
+    AddItemToPool(RG_PROGRESSIVE_BOW, 4 + infiniteProgressive,
+                                      3 + infiniteProgressive,
                                       2 + infiniteProgressive,
                                       1 + infiniteProgressive);
-    AddItemToPool(RG_PROGRESSIVE_SLINGSHOT, 4 + infiniteProgressive, 
-                                            3 + infiniteProgressive, 
+    AddItemToPool(RG_PROGRESSIVE_SLINGSHOT, 4 + infiniteProgressive,
+                                            3 + infiniteProgressive,
                                             2 + infiniteProgressive,
                                             1 + infiniteProgressive);
-    AddItemToPool(RG_PROGRESSIVE_BOMB_BAG,  4 + infiniteProgressive, 
-                                            3 + infiniteProgressive, 
+    AddItemToPool(RG_PROGRESSIVE_BOMB_BAG,  4 + infiniteProgressive,
+                                            3 + infiniteProgressive,
                                             2 + infiniteProgressive,
                                             1 + infiniteProgressive);
-    AddItemToPool(RG_PROGRESSIVE_MAGIC_METER, 3 + infiniteProgressive, 
-                                              2 + infiniteProgressive, 
+    AddItemToPool(RG_PROGRESSIVE_MAGIC_METER, 3 + infiniteProgressive,
+                                              2 + infiniteProgressive,
                                               1 + infiniteProgressive,
                                               1 + infiniteProgressive);
+    AddItemToPool(RG_PROGRESSIVE_IVAN_STAMINA, 4, 4, 4, 4);
     //clang-format on
 
     int extraWallets =(ctx->GetOption(RSK_SHUFFLE_CHILD_WALLET) ? 1 : 0) + (ctx->GetOption(RSK_INCLUDE_TYCOON_WALLET) ? 1 : 0);
-    AddItemToPool(RG_PROGRESSIVE_WALLET, 3 + infiniteProgressive + extraWallets, 
+    AddItemToPool(RG_PROGRESSIVE_WALLET, 3 + infiniteProgressive + extraWallets,
                                          2 + infiniteProgressive + extraWallets,
                                          2 + infiniteProgressive + extraWallets,
                                          2 + infiniteProgressive + extraWallets);
@@ -239,8 +240,8 @@ void GenerateItemPool() {
     if (ctx->GetOption(RSK_BOMBCHU_BAG).Is(RO_BOMBCHU_BAG_SINGLE)) {
         AddItemToPool(RG_PROGRESSIVE_BOMBCHU_BAG, 6, 5, 3, 1);
     } else if (ctx->GetOption(RSK_BOMBCHU_BAG).Is(RO_BOMBCHU_BAG_PROGRESSIVE)) {
-        AddItemToPool(RG_PROGRESSIVE_BOMBCHU_BAG,  4 + infiniteProgressive, 
-                                                   3 + infiniteProgressive, 
+        AddItemToPool(RG_PROGRESSIVE_BOMBCHU_BAG,  4 + infiniteProgressive,
+                                                   3 + infiniteProgressive,
                                                    2 + infiniteProgressive,
                                                    1 + infiniteProgressive);
     } else {
