@@ -28,23 +28,23 @@ f32 gIvanCamYaw = 0.0f;
 f32 gIvanCamPitch = 0.0f;
 
 // Ivan stamina system
-#define IVAN_STAMINA_MAX             16
-#define IVAN_STAMINA_REGEN_COOLDOWN  90   // frames of no-use before regen starts
-#define IVAN_STAMINA_REGEN_RATE      20   // frames between each +1 regen tick
+#define IVAN_STAMINA_MAX             20
+#define IVAN_STAMINA_REGEN_COOLDOWN  40  // frames of no-use before regen starts
+#define IVAN_STAMINA_REGEN_RATE      1   // stamina restored per frame during regen
 
-#define IVAN_STAMINA_ARROW_NORMAL    1
-#define IVAN_STAMINA_ARROW_FIRE      2
-#define IVAN_STAMINA_ARROW_ICE       2
-#define IVAN_STAMINA_ARROW_LIGHT     3
-#define IVAN_STAMINA_SLINGSHOT       1
-#define IVAN_STAMINA_BOMB            2
-#define IVAN_STAMINA_BOMBCHU         2
-#define IVAN_STAMINA_DEKU_STICK      1
-#define IVAN_STAMINA_DEKU_NUT        1
-#define IVAN_STAMINA_BOOMERANG       1
-#define IVAN_STAMINA_HAMMER          2
-#define IVAN_STAMINA_BEANS           3
-#define IVAN_STAMINA_SPELL           1    // per 20-frame tick while held
+#define IVAN_STAMINA_ARROW_NORMAL    6
+#define IVAN_STAMINA_ARROW_FIRE      12
+#define IVAN_STAMINA_ARROW_ICE       12
+#define IVAN_STAMINA_ARROW_LIGHT     18
+#define IVAN_STAMINA_SLINGSHOT       3
+#define IVAN_STAMINA_BOMB            6
+#define IVAN_STAMINA_BOMBCHU         18
+#define IVAN_STAMINA_DEKU_STICK      1   // per frame
+#define IVAN_STAMINA_DEKU_NUT        3
+#define IVAN_STAMINA_BOOMERANG       6
+#define IVAN_STAMINA_HAMMER          6
+#define IVAN_STAMINA_BEANS           40
+#define IVAN_STAMINA_SPELL           1   // per frame
 void EnPartner_Init(Actor* thisx, PlayState* play);
 void EnPartner_Destroy(Actor* thisx, PlayState* play);
 void EnPartner_Update(Actor* thisx, PlayState* play);
@@ -124,7 +124,6 @@ void EnPartner_Init(Actor* thisx, PlayState* play) {
     this->beanCooldownTimer = 0;
     this->stamina = IVAN_STAMINA_MAX;
     this->staminaRegenCooldown = 0;
-    this->staminaRegenTimer = IVAN_STAMINA_REGEN_RATE;
     GET_PLAYER(play)->ivanFloating = 0;
 
     this->innerColor.r = 255.0f;
@@ -264,7 +263,6 @@ static void Ivan_UseStamina(EnPartner* this, s16 cost) {
         this->stamina = 0;
     }
     this->staminaRegenCooldown = IVAN_STAMINA_REGEN_COOLDOWN;
-    this->staminaRegenTimer = IVAN_STAMINA_REGEN_RATE;
 }
 
 void UseBow(Actor* thisx, PlayState* play, u8 started, u8 arrowType) {
@@ -452,12 +450,7 @@ void UseDekuStick(Actor* thisx, PlayState* play, u8 started) {
                 Collider_UpdateCylinder(&this->actor, &this->weaponCollider);
                 CollisionCheck_SetAT(play, &play->colChkCtx, &this->weaponCollider.base);
 
-                if (this->damageTimer <= 0) {
-                    Ivan_UseStamina(this, IVAN_STAMINA_DEKU_STICK);
-                    this->damageTimer = 20;
-                } else {
-                    this->damageTimer--;
-                }
+                Ivan_UseStamina(this, IVAN_STAMINA_DEKU_STICK);
             }
         }
     }
@@ -551,15 +544,11 @@ void UseFaroresWind(Actor* thisx, PlayState* play, u8 started) {
             player->pushedYaw = this->actor.shape.rot.y;
         }
 
-        this->magicTimer--;
-        if (this->magicTimer <= 0) {
-            if (this->stamina <= 0) {
-                EndFaroresWind(this, play);
-                return;
-            }
-            Ivan_UseStamina(this, IVAN_STAMINA_SPELL);
-            this->magicTimer = 20;
+        if (this->stamina <= 0) {
+            EndFaroresWind(this, play);
+            return;
         }
+        Ivan_UseStamina(this, IVAN_STAMINA_SPELL);
     }
 
     if (started == 0) {
@@ -728,14 +717,10 @@ void UseSpell(Actor* thisx, PlayState* play, u8 started, u8 spellType) {
                         break;
                 }
 
-                this->magicTimer--;
-                if (this->magicTimer <= 0) {
-                    Ivan_UseStamina(this, IVAN_STAMINA_SPELL);
-                    this->magicTimer = 20;
-                    if (this->stamina <= 0) {
-                        this->itemTimer = 10;
-                        this->usedSpell = 0;
-                    }
+                Ivan_UseStamina(this, IVAN_STAMINA_SPELL);
+                if (this->stamina <= 0) {
+                    this->itemTimer = 10;
+                    this->usedSpell = 0;
                 }
             }
         }
@@ -963,10 +948,9 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
     if (this->staminaRegenCooldown > 0) {
         this->staminaRegenCooldown--;
     } else if (this->stamina < IVAN_STAMINA_MAX) {
-        this->staminaRegenTimer--;
-        if (this->staminaRegenTimer <= 0) {
-            this->stamina++;
-            this->staminaRegenTimer = IVAN_STAMINA_REGEN_RATE;
+        this->stamina += IVAN_STAMINA_REGEN_RATE;
+        if (this->stamina > IVAN_STAMINA_MAX) {
+            this->stamina = IVAN_STAMINA_MAX;
         }
     }
 
@@ -1204,7 +1188,7 @@ void EnPartner_Draw(Actor* thisx, PlayState* play) {
     gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 40, 40, 40, 200);
     gDPFillRectangle(OVERLAY_DISP++,
         IVAN_SBAR_X - 1, IVAN_SBAR_Y - 1,
-        IVAN_SBAR_X + IVAN_STAMINA_MAX * 4, IVAN_SBAR_Y + 7);
+        IVAN_SBAR_X + IVAN_STAMINA_MAX, IVAN_SBAR_Y + 7);
 
     // Yellow fill proportional to current stamina.
     if (this->stamina > 0) {
@@ -1212,7 +1196,7 @@ void EnPartner_Draw(Actor* thisx, PlayState* play) {
         gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 250, 230, 0, 255);
         gDPFillRectangle(OVERLAY_DISP++,
             IVAN_SBAR_X, IVAN_SBAR_Y,
-            IVAN_SBAR_X + this->stamina * 4 - 1, IVAN_SBAR_Y + 6);
+            IVAN_SBAR_X + this->stamina - 1, IVAN_SBAR_Y + 6);
     }
 
     CLOSE_DISPS(play->state.gfxCtx);
