@@ -280,7 +280,7 @@ void GenerateItemPool() {
             AddItemToPool(RG_SUNS_SONG, songAnywhere ? 2 : 1, 1, 1, 1, songAnywhere);
         }
         if (!ctx->GetOption(RSK_STARTING_SONG_OF_TIME).Get()) {
-            AddItemToPool(RG_SONG_OF_TIME, songAnywhere ? 2 : 1, 1, 1, 1, songAnywhere);
+            AddItemToPool(RG_SONG_OF_TIME, songAnywhere ? 3 : 1, 1, 1, 1, songAnywhere);
         }
         if (!ctx->GetOption(RSK_STARTING_SONG_OF_STORMS).Get()) {
             AddItemToPool(RG_SONG_OF_STORMS, songAnywhere ? 2 : 1, 1, 1, 1, songAnywhere);
@@ -319,9 +319,9 @@ void GenerateItemPool() {
     }
 
     bool rewardIceTraps = ctx->GetOption(RSK_SHUFFLE_DUNGEON_REWARDS).Get() >= RO_DUNGEON_REWARDS_OWN_DUNGEON;
-    AddFixedItemToPool(RG_KOKIRI_EMERALD, 1, rewardIceTraps);
-    AddFixedItemToPool(RG_GORON_RUBY, 1, rewardIceTraps);
-    AddFixedItemToPool(RG_ZORA_SAPPHIRE, 1, rewardIceTraps);
+    AddFixedItemToPool(RG_KOKIRI_EMERALD, 2, rewardIceTraps);
+    AddFixedItemToPool(RG_GORON_RUBY, 2, rewardIceTraps);
+    AddFixedItemToPool(RG_ZORA_SAPPHIRE, 2, rewardIceTraps);
     AddFixedItemToPool(RG_FOREST_MEDALLION, 1, rewardIceTraps);
     AddFixedItemToPool(RG_FIRE_MEDALLION, 1, rewardIceTraps);
     AddFixedItemToPool(RG_WATER_MEDALLION, 1, rewardIceTraps);
@@ -378,7 +378,7 @@ void GenerateItemPool() {
     if (ctx->GetOption(RSK_SHUFFLE_OCARINA)) {
         if (ctx->GetOption(RSK_STARTING_OCARINA).IsNot(RO_STARTING_OCARINA_TIME)) {
             int baseOcarinas = ctx->GetOption(RSK_STARTING_OCARINA).Is(RO_STARTING_OCARINA_OFF) ? 2 : 1;
-            AddItemToPool(RG_PROGRESSIVE_OCARINA, baseOcarinas + 1, baseOcarinas, baseOcarinas, baseOcarinas);
+            AddItemToPool(RG_PROGRESSIVE_OCARINA, baseOcarinas + 2, baseOcarinas, baseOcarinas, baseOcarinas);
         }
     } else {
         if (ctx->GetOption(RSK_STARTING_OCARINA).Is(RO_STARTING_OCARINA_OFF)) {
