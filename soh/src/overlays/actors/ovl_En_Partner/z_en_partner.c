@@ -842,7 +842,7 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
     Input sControlInput = play->state.input[this->actor.params];
 
     // Right stick camera control
-    f32 rsX = -sControlInput.cur.right_stick_x * 10.0f;
+    f32 rsX = -sControlInput.cur.right_stick_x * 10.0f * (CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0) ? -1 : 1);
     f32 rsY = sControlInput.cur.right_stick_y * 10.0f;
     gIvanCamYaw += rsX;
     gIvanCamPitch += rsY;
