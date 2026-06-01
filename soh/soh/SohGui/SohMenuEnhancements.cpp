@@ -1,4 +1,5 @@
 ﻿#include "SohMenu.h"
+#include "soh/SohGui/UIWidgets.hpp"
 #include <soh/Enhancements/enhancementTypes.h>
 #include "soh/Enhancements/SwitchAge.h"
 #include <soh/Enhancements/game-interactor/GameInteractor.h>
@@ -1654,6 +1655,17 @@ void SohMenu::AddMenuEnhancements() {
         .Options(CheckboxOptions().Tooltip(
             "Enables Ivan the Fairy. Player 2 can control Ivan and press the C-Buttons to use items and mess with "
             "Player 1!"));
+    AddWidget(path, "No Ocarina Freeze", WIDGET_CVAR_CHECKBOX)
+        .CVar(CVAR_ENHANCEMENT("IvanCoop.NoOcarinaFreeze"))
+        .PreFunc([](WidgetInfo& info) { info.isHidden = CVarGetInteger(CVAR_ENHANCEMENT("IvanCoopModeEnabled"), 0) == 0; })
+        .Options(CheckboxOptions().Tooltip("Allows Ivan to keep fighting while Link has his Ocarina out."));
+    AddWidget(path, "No Ocarina Invulnerability", WIDGET_CVAR_CHECKBOX)
+        .CVar(CVAR_ENHANCEMENT("IvanCoop.NoOcarinaInvulnerability"))
+        .PreFunc([](WidgetInfo& info) {
+            info.isHidden = CVarGetInteger(CVAR_ENHANCEMENT("IvanCoopModeEnabled"), 0) == 0 ||
+                            CVarGetInteger(CVAR_ENHANCEMENT("IvanCoop.NoOcarinaFreeze"), 0) == 0;
+        })
+        .Options(CheckboxOptions().Tooltip("Allows Link to take damage while playing the Ocarina."));
     AddWidget(path, "Dogs Follow You Everywhere", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("DogFollowsEverywhere"))
         .Options(CheckboxOptions().Tooltip("Allows dogs to follow you anywhere you go, even if you leave the Market."));
