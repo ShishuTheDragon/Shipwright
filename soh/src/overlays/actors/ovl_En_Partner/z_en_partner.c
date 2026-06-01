@@ -782,6 +782,19 @@ bool IsDeadDekuBaba(Actor* itemActor) {
     return false;
 }
 
+bool IsStuckInCutscene(PlayState* play) {
+    if (!Player_InCsMode(play))
+        return false;
+
+    if (CVarGetInteger(CVAR_ENHANCEMENT("IvanCoop.NoOcarinaFreeze"), 0)) {
+        Player* player = GET_PLAYER(play);
+        if (player->stateFlags2 & PLAYER_STATE2_OCARINA_PLAYING)
+            return false;
+    }
+
+    return true;
+}
+
 void EnPartner_Update(Actor* thisx, PlayState* play) {
     s32 pad;
     EnPartner* this = (EnPartner*)thisx;
@@ -852,7 +865,7 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
         func_8002F974(thisx, NA_SE_PL_MAGIC_SOUL_NORMAL - SFX_FLAG);
     }
 
-    if (!Player_InCsMode(play)) {
+    if (!IsStuckInCutscene(play)) {
         // Collect drops & rupees
         Actor* itemActor = play->actorCtx.actorLists[ACTORCAT_MISC].head;
         while (itemActor != NULL) {
@@ -910,7 +923,7 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
         this->beanCooldownTimer--;
     }
 
-    if (!Player_InCsMode(play)) {
+    if (!IsStuckInCutscene(play)) {
         uint8_t pressed = 0;
         uint8_t released = 0;
         uint8_t current = 0;
