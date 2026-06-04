@@ -836,11 +836,16 @@ bool IsDeadDekuBaba(Actor* itemActor) {
 }
 
 bool IsStuckInCutscene(PlayState* play) {
-    if (CVarGetInteger(CVAR_ENHANCEMENT("IvanCoop.NoOcarinaFreeze"), 0)) {
-        // TODO: something better
+    if (!Player_InCsMode(play))
         return false;
+
+    if (CVarGetInteger(CVAR_ENHANCEMENT("IvanCoop.NoOcarinaFreeze"), 0)) {
+        Player* player = GET_PLAYER(play);
+        if (player->stateFlags2 & PLAYER_STATE2_OCARINA_PLAYING)
+            return false;
     }
-    return Player_InCsMode(play);
+
+    return true;
 }
 
 void EnPartner_Update(Actor* thisx, PlayState* play) {
