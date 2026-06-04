@@ -1650,6 +1650,7 @@ void SohMenu::AddMenuEnhancements() {
                     " - Dungeons (MQ): Mirror the world in MQ Dungeons.\n"
                     " - Dungeons Random: Randomly decide to mirror the world in Dungeons.\n"
                     " - Dungeons Random (Seeded): Dungeons are mirrored based on the current randomizer seed/file."));
+    path.column = SECTION_COLUMN_3;
     AddWidget(path, "Ivan the Fairy (Coop Mode)", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("IvanCoopModeEnabled"))
         .Options(CheckboxOptions().Tooltip(
@@ -1666,6 +1667,7 @@ void SohMenu::AddMenuEnhancements() {
                             CVarGetInteger(CVAR_ENHANCEMENT("IvanCoop.NoOcarinaFreeze"), 0) == 0;
         })
         .Options(CheckboxOptions().Tooltip("Allows Link to take damage while playing the Ocarina."));
+    path.column = SECTION_COLUMN_1;
     AddWidget(path, "Dogs Follow You Everywhere", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("DogFollowsEverywhere"))
         .Options(CheckboxOptions().Tooltip("Allows dogs to follow you anywhere you go, even if you leave the Market."));
