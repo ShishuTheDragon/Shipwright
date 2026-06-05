@@ -14,6 +14,7 @@
 #include <overlays/actors/ovl_Obj_Switch/z_obj_switch.h>
 #include <overlays/effects/ovl_Effect_Ss_HitMark/z_eff_ss_hitmark.h>
 #include "soh/OTRGlobals.h"
+#include "soh/framebuffer_effects.h"
 #include "soh/ResourceManagerHelpers.h"
 #include "objects/gameplay_field_keep/gameplay_field_keep.h"
 #include "overlays/actors/ovl_Demo_Effect/z_demo_effect.h"
@@ -1210,20 +1211,14 @@ void EnPartner_Draw(Actor* thisx, PlayState* play) {
         DrawOrb(this, play, this->usedSpell);
     }
 
-    // Draw stamina bar on Ivan's half of the split screen.
-    // Only emit overlay commands once (Ivan's pass = pass 1).
-    if (!gSplitScreenActive || gSplitScreenPass == 1) {
-        // Bar layout: 4px per stamina unit, 1px border all around.
-        //   Background: (167,209)-(232,217)  66 x 9 px
-        //   Fill max:   (168,210)-(231,216)  64 x 7 px
+    // Draw stamina bar in the Ivan window.
+    if (gIvanFrameBuffer >= 0) {
         #define IVAN_SBAR_X  200
         #define IVAN_SBAR_Y  4
 
         OPEN_DISPS(play->state.gfxCtx);
 
-        // Restrict scissor to the right half so the bar never bleeds left.
-        // gDPSetScissor(OVERLAY_DISP++, G_SC_NON_INTERLACE, SCREEN_WIDTH / 2, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
+        gsSPSetFBNoClearDepth(OVERLAY_DISP++, gIvanFrameBuffer);
         // Solid-color rect setup (same pipeline as the screen-fade rect in z_parameter.c).
         gDPPipeSync(OVERLAY_DISP++);
         gSPClearGeometryMode(OVERLAY_DISP++, G_ZBUFFER | G_SHADE | G_CULL_BOTH | G_FOG | G_LIGHTING |
@@ -1248,6 +1243,9 @@ void EnPartner_Draw(Actor* thisx, PlayState* play) {
                 IVAN_SBAR_X, IVAN_SBAR_Y,
                 IVAN_SBAR_X + this->stamina - 1, IVAN_SBAR_Y + 6);
         }
+
+        gDPPipeSync(OVERLAY_DISP++);
+        gsSPResetFB(OVERLAY_DISP++);
 
         CLOSE_DISPS(play->state.gfxCtx);
 
