@@ -1447,7 +1447,7 @@ void Play_Draw(PlayState* play) {
                 gsSPSetFB(POLY_OPA_DISP++, gIvanFrameBuffer);
                 gDPPipeSync(POLY_OPA_DISP++);
                 gDPSetDepthImage(POLY_OPA_DISP++, gIvanZBuffer);
-                gsSPSetFB(POLY_XLU_DISP++, gIvanFrameBuffer);
+                gsSPSetFBNoClearDepth(POLY_XLU_DISP++, gIvanFrameBuffer);
                 gDPPipeSync(POLY_XLU_DISP++);
                 gDPSetDepthImage(POLY_XLU_DISP++, gIvanZBuffer);
                 // Restore clean view then set Ivan camera (full-width viewport)
