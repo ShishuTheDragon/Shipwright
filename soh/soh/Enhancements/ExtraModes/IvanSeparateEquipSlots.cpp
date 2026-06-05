@@ -1,6 +1,7 @@
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/ShipInit.hpp"
 #include "soh/OTRGlobals.h"
+#include "soh/framebuffer_effects.h"
 
 #include "textures/parameter_static/parameter_static.h"
 #include "soh_assets.h"
@@ -24,10 +25,10 @@ static const s16 itemIconTexStep = 512 * 32 / itemIconSize;
 static const s16 itemSpacing = 16;
 static const s16 dPadSize = 32;
 static const s16 dPadTexStep = 512;
-static const s16 dPadCenterX = 186;
-static const s16 cButtonsCenterX = 348;
-static const s16 dPadCenterY = 216;
-static const s16 cButtonsCenterY = 216;
+static const s16 dPadCenterX = 80;
+static const s16 cButtonsCenterX = 240;
+static const s16 dPadCenterY = 200;
+static const s16 cButtonsCenterY = 200;
 static const s16 naviLabelYOffset = 4;
 static const s16 naviLabelXOffset = 8;
 
@@ -114,11 +115,16 @@ void OnKaleidoUpdate() {
 }
 
 extern "C" void Ivan_DrawInventory() {
+    if (gIvanFrameBuffer < 0) {
+        return;
+    }
+
     auto play = gPlayState;
     auto interfaceCtx = &gPlayState->interfaceCtx;
 
     OPEN_DISPS(play->state.gfxCtx);
 
+    gsSPSetFBNoClearDepth(OVERLAY_DISP++, gIvanFrameBuffer);
     gDPPipeSync(OVERLAY_DISP++);
     gDPSetCombineMode(OVERLAY_DISP++, G_CC_MODULATEIA_PRIM, G_CC_MODULATEIA_PRIM);
     gDPSetEnvColor(OVERLAY_DISP++, 0, 0, 0, 255);
@@ -228,6 +234,7 @@ extern "C" void Ivan_DrawInventory() {
     }
 
     gDPPipeSync(OVERLAY_DISP++);
+    gsSPResetFB(OVERLAY_DISP++);
 
     CLOSE_DISPS(play->state.gfxCtx);
 }
