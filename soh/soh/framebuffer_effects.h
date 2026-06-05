@@ -8,6 +8,7 @@ extern s32 gBlurFrameBuffer;
 extern s32 gReusableFrameBuffer;
 extern s32 gN64ResFrameBuffer;
 extern s32 gIvanFrameBuffer;
+extern uint32_t gIvanViewportN64Height;
 
 void FB_CreateFramebuffers(void);
 void FB_CopyToFramebuffer(Gfx** gfxp, s32 fb_src, s32 fb_dest, u8 oncePerFrame, u8* hasCopied);

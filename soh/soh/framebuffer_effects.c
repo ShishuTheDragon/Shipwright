@@ -16,6 +16,7 @@ s32 gN64ResFrameBuffer = -1;
 
 // Ivan (EnPartner) secondary viewpoint buffer
 s32 gIvanFrameBuffer = -1;
+uint32_t gIvanViewportN64Height = 0;
 
 void FB_CreateFramebuffers(void) {
     if (gPauseFrameBuffer == -1) {

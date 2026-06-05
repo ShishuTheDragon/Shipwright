@@ -1478,6 +1478,9 @@ void Play_Draw(PlayState* play) {
                     play->view.eye.z = ivanCamResult.z + COLPOLY_GET_NORMAL(ivanCamPoly->normal.z);
                 }
                 play->view.fovy = 60.0f;
+                if (gIvanViewportN64Height > 0 && gIvanViewportN64Height <= SCREEN_HEIGHT) {
+                    play->view.viewport.bottomY = (s32)gIvanViewportN64Height;
+                }
             }
         }
 
