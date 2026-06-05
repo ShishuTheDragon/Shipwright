@@ -14,6 +14,9 @@ s32 gReusableFrameBuffer = -1;
 // N64 resolution sized buffer (320x240), used by picto box and deku bubble
 s32 gN64ResFrameBuffer = -1;
 
+// Ivan (EnPartner) secondary viewpoint buffer
+s32 gIvanFrameBuffer = -1;
+
 void FB_CreateFramebuffers(void) {
     if (gPauseFrameBuffer == -1) {
         gPauseFrameBuffer = gfx_create_framebuffer(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, true);
@@ -29,6 +32,10 @@ void FB_CreateFramebuffers(void) {
 
     if (gN64ResFrameBuffer == -1) {
         gN64ResFrameBuffer = gfx_create_framebuffer(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, false);
+    }
+
+    if (gIvanFrameBuffer == -1) {
+        gIvanFrameBuffer = gfx_create_framebuffer(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, true);
     }
 }
 

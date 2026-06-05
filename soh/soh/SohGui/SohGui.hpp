@@ -14,6 +14,7 @@
 #include "soh/Enhancements/controls/InputViewer.h"
 #include "soh/Enhancements/cosmetics/CosmeticsEditor.h"
 #include "soh/Enhancements/debugger/actorViewer.h"
+#include "soh/Enhancements/ExtraModes/IvanCam.h"
 #include "soh/Enhancements/debugger/colViewer.h"
 #include "soh/Enhancements/debugger/debugSaveEditor.h"
 #include "soh/Enhancements/debugger/hookDebugger.h"

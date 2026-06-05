@@ -1403,6 +1403,29 @@ void Play_Draw(PlayState* play) {
 
     Gfx_SetupFrame(gfxCtx, 0, 0, 0);
 
+    if (gIvanFrameBuffer >= 0) {
+        Gfx* gfxP = WORK_DISP;
+        gsSPSetFB(gfxP++, gIvanFrameBuffer);
+        gDPPipeSync(gfxP++);
+        gDPSetDepthImage(gfxP++, gIvanZBuffer);
+        gDPSetColorImage(gfxP++, G_IM_FMT_RGBA, G_IM_SIZ_16b, gScreenWidth, gIvanZBuffer);
+        gDPSetCycleType(gfxP++, G_CYC_FILL);
+        gDPSetRenderMode(gfxP++, G_RM_NOOP, G_RM_NOOP2);
+        gDPSetFillColor(gfxP++, (GPACK_ZDZ(G_MAXFBZ, 0) << 16) | GPACK_ZDZ(G_MAXFBZ, 0));
+        gDPFillRectangle(gfxP++, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+        gDPPipeSync(gfxP++);
+        gDPSetColorImage(gfxP++, G_IM_FMT_RGBA, G_IM_SIZ_16b, gScreenWidth, gIvanFrameBuffer);
+        gDPSetCycleType(gfxP++, G_CYC_FILL);
+        gDPSetRenderMode(gfxP++, G_RM_NOOP, G_RM_NOOP2);
+        gDPSetFillColor(gfxP++, (GPACK_RGBA5551(0, 0, 0, 1) << 16) | GPACK_RGBA5551(0, 0, 0, 1));
+        gDPFillRectangle(gfxP++, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+        gDPPipeSync(gfxP++);
+        gDPSetCycleType(gfxP++, G_CYC_1CYCLE);
+        gDPSetDepthImage(gfxP++, gZBuffer);
+        gsSPResetFB(gfxP++);
+        WORK_DISP = gfxP;
+    }
+
     if ((HREG(80) != 10) || (HREG(82) != 0)) {
         GameInteractor_ExecuteOnPlayDrawBegin();
 
@@ -1419,13 +1442,16 @@ void Play_Draw(PlayState* play) {
         for (s32 splitPass = 0; splitPass < numSplitPasses; splitPass++) {
         gSplitScreenPass = splitPass;
         if (splitScreenActive) {
-            if (splitPass == 0) {
-                // P1: left half
-                play->view.viewport.rightX = SCREEN_WIDTH / 2;
-            } else {
-                // P2: right half — restore clean view then override
+            if (splitPass == 1) {
+                // Ivan: switch rendering to Ivan's framebuffer
+                gsSPSetFB(POLY_OPA_DISP++, gIvanFrameBuffer);
+                gDPPipeSync(POLY_OPA_DISP++);
+                gDPSetDepthImage(POLY_OPA_DISP++, gIvanZBuffer);
+                gsSPSetFB(POLY_XLU_DISP++, gIvanFrameBuffer);
+                gDPPipeSync(POLY_XLU_DISP++);
+                gDPSetDepthImage(POLY_XLU_DISP++, gIvanZBuffer);
+                // Restore clean view then set Ivan camera (full-width viewport)
                 play->view = savedView;
-                play->view.viewport.leftX = SCREEN_WIDTH / 2;
                 // Ivan camera controlled by P2 right stick
                 play->view.up.x = 0.0f;
                 play->view.up.y = 1.0f;
@@ -1479,19 +1505,10 @@ void Play_Draw(PlayState* play) {
         // The billboard is still a viewing matrix at this stage
         Matrix_Mult(&play->billboardMtxF, MTXMODE_APPLY);
         Matrix_Get(&play->viewProjectionMtxF);
-        // Save Link's unscaled view-projection matrix on pass 0 so it can be
+        // Save Link's view-projection matrix on pass 0 so it can be
         // restored after the loop for use by update-phase code (Z-targeting etc.)
         if (splitScreenActive && splitPass == 0) {
             linkViewProjectionMtxF = play->viewProjectionMtxF;
-        }
-        // Widen the culling frustum for split screen: the half-width viewport creates a
-        // narrow 2:3 projection, but the renderer stretches to fill the actual half-window.
-        // Scale the X row to use the original 4:3 aspect so edge actors aren't culled.
-        if (splitScreenActive) {
-            play->viewProjectionMtxF.xx *= 0.5f;
-            play->viewProjectionMtxF.xy *= 0.5f;
-            play->viewProjectionMtxF.xz *= 0.5f;
-            play->viewProjectionMtxF.xw *= 0.5f;
         }
         play->billboardMtxF.mf[0][3] = play->billboardMtxF.mf[1][3] = play->billboardMtxF.mf[2][3] =
             play->billboardMtxF.mf[3][0] = play->billboardMtxF.mf[3][1] = play->billboardMtxF.mf[3][2] = 0.0f;
@@ -1681,17 +1698,19 @@ void Play_Draw(PlayState* play) {
             DebugDisplay_DrawObjects(play);
         }
 
-        // Draw the Z-targeting indicator during Link's pass so it uses Link's
-        // camera and appears in Link's viewport, not Ivan's.
+        // Draw the Z-targeting indicator during Link's pass so it uses Link's camera.
         if (splitScreenActive && splitPass == 0) {
-            // Set up OVERLAY_DISP's orthographic projection before drawing so
-            // the 2D lock-on triangles use the correct coordinate space.
             SET_FULLSCREEN_VIEWPORT(&play->interfaceCtx.view);
             func_800AB2C4(&play->interfaceCtx.view);
-            MtxF scaledMtxF = play->viewProjectionMtxF;
-            play->viewProjectionMtxF = linkViewProjectionMtxF;
             func_8002C124(&play->actorCtx.targetCtx, play);
-            play->viewProjectionMtxF = scaledMtxF;
+        }
+
+        // Restore main framebuffer after Ivan's render pass
+        if (splitScreenActive && splitPass == 1) {
+            gsSPResetFB(POLY_OPA_DISP++);
+            gDPSetDepthImage(POLY_OPA_DISP++, gZBuffer);
+            gsSPResetFB(POLY_XLU_DISP++);
+            gDPSetDepthImage(POLY_XLU_DISP++, gZBuffer);
         }
 
         } // end split-screen for loop
