@@ -54,6 +54,7 @@ static s16 Ivan_GetRegenRate(void) {
 #define IVAN_STAMINA_HAMMER          6
 #define IVAN_STAMINA_BEANS           40
 #define IVAN_STAMINA_SPELL           1   // per frame
+
 void EnPartner_Init(Actor* thisx, PlayState* play);
 void EnPartner_Destroy(Actor* thisx, PlayState* play);
 void EnPartner_Update(Actor* thisx, PlayState* play);
@@ -176,6 +177,8 @@ void EnPartner_Init(Actor* thisx, PlayState* play) {
     thisx->room = -1;
 
     gIvanActor = this;
+    gIvanCamYaw = (f32)this->actor.shape.rot.y;
+    gIvanCamPitch = 0;
 }
 
 void EnPartner_Destroy(Actor* thisx, PlayState* play) {
@@ -585,12 +588,19 @@ void UseNuts(Actor* thisx, PlayState* play, u8 started) {
         if (started == 1) {
             if (this->stamina >= IVAN_STAMINA_DEKU_NUT) {
                 this->itemTimer = 10;
+                this->usedItem = 0xFF;
+
+                // Snap Ivan to camera yaw so the firing pose matches the shot direction
+                this->actor.world.rot.y = (s16)gIvanCamYaw;
+                this->actor.shape.rot.y = (s16)gIvanCamYaw;
+
                 Actor_Spawn(&play->actorCtx, play, ACTOR_EN_ARROW, this->actor.world.pos.x, this->actor.world.pos.y + 7,
                             this->actor.world.pos.z, (s16)gIvanCamPitch, (s16)gIvanCamYaw, 0, ARROW_NUT);
 
                 Ivan_UseStamina(this, IVAN_STAMINA_DEKU_NUT);
             } else {
                 Sfx_PlaySfxCentered(NA_SE_SY_ERROR);
+                this->usedItem = 0xFF;
             }
         }
     }
@@ -844,23 +854,39 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
 
     Input sControlInput = play->state.input[this->actor.params];
 
+    // Right stick camera control
+    f32 rsX = -sControlInput.cur.right_stick_x * 10.0f * (CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0) ? -1 : 1);
+    f32 rsY = sControlInput.cur.right_stick_y * 10.0f;
+    gIvanCamYaw += rsX;
+    gIvanCamPitch += rsY;
+    if (gIvanCamPitch > 0x32A4) {
+        gIvanCamPitch = 0x32A4;
+    }
+    if (gIvanCamPitch < -0x228C) {
+        gIvanCamPitch = -0x228C;
+    }
+
     f32 relX = sControlInput.cur.stick_x / 10.0f * (CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0) ? -1 : 1);
     f32 relY = sControlInput.cur.stick_y / 10.0f;
 
-    Vec3f camForward = { GET_ACTIVE_CAM(play)->at.x - GET_ACTIVE_CAM(play)->eye.x, 0.0f,
-                         GET_ACTIVE_CAM(play)->at.z - GET_ACTIVE_CAM(play)->eye.z };
-    camForward = Vec3fNormalize(camForward);
+    // Movement relative to Ivan's own camera (yaw + pitch)
+    f32 yawSin   = Math_SinS((s16)gIvanCamYaw);
+    f32 yawCos   = Math_CosS((s16)gIvanCamYaw);
+    f32 pitchSin = Math_SinS((s16)gIvanCamPitch);
+    f32 pitchCos = Math_CosS((s16)gIvanCamPitch);
 
-    Vec3f camRight = { -camForward.z, 0.0f, camForward.x };
+    // eye->lookAt direction matching z_play.c view calculation
+    Vec3f camForward = { yawSin * pitchCos, -pitchSin, yawCos * pitchCos };
+    // Right stays horizontal so strafing doesn't tilt with pitch
+    Vec3f camRight   = { -yawCos, 0.0f, yawSin };
 
     this->actor.velocity.x = 0;
     this->actor.velocity.y = 0;
     this->actor.velocity.z = 0;
 
-    this->actor.velocity.x += camRight.x * relX;
-    this->actor.velocity.z += camRight.z * relX;
-    this->actor.velocity.x += camForward.x * relY;
-    this->actor.velocity.z += camForward.z * relY;
+    this->actor.velocity.x += camRight.x * relX + camForward.x * relY;
+    this->actor.velocity.y +=                     camForward.y * relY;
+    this->actor.velocity.z += camRight.z * relX + camForward.z * relY;
 
     if (this->actor.velocity.x != 0 || this->actor.velocity.z != 0) {
         int16_t finalDir = Math_Atan2S(-this->actor.velocity.x, this->actor.velocity.z) - 0x4000;
