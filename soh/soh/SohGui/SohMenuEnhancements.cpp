@@ -1667,6 +1667,9 @@ void SohMenu::AddMenuEnhancements() {
                             CVarGetInteger(CVAR_ENHANCEMENT("IvanCoop.NoOcarinaFreeze"), 0) == 0;
         })
         .Options(CheckboxOptions().Tooltip("Allows Link to take damage while playing the Ocarina."));
+    AddWidget(path, "Render Every Room", WIDGET_CVAR_CHECKBOX)
+        .CVar(CVAR_ENHANCEMENT("IvanCoop.RenderEveryRoom"))
+        .PreFunc([](WidgetInfo& info) { info.isHidden = CVarGetInteger(CVAR_ENHANCEMENT("IvanCoopModeEnabled"), 0) == 0; });
     path.column = SECTION_COLUMN_1;
     AddWidget(path, "Dogs Follow You Everywhere", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_ENHANCEMENT("DogFollowsEverywhere"))
