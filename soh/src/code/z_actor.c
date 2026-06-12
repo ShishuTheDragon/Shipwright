@@ -3055,6 +3055,9 @@ void func_800315AC(PlayState* play, ActorContext* actorCtx) {
     for (i = 0; i < ARRAY_COUNT(actorCtx->actorLists); i++, actorListEntry++) {
         actor = actorListEntry->head;
 
+        if (i != 4)
+            continue;
+
         while (actor != NULL) {
             char* actorName = ActorDB_Retrieve(actor->id)->name;
 

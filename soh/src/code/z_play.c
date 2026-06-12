@@ -1564,6 +1564,7 @@ void Play_Draw(PlayState* play) {
 
         if ((HREG(80) != 10) || (HREG(85) != 0)) {
             func_800315AC(play, &play->actorCtx);
+            GameInteractor_ExecuteOnPlayDrawEnd();
         }
 
         if ((HREG(80) != 10) || (HREG(86) != 0)) {
@@ -1645,7 +1646,7 @@ void Play_Draw(PlayState* play) {
 
         // Draw Enhancements that need to be placed in the world. This happens before the PostWorldDraw
         // so that they aren't drawn when the pause menu is up (e.g. collision viewer, actor name tags)
-        GameInteractor_ExecuteOnPlayDrawEnd();
+        // GameInteractor_ExecuteOnPlayDrawEnd();
 
     Play_Draw_DrawOverlayElements:
         if ((HREG(80) != 10) || (HREG(89) != 0)) {

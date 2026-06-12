@@ -43,6 +43,7 @@ static void DrawStuff(Actor* thisx, PlayState* play) {
             continue;
         if (roomNum == play->roomCtx.prevRoom.num)
             continue;
+        // gSPSegment(POLY_OPA_DISP++, 0x03, allRooms[roomNum].segment);
         Room_Draw(play, &allRooms[roomNum], 3);
     }
 }
@@ -97,7 +98,7 @@ static void SpawnThingsCore() {
     Actor* actor =
         Actor_Spawn(&gPlayState->actorCtx, gPlayState, ACTOR_BG_SPOT17_FUNEN, 0, 0, 0, 0, 0, 0, 0);
     actor->update = Nothing;
-    actor->draw = DrawStuff;
+    actor->draw = Nothing;
     actor->room = -1;
     customDrawer = actor;
 }
@@ -137,6 +138,16 @@ static void AfterSceneCommands(int) {
     }
 }
 
+static void OnPlayDrawEnd() {
+    if (!gPlayState)
+        return;
+    if (!SceneSupported(gPlayState->sceneNum))
+        return;
+    if (needsLoading)
+        return;
+    DrawStuff(nullptr, gPlayState);
+}
+
 static void RegisterRenderAllRooms() {
     if (CVAR_VALUE) {
         ResetThings();
@@ -150,6 +161,8 @@ static void RegisterRenderAllRooms() {
     });
 
     COND_HOOK(AfterSceneCommands, CVAR_VALUE, AfterSceneCommands);
+
+    COND_HOOK(OnPlayDrawEnd, CVAR_VALUE, OnPlayDrawEnd);
 }
 
 static RegisterShipInitFunc initFunc(RegisterRenderAllRooms, { CVAR_NAME });
