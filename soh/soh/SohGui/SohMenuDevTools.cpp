@@ -1,5 +1,6 @@
 #include "SohMenu.h"
 #include "SohGui.hpp"
+#include "soh/SohGui/MenuTypes.h"
 
 extern "C" {
 extern PlayState* gPlayState;
@@ -78,6 +79,8 @@ void SohMenu::AddMenuDevTools() {
     AddWidget(path, "Resource logging", WIDGET_CVAR_CHECKBOX)
         .CVar(CVAR_DEVELOPER_TOOLS("ResourceLogging"))
         .Options(CheckboxOptions().Tooltip("Logs some resources as XML when they're loaded in binary format."));
+    AddWidget(path, "Render all rooms", WIDGET_CVAR_CHECKBOX)
+        .CVar(CVAR_DEVELOPER_TOOLS("RenderAllRooms"));
 
     AddWidget(path, "Frame Advance", WIDGET_CHECKBOX)
         .Options(CheckboxOptions().Tooltip(
