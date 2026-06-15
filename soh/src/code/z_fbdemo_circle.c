@@ -165,9 +165,11 @@ void TransitionCircle_Draw(void* thisx, Gfx** gfxP) {
     gSPMatrix(gfx++, &this->lookAt, G_MTX_PROJECTION | G_MTX_NOPUSH | G_MTX_MUL);
 
     float aspectRatio = OTRGetAspectRatio();
+    // Use the larger axis ratio so the circle covers the full screen at any aspect.
+    float circleScale = fmaxf(aspectRatio, 1.0f / aspectRatio);
 
     if (scale != 1.0f) {
-        guScale(&modelView[0], scale * aspectRatio, scale * aspectRatio, 1.0f);
+        guScale(&modelView[0], scale * circleScale, scale * circleScale, 1.0f);
         gSPMatrix(gfx++, &modelView[0], G_MTX_LOAD);
     }
 

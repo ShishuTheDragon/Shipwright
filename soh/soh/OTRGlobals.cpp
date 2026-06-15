@@ -2193,11 +2193,14 @@ extern "C" float OTRGetAspectRatio() {
 }
 
 extern "C" float OTRGetDimensionFromLeftEdge(float v) {
-    return (SCREEN_WIDTH / 2 - SCREEN_HEIGHT / 2 * OTRGetAspectRatio() + (v));
+    // Clamp to 4:3 minimum — for tallscreen, don't compress the canvas inward.
+    float aspect = fmaxf(OTRGetAspectRatio(), 4.0f / 3.0f);
+    return (SCREEN_WIDTH / 2 - SCREEN_HEIGHT / 2 * aspect + (v));
 }
 
 extern "C" float OTRGetDimensionFromRightEdge(float v) {
-    return (SCREEN_WIDTH / 2 + SCREEN_HEIGHT / 2 * OTRGetAspectRatio() - (SCREEN_WIDTH - v));
+    float aspect = fmaxf(OTRGetAspectRatio(), 4.0f / 3.0f);
+    return (SCREEN_WIDTH / 2 + SCREEN_HEIGHT / 2 * aspect - (SCREEN_WIDTH - v));
 }
 
 // Gets the width of the current render target area
