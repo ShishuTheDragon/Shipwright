@@ -1401,7 +1401,8 @@ void Play_Draw(PlayState* play) {
         GameInteractor_ExecuteOnPlayDrawBegin();
 
         // Split-screen setup for Ivan coop
-        s32 splitScreenActive = (gIvanActor != NULL) && CVarGetInteger(CVAR_ENHANCEMENT("IvanCoopModeEnabled"), 0);
+        s32 splitScreenActive = (gIvanActor != NULL) &&
+            CVarGetInteger(CVAR_ENHANCEMENT("IvanCoop.SplitScreen"), IVAN_SPLIT_SCREEN_OFF) == IVAN_SPLIT_SCREEN_METHOD1;
         s32 numSplitPasses = splitScreenActive ? 2 : 1;
         View savedView;
         MtxF linkViewProjectionMtxF;

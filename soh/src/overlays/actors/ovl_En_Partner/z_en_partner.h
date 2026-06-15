@@ -62,6 +62,10 @@ void EnPartner_Draw(Actor* thisx, PlayState* play);
 }
 #endif
 
+#define IVAN_SPLIT_SCREEN_OFF     0
+#define IVAN_SPLIT_SCREEN_METHOD1 1
+#define IVAN_SPLIT_SCREEN_METHOD2 2
+
 extern EnPartner* gIvanActor;
 extern f32 gIvanCamYaw;
 extern f32 gIvanCamPitch;
