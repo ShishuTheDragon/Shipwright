@@ -1,0 +1,263 @@
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
+#include "soh/ShipInit.hpp"
+#include "soh/OTRGlobals.h"
+
+extern "C" {
+#include "macros.h"
+#include "variables.h"
+#include "functions.h"
+#include <overlays/actors/ovl_En_Partner/z_en_partner.h>
+extern PlayState* gPlayState;
+void FrameInterpolation_RecordOpenChild(const void* a, int b);
+void FrameInterpolation_RecordCloseChild(void);
+int16_t OTRGetRectDimensionFromRightEdge(float v);
+}
+
+#define CVAR_NAME CVAR_ENHANCEMENT("IvanCoop.SplitScreen")
+#define CVAR_IVAN_MODE CVAR_ENHANCEMENT("IvanCoopModeEnabled")
+
+static bool IsEnabled() {
+    return CVarGetInteger(CVAR_IVAN_MODE, 0) &&
+           CVarGetInteger(CVAR_NAME, 0) == IVAN_SPLIT_SCREEN_METHOD2;
+}
+
+static Gfx ivan_opa[0x2FC0];
+static Gfx ivan_xlu[0x1000];
+
+static void SetIvansCameraAndViewport() {
+    const f32 camDist = 90.0f;
+    const f32 lookAtHeight = 40.0f;
+    const f32 fovy = 60.0f;
+
+    // Convenience variables:
+    PlayState* play = gPlayState;
+
+    // Read some (currently) global variables:
+    Vec3f ivanPos = gIvanActor->actor.world.pos;
+    s16 yaw = (s16)gIvanCamYaw;
+    s16 pitch = (s16)gIvanCamPitch;
+
+    // Setup camera position and direction:
+    play->view.up.x = 0.0f;
+    play->view.up.y = 1.0f;
+    play->view.up.z = 0.0f;
+    play->view.eye.x = ivanPos.x - Math_SinS(yaw) * Math_CosS(pitch) * camDist;
+    play->view.eye.y = ivanPos.y + lookAtHeight + Math_SinS(pitch) * camDist;
+    play->view.eye.z = ivanPos.z - Math_CosS(yaw) * Math_CosS(pitch) * camDist;
+    play->view.lookAt.x = ivanPos.x;
+    play->view.lookAt.y = ivanPos.y + lookAtHeight;
+    play->view.lookAt.z = ivanPos.z;
+    play->view.fovy = fovy;
+
+    // Apply collision to camera position:
+    Vec3f ivanCamResult;
+    CollisionPoly* ivanCamPoly = NULL;
+    s32 ivanCamBgId = 0;
+    if (BgCheck_CameraLineTest1(&play->colCtx, &play->view.lookAt, &play->view.eye, &ivanCamResult, &ivanCamPoly, 1, 1,
+                                1, -1, &ivanCamBgId)) {
+        play->view.eye.x = ivanCamResult.x + COLPOLY_GET_NORMAL(ivanCamPoly->normal.x);
+        play->view.eye.y = ivanCamResult.y + COLPOLY_GET_NORMAL(ivanCamPoly->normal.y);
+        play->view.eye.z = ivanCamResult.z + COLPOLY_GET_NORMAL(ivanCamPoly->normal.z);
+    }
+
+    // Set viewport to right half of screen:
+    play->view.viewport.leftX = SCREEN_WIDTH / 2;
+    play->view.viewport.rightX = SCREEN_WIDTH;
+}
+
+static void RenderEverything() {
+    // Convenience variables:
+    PlayState* play = gPlayState;
+    GraphicsContext* gfxCtx = play->state.gfxCtx;
+
+    // Emit fog for both display lists
+    OPEN_DISPS(gfxCtx);
+    POLY_OPA_DISP = Play_SetFog(play, POLY_OPA_DISP);
+    POLY_XLU_DISP = Play_SetFog(play, POLY_XLU_DISP);
+    CLOSE_DISPS(gfxCtx);
+
+    // Compute Ivan's view/projection matrices and emit the viewport scissor
+    func_800AA460(&play->view, play->view.fovy, play->view.zNear, play->lightCtx.fogFar);
+    func_800AAA50(&play->view, 15);
+
+    // MirroredWorld: flip projection and invert culling for Ivan's pass
+    if (CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0)) {
+        OPEN_DISPS(gfxCtx);
+        gSPSetExtraGeometryMode(POLY_OPA_DISP++, G_EX_INVERT_CULLING);
+        gSPSetExtraGeometryMode(POLY_XLU_DISP++, G_EX_INVERT_CULLING);
+        gSPMatrix(POLY_OPA_DISP++, play->view.projectionFlippedPtr, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
+        gSPMatrix(POLY_XLU_DISP++, play->view.projectionFlippedPtr, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
+        gSPMatrix(POLY_OPA_DISP++, play->view.viewingPtr, G_MTX_NOPUSH | G_MTX_MUL | G_MTX_PROJECTION);
+        gSPMatrix(POLY_XLU_DISP++, play->view.viewingPtr, G_MTX_NOPUSH | G_MTX_MUL | G_MTX_PROJECTION);
+        CLOSE_DISPS(gfxCtx);
+    }
+
+    // Build billboard matrix and view-projection matrix (mirror z_play.c:1471-1496)
+    Matrix_MtxToMtxF(&play->view.viewing, &play->billboardMtxF);
+    Matrix_MtxToMtxF(&play->view.projection, &play->viewProjectionMtxF);
+    Matrix_Mult(&play->viewProjectionMtxF, MTXMODE_NEW);
+    Matrix_Mult(&play->billboardMtxF, MTXMODE_APPLY);
+    Matrix_Get(&play->viewProjectionMtxF);
+
+    // Widen frustum X row for half-width viewport so edge actors aren't culled
+    play->viewProjectionMtxF.xx *= 0.5f;
+    play->viewProjectionMtxF.xy *= 0.5f;
+    play->viewProjectionMtxF.xz *= 0.5f;
+    play->viewProjectionMtxF.xw *= 0.5f;
+
+    play->billboardMtxF.mf[0][3] = play->billboardMtxF.mf[1][3] = play->billboardMtxF.mf[2][3] =
+        play->billboardMtxF.mf[3][0] = play->billboardMtxF.mf[3][1] = play->billboardMtxF.mf[3][2] = 0.0f;
+    Matrix_Transpose(&play->billboardMtxF);
+    play->billboardMtx =
+        Matrix_MtxFToMtx(MATRIX_CHECKFLOATS(&play->billboardMtxF), (Mtx*)Graph_Alloc(gfxCtx, sizeof(Mtx)));
+
+    // Emit segment registers
+    OPEN_DISPS(gfxCtx);
+    gSPSegment(POLY_OPA_DISP++, 0x01, (uintptr_t)play->billboardMtx);
+    gSPSegment(POLY_XLU_DISP++, 0x01, (uintptr_t)play->billboardMtx);
+    gSPSegment(POLY_OPA_DISP++, 0x02, (uintptr_t)play->sceneSegment);
+    gSPSegment(POLY_XLU_DISP++, 0x02, (uintptr_t)play->sceneSegment);
+    CLOSE_DISPS(gfxCtx);
+
+    // Skybox first call
+    if (play->skyboxId && (play->skyboxId != SKYBOX_UNSET_1D) && !play->envCtx.skyboxDisabled) {
+        if ((play->skyboxId == SKYBOX_NORMAL_SKY) || (play->skyboxId == SKYBOX_CUTSCENE_MAP)) {
+            Environment_UpdateSkybox(play, play->skyboxId, &play->envCtx, &play->skyboxCtx);
+            SkyboxDraw_Draw(&play->skyboxCtx, gfxCtx, play->skyboxId, play->envCtx.skyboxBlend,
+                            play->view.eye.x, play->view.eye.y, play->view.eye.z);
+        } else if (play->skyboxCtx.unk_140 == 0) {
+            SkyboxDraw_Draw(&play->skyboxCtx, gfxCtx, play->skyboxId, 0,
+                            play->view.eye.x, play->view.eye.y, play->view.eye.z);
+        }
+    }
+
+    if (!play->envCtx.sunMoonDisabled) {
+        Environment_DrawSunAndMoon(play);
+    }
+
+    Environment_DrawSkyboxFilters(play);
+
+    // Draw-only — Environment_UpdateLightningStrike runs in Play_Update, not here
+    Environment_DrawLightning(play, 0);
+
+    // Set up lights then draw world geometry
+    Lights* lights = LightContext_NewLights(&play->lightCtx, gfxCtx);
+    Lights_BindAll(lights, play->lightCtx.listHead, NULL);
+    Lights_Draw(lights, gfxCtx);
+
+    Scene_Draw(play);
+    Room_Draw(play, &play->roomCtx.curRoom, 3);
+    Room_Draw(play, &play->roomCtx.prevRoom, 3);
+
+    // Skybox second call (camera-quake path)
+    if ((play->skyboxCtx.unk_140 != 0) && (GET_ACTIVE_CAM(play)->setting != CAM_SET_PREREND_FIXED)) {
+        Vec3f quakeOffset;
+        Camera_GetSkyboxOffset(&quakeOffset, GET_ACTIVE_CAM(play));
+        SkyboxDraw_Draw(&play->skyboxCtx, gfxCtx, play->skyboxId, 0,
+                        play->view.eye.x + quakeOffset.x, play->view.eye.y + quakeOffset.y,
+                        play->view.eye.z + quakeOffset.z);
+    }
+
+    if (play->envCtx.unk_EE[1] != 0) {
+        Environment_DrawRain(play, &play->view, gfxCtx);
+    }
+
+    Environment_FillScreen(gfxCtx, 0, 0, 0, play->unk_11E18, FILL_SCREEN_OPA);
+
+    // Draw actors (Lens of Truth forced off for Ivan's pass).
+    u8 savedLensActive = play->actorCtx.lensActive;
+    play->actorCtx.lensActive = false;
+    func_800315AC(play, &play->actorCtx);
+    play->actorCtx.lensActive = savedLensActive;
+
+    // Gameplay tints (skip MREG debug block per REFACTOR.md)
+    switch (play->envCtx.fillScreen) {
+        case 1:
+            Environment_FillScreen(gfxCtx, play->envCtx.screenFillColor[0], play->envCtx.screenFillColor[1],
+                                   play->envCtx.screenFillColor[2], play->envCtx.screenFillColor[3],
+                                   FILL_SCREEN_OPA | FILL_SCREEN_XLU);
+            break;
+        default:
+            break;
+    }
+
+    if (play->envCtx.sandstormState != SANDSTORM_OFF) {
+        Environment_DrawSandstorm(play, play->envCtx.sandstormState);
+    }
+}
+
+static void OnPlayDrawBegin() {
+    if (gIvanActor == NULL)
+        return;
+
+    PlayState* play = gPlayState;
+
+    // The original game skips all world rendering when paused (R_PAUSE_MENU_MODE >= 3
+    // jumps to overlay elements via goto). KaleidoScope draws full-screen, so Ivan's
+    // half needs no world render during pause.
+    // if ((play->pauseCtx.state != 0) || (play->pauseCtx.debugState != 0))
+        // return;
+
+    if (R_PAUSE_MENU_MODE == 2 || R_PAUSE_MENU_MODE == 3)
+        return;
+
+    GraphicsContext* gfxCtx = play->state.gfxCtx;
+
+    // Save the real GfxPool arenas and original camera/viewport:
+    TwoHeadGfxArena savedOpa = gfxCtx->polyOpa;
+    TwoHeadGfxArena savedXlu = gfxCtx->polyXlu;
+    View savedView = play->view;
+    MtxF linkViewProjectionMtxF = play->viewProjectionMtxF;
+
+    // To avoid buffer overflow, replace the GfxPool arenas with our own separate buffers:
+    THGA_Ct(&gfxCtx->polyOpa, ivan_opa, sizeof(ivan_opa));
+    THGA_Ct(&gfxCtx->polyXlu, ivan_xlu, sizeof(ivan_xlu));
+
+    // Render the world from Ivan’s view:
+    SetIvansCameraAndViewport();
+    RenderEverything();
+
+    // Our own separate display lists will “called” from the real display list, so
+    // we need to add the “return” statement:
+    OPEN_DISPS(gfxCtx);
+    gSPEndDisplayList(POLY_OPA_DISP++);
+    gSPEndDisplayList(POLY_XLU_DISP++);
+    CLOSE_DISPS(gfxCtx);
+
+    // Check for overflow while still pointing at the Ivan buffers
+    // TODO: do something if crashed (e.g. skip rendering)
+    if (THGA_IsCrash(&gfxCtx->polyOpa)) {
+        SPDLOG_ERROR("IvanSplitScreen: ivan_opa buffer overflow");
+    }
+    if (THGA_IsCrash(&gfxCtx->polyXlu)) {
+        SPDLOG_ERROR("IvanSplitScreen: ivan_xlu buffer overflow");
+    }
+
+    // Restore the real GfxPool arenas and original camera/viewport:
+    gfxCtx->polyOpa = savedOpa;
+    gfxCtx->polyXlu = savedXlu;
+    play->view = savedView;
+    play->viewProjectionMtxF = linkViewProjectionMtxF;
+
+    // “Call” our separate display lists:
+    OPEN_DISPS(gfxCtx);
+    gSPDisplayList(POLY_OPA_DISP++, ivan_opa);
+    gSPDisplayList(POLY_XLU_DISP++, ivan_xlu);
+    CLOSE_DISPS(gfxCtx);
+
+    // Lastly, before closing off, set Link’s viewport to left half of screen:
+    play->view.viewport.rightX = SCREEN_WIDTH / 2;
+}
+
+static void OnPlayDrawEnd() {
+    if (!gPlayState)
+        return;
+    gPlayState->view.viewport.rightX = SCREEN_WIDTH;
+}
+
+static void RegisterIvanSplitScreen() {
+    COND_HOOK(OnPlayDrawBegin, IsEnabled(), OnPlayDrawBegin);
+    COND_HOOK(OnPlayDrawEnd, IsEnabled(), OnPlayDrawEnd);
+}
+
+static RegisterShipInitFunc initFunc(RegisterIvanSplitScreen, { CVAR_IVAN_MODE, CVAR_NAME });
