@@ -201,6 +201,10 @@ static void OnPlayDrawBegin() {
     if (R_PAUSE_MENU_MODE == 2 || R_PAUSE_MENU_MODE == 3)
         return;
 
+    s16 camSetting = GET_ACTIVE_CAM(play)->setting;
+    if (camSetting == CAM_SET_PREREND_FIXED || camSetting == CAM_SET_PREREND_PIVOT)
+        return;
+
     GraphicsContext* gfxCtx = play->state.gfxCtx;
 
     // Save the real GfxPool arenas and original camera/viewport:
