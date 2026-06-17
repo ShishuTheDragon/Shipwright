@@ -10,6 +10,7 @@ extern "C" {
 extern PlayState* gPlayState;
 void FrameInterpolation_RecordOpenChild(const void* a, int b);
 void FrameInterpolation_RecordCloseChild(void);
+int16_t OTRGetRectDimensionFromLeftEdge(float v);
 int16_t OTRGetRectDimensionFromRightEdge(float v);
 }
 
@@ -186,7 +187,11 @@ static void RenderEverything() {
     }
 }
 
+static bool did = false;
+
 static void OnPlayDrawBegin() {
+    did = false;
+
     if (gIvanActor == NULL)
         return;
 
@@ -204,6 +209,8 @@ static void OnPlayDrawBegin() {
     s16 camSetting = GET_ACTIVE_CAM(play)->setting;
     if (camSetting == CAM_SET_PREREND_FIXED || camSetting == CAM_SET_PREREND_PIVOT)
         return;
+
+    did = true;
 
     GraphicsContext* gfxCtx = play->state.gfxCtx;
 
@@ -254,9 +261,23 @@ static void OnPlayDrawBegin() {
 }
 
 static void OnPlayDrawEnd() {
-    if (!gPlayState)
+    if (!did)
         return;
+
     gPlayState->view.viewport.rightX = SCREEN_WIDTH;
+
+    // Encode Link's half-viewport X remap into viewProjectionMtxF so func_8002C124
+    // places the Z-target lock-on triangles in the left half rather than screen center.
+    // Replicates Method 1's: spBC.x = spBC.x / 2 - viewportWidth / 2.
+    // viewportWidth accounts for widescreen (leftEdge goes negative beyond 4:3 bounds).
+    f32 leftEdge = (f32)OTRGetRectDimensionFromLeftEdge(0);
+    f32 viewportWidth = (f32)(SCREEN_WIDTH / 2) - leftEdge;
+    f32 xShift = viewportWidth / (f32)SCREEN_WIDTH;
+    MtxF* m = &gPlayState->viewProjectionMtxF;
+    m->xx = m->xx * 0.5f - xShift * m->wx;
+    m->xy = m->xy * 0.5f - xShift * m->wy;
+    m->xz = m->xz * 0.5f - xShift * m->wz;
+    m->xw = m->xw * 0.5f - xShift * m->ww;
 }
 
 static void RegisterIvanSplitScreen() {
