@@ -5402,7 +5402,7 @@ void Interface_Draw(PlayState* play) {
                 gSPMatrix(OVERLAY_DISP++, interfaceCtx->view.projectionFlippedPtr,
                           G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
             }
-            if (!gIvanActor) {
+            if (!gSplitScreenActive) {
                 func_8002C124(&play->actorCtx.targetCtx, play); // Draw Z-Target
             }
             if (CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0)) {
