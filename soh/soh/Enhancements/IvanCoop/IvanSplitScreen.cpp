@@ -25,6 +25,8 @@ static bool IsEnabled() {
 static Gfx ivan_opa[0x2FC0];
 static Gfx ivan_xlu[0x1000];
 
+static MtxF sIvanViewProjMtxF;
+
 static void SetIvansCameraAndViewport() {
     const f32 camDist = 90.0f;
     const f32 lookAtHeight = 40.0f;
@@ -228,6 +230,10 @@ static void OnPlayDrawBegin() {
     SetIvansCameraAndViewport();
     RenderEverything();
 
+    // Capture the live widened Ivan view-projection so OnPlayDrawEnd can re-project
+    // actors and OR-in Ivan's cull verdict. Same matrix func_800315AC used at line 171.
+    sIvanViewProjMtxF = play->viewProjectionMtxF;
+
     // Our own separate display lists will “called” from the real display list, so
     // we need to add the “return” statement:
     OPEN_DISPS(gfxCtx);
@@ -278,6 +284,25 @@ static void OnPlayDrawEnd() {
     m->xy = m->xy * 0.5f - xShift * m->wy;
     m->xz = m->xz * 0.5f - xShift * m->wz;
     m->xw = m->xw * 0.5f - xShift * m->ww;
+
+    // Union update-culling: re-project each actor through Ivan's captured matrix and OR-in
+    // its cull verdict so actors visible only in Ivan's half keep updating. func_800315AC
+    // already set/cleared the flag from Link's frustum this frame; we never clear here.
+    // Ship_CalcShouldDrawAndUpdate runs the vanilla cull first, so it covers both CVar paths.
+    ActorContext* actorCtx = &gPlayState->actorCtx;
+    for (s32 i = 0; i < ARRAY_COUNT(actorCtx->actorLists); i++) {
+        for (Actor* actor = actorCtx->actorLists[i].head; actor != NULL; actor = actor->next) {
+            Vec3f projPos;
+            f32 projW;
+            SkinMatrix_Vec3fMtxFMultXYZW(&sIvanViewProjMtxF, &actor->world.pos, &projPos, &projW);
+
+            bool shouldDraw = false;
+            bool shouldUpdate = false;
+            Ship_CalcShouldDrawAndUpdate(gPlayState, actor, &projPos, projW, &shouldDraw, &shouldUpdate);
+            if (shouldUpdate)
+                actor->flags |= ACTOR_FLAG_INSIDE_CULLING_VOLUME;
+        }
+    }
 }
 
 static void RegisterIvanSplitScreen() {
