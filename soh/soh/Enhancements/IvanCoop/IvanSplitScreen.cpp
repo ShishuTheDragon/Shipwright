@@ -199,7 +199,18 @@ static void RenderEverything() {
     // Draw actors (Lens of Truth forced off for Ivan's pass).
     u8 savedLensActive = play->actorCtx.lensActive;
     play->actorCtx.lensActive = false;
+
+    // Camera-billboarded draw functions (e.g. En_Light's flame) orient toward the active
+    // camera's cached direction. Point it at Ivan's view for this pass so the flame faces
+    // Ivan rather than Link, then restore Link's direction afterward.
+    Camera* activeCam = GET_ACTIVE_CAM(play);
+    Vec3s savedCamDir = activeCam->camDir;
+    activeCam->camDir.y = (s16)gIvanCamYaw;
+    activeCam->camDir.x = (s16)gIvanCamPitch;
+
     func_800315AC(play, &play->actorCtx);
+
+    activeCam->camDir = savedCamDir;
     play->actorCtx.lensActive = savedLensActive;
 
     // Gameplay tints (skip MREG debug block per REFACTOR.md)
