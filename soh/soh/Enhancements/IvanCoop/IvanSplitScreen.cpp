@@ -350,6 +350,18 @@ static void OnPlayDrawEnd() {
             Ship_CalcShouldDrawAndUpdate(gPlayState, actor, &projPos, projW, &shouldDraw, &shouldUpdate);
             if (shouldUpdate)
                 actor->flags |= ACTOR_FLAG_INSIDE_CULLING_VOLUME;
+
+            // Per-viewport audio loudness: func_800315AC registered each actor's SFX against
+            // &actor->projectedPos (the audio system holds the pointer and reads it on later
+            // frames). projectedPos currently holds Link's projection; if Ivan's viewport hears
+            // the actor louder (closer in projected space), swap in Ivan's so the SFX pans/volumes
+            // toward whichever half is nearer. Mirrors Method 1's z_actor.c:3109-3114.
+            f32 linkDistSq = SQ(actor->projectedPos.x) + SQ(actor->projectedPos.y) + SQ(actor->projectedPos.z);
+            f32 ivanDistSq = SQ(projPos.x) + SQ(projPos.y) + SQ(projPos.z);
+            if (ivanDistSq < linkDistSq) {
+                actor->projectedPos = projPos;
+                actor->projectedW = projW;
+            }
         }
     }
 }
