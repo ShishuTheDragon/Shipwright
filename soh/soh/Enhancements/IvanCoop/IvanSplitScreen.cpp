@@ -2,11 +2,14 @@
 #include "soh/ShipInit.hpp"
 #include "soh/OTRGlobals.h"
 
+#include <cstring>
+
 extern "C" {
 #include "macros.h"
 #include "variables.h"
 #include "functions.h"
 #include <overlays/actors/ovl_En_Partner/z_en_partner.h>
+#include <overlays/actors/ovl_Object_Kankyo/z_object_kankyo.h>
 extern PlayState* gPlayState;
 void FrameInterpolation_RecordOpenChild(const void* a, int b);
 void FrameInterpolation_RecordCloseChild(void);
@@ -26,6 +29,32 @@ static Gfx ivan_opa[0x2FC0];
 static Gfx ivan_xlu[0x1000];
 
 static MtxF sIvanViewProjMtxF;
+
+// The snow effect (Object_Kankyo, params 3) runs its whole simulation inside its draw
+// function and anchors every flake relative to play->view. Rendering the world twice would
+// otherwise advance Link's flakes against Ivan's camera, flinging them onto the near plane
+// (the giant stretched quad). Give Ivan a private snow state and swap it in around his pass.
+static ObjectKankyoEffect sIvanSnowEffects[ARRAY_COUNT(((ObjectKankyo*)0)->effects)] = {};
+static u8 sIvanSnowCount = 0;
+
+static ObjectKankyo* FindSnowActor(PlayState* play) {
+    Actor* actor = Actor_Find(&play->actorCtx, ACTOR_OBJECT_KANKYO, ACTORCAT_ITEMACTION);
+    if (actor != NULL && actor->params == 3) {
+        return (ObjectKankyo*)actor;
+    }
+    return NULL;
+}
+
+static void SwapSnowState(ObjectKankyo* snow, PlayState* play) {
+    ObjectKankyoEffect tmpEffects[ARRAY_COUNT(snow->effects)];
+    memcpy(tmpEffects, snow->effects, sizeof(tmpEffects));
+    memcpy(snow->effects, sIvanSnowEffects, sizeof(snow->effects));
+    memcpy(sIvanSnowEffects, tmpEffects, sizeof(sIvanSnowEffects));
+
+    u8 tmpCount = play->envCtx.unk_EE[2];
+    play->envCtx.unk_EE[2] = sIvanSnowCount;
+    sIvanSnowCount = tmpCount;
+}
 
 static void SetIvansCameraAndViewport() {
     const f32 camDist = 90.0f;
@@ -226,9 +255,18 @@ static void OnPlayDrawBegin() {
     THGA_Ct(&gfxCtx->polyOpa, ivan_opa, sizeof(ivan_opa));
     THGA_Ct(&gfxCtx->polyXlu, ivan_xlu, sizeof(ivan_xlu));
 
-    // Render the world from Ivan’s view:
+    // Render the world from Ivan’s view, with Ivan's private snow state swapped in:
+    ObjectKankyo* snow = FindSnowActor(play);
+    if (snow != NULL) {
+        SwapSnowState(snow, play);
+    }
+
     SetIvansCameraAndViewport();
     RenderEverything();
+
+    if (snow != NULL) {
+        SwapSnowState(snow, play);
+    }
 
     // Capture the live widened Ivan view-projection so OnPlayDrawEnd can re-project
     // actors and OR-in Ivan's cull verdict. Same matrix func_800315AC used at line 171.
