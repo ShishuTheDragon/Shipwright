@@ -30,6 +30,10 @@ static Gfx ivan_xlu[0x1000];
 
 static MtxF sIvanViewProjMtxF;
 
+// Head of Link's XLU display list (just past Ivan's spliced-in stub). OnPlayDrawEnd scans
+// from here to recenter the Lens of Truth overlay into Link's left half.
+static Gfx* sLinkXluStart = NULL;
+
 // The snow effect (Object_Kankyo, params 3) runs its whole simulation inside its draw
 // function and anchors every flake relative to play->view. Rendering the world twice would
 // otherwise advance Link's flakes against Ivan's camera, flinging them onto the near plane
@@ -311,13 +315,64 @@ static void OnPlayDrawBegin() {
     gSPDisplayList(POLY_XLU_DISP++, ivan_xlu);
     CLOSE_DISPS(gfxCtx);
 
+    // Everything Link's Play_Draw appends to POLY_XLU after this point starts here.
+    sLinkXluStart = gfxCtx->polyXlu.p;
+
     // Lastly, before closing off, set Link’s viewport to left half of screen:
     play->view.viewport.rightX = SCREEN_WIDTH / 2;
+}
+
+// The Lens of Truth overlay (Actor_DrawLensOverlay, z_actor.c) is a 2D screen-space texture
+// rectangle baked around SCREEN_WIDTH/2; texrects ignore the viewport/projection, so it lands
+// at screen center straddling the split instead of inside Link's half. We can't change the
+// decomp emit, so we translate the already-emitted G_TEXRECT_WIDE commands in Link's XLU stream
+// to recenter the circle in Link's left half. Pure translation (no X scaling, dsdx untouched)
+// keeps the lens a true circle.
+static void RecenterLensOverlay() {
+    if (sLinkXluStart == NULL)
+        return;
+
+    GraphicsContext* gfxCtx = gPlayState->state.gfxCtx;
+    Gfx* end = gfxCtx->polyXlu.p;
+
+    // Move the circle's center from SCREEN_WIDTH/2 to the center of Link's visible half
+    // [leftEdge, SCREEN_WIDTH/2]. leftEdge is in game coords (negative under widescreen);
+    // in encoded (<<2) rect units the shift reduces to a clean integer.
+    s16 leftEdge = OTRGetRectDimensionFromLeftEdge(0);
+    s32 dx = 2 * (s32)leftEdge - SCREEN_WIDTH;
+
+    for (Gfx* g = sLinkXluStart; g < end; g++) {
+        if (((g->words.w0 >> 24) & 0xFF) != (u32)G_TEXRECT_WIDE)
+            continue;
+
+        // A wide texrect is 3 consecutive Gfx:
+        //   [0] w0 = (op<<24)   | xh,   w1 = yh
+        //   [1] w0 = (tile<<24) | xl,   w1 = yl
+        //   [2] w0 = (s<<16)|t,         w1 = (dsdx<<16)|dtdy
+        // The lens emits the only full-height (yl=0, yh=SCREEN_HEIGHT<<2) wide rects here.
+        Gfx* g0 = g;
+        Gfx* g1 = g + 1;
+        if (g1 >= end || (g0->words.w1 & 0x00FFFFFF) != (u32)(SCREEN_HEIGHT << 2) ||
+            (g1->words.w1 & 0x00FFFFFF) != 0)
+            continue;
+
+        // Sign-extend the 24-bit X fields, translate, write back preserving op/tile bits.
+        s32 xh = (s32)(g0->words.w0 & 0x00FFFFFF);
+        s32 xl = (s32)(g1->words.w0 & 0x00FFFFFF);
+        if (xh & 0x00800000) xh -= 0x01000000;
+        if (xl & 0x00800000) xl -= 0x01000000;
+        g0->words.w0 = (g0->words.w0 & ~(uintptr_t)0x00FFFFFF) | ((uintptr_t)(xh + dx) & 0x00FFFFFF);
+        g1->words.w0 = (g1->words.w0 & ~(uintptr_t)0x00FFFFFF) | ((uintptr_t)(xl + dx) & 0x00FFFFFF);
+
+        g += 2; // skip the remaining two Gfx of this rect
+    }
 }
 
 static void OnPlayDrawEnd() {
     if (!did)
         return;
+
+    RecenterLensOverlay();
 
     gPlayState->view.viewport.rightX = SCREEN_WIDTH;
 
