@@ -211,6 +211,8 @@ static void DrawCustomCosmeticColorRow(const char* label, const char* cvar, Colo
 void ScanCustomCosmetics() {
     customCosmeticEntries.clear();
 
+    return;
+
     auto resourceManager = Ship::Context::GetRawInstance()->GetResourceManager();
     auto archiveManager = resourceManager->GetArchiveManager();
     auto materialPaths = archiveManager->ListFiles("*");
