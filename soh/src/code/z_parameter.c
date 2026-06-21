@@ -42,8 +42,6 @@ s16 Left_HUD_Margin = 0;
 s16 Right_HUD_Margin = 0;
 s16 Bottom_HUD_Margin = 0;
 
-extern void* gIvanActor;
-
 typedef struct {
     /* 0x00 */ u8 scene;
     /* 0x01 */ u8 flags1;
@@ -5402,9 +5400,7 @@ void Interface_Draw(PlayState* play) {
                 gSPMatrix(OVERLAY_DISP++, interfaceCtx->view.projectionFlippedPtr,
                           G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
             }
-            if (!gSplitScreenActive) {
-                func_8002C124(&play->actorCtx.targetCtx, play); // Draw Z-Target
-            }
+            func_8002C124(&play->actorCtx.targetCtx, play); // Draw Z-Target
             if (CVarGetInteger(CVAR_ENHANCEMENT("MirroredWorld"), 0)) {
                 gSPMatrix(OVERLAY_DISP++, interfaceCtx->view.projectionPtr,
                           G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);

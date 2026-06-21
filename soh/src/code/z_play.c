@@ -13,7 +13,6 @@
 #include "soh/ResourceManagerHelpers.h"
 #include "soh/SaveManager.h"
 #include "soh/framebuffer_effects.h"
-#include <overlays/actors/ovl_En_Partner/z_en_partner.h>
 
 #include <libultraship/libultraship.h>
 
@@ -24,8 +23,6 @@ TransitionUnk sTrnsnUnk;
 s32 gTrnsnUnkState;
 VisMono gPlayVisMono;
 Color_RGBA8_u32 gVisMonoColor;
-s32 gSplitScreenPass;
-s32 gSplitScreenActive;
 
 FaultClient D_801614B8;
 
@@ -1400,56 +1397,6 @@ void Play_Draw(PlayState* play) {
     if ((HREG(80) != 10) || (HREG(82) != 0)) {
         GameInteractor_ExecuteOnPlayDrawBegin();
 
-        // Split-screen setup for Ivan coop
-        s32 splitScreenActive = (gIvanActor != NULL) &&
-            CVarGetInteger(CVAR_ENHANCEMENT("IvanCoop.SplitScreen"), IVAN_SPLIT_SCREEN_OFF) == IVAN_SPLIT_SCREEN_METHOD1;
-        s32 numSplitPasses = splitScreenActive ? 2 : 1;
-        View savedView;
-        MtxF linkViewProjectionMtxF;
-        if (splitScreenActive) {
-            savedView = play->view;
-        }
-
-        gSplitScreenActive = splitScreenActive;
-        for (s32 splitPass = 0; splitPass < numSplitPasses; splitPass++) {
-        gSplitScreenPass = splitPass;
-        if (splitScreenActive) {
-            if (splitPass == 0) {
-                // P1: left half
-                play->view.viewport.rightX = SCREEN_WIDTH / 2;
-            } else {
-                // P2: right half — restore clean view then override
-                play->view = savedView;
-                play->view.viewport.leftX = SCREEN_WIDTH / 2;
-                // Ivan camera controlled by P2 right stick
-                play->view.up.x = 0.0f;
-                play->view.up.y = 1.0f;
-                play->view.up.z = 0.0f;
-                Vec3f ivanPos = gIvanActor->actor.world.pos;
-                f32 camDist = 90.0f;
-                f32 lookAtHeight = 40.0f;
-                s16 yaw = (s16)gIvanCamYaw;
-                s16 pitch = (s16)gIvanCamPitch;
-                play->view.eye.x = ivanPos.x - Math_SinS(yaw) * Math_CosS(pitch) * camDist;
-                play->view.eye.y = ivanPos.y + lookAtHeight + Math_SinS(pitch) * camDist;
-                play->view.eye.z = ivanPos.z - Math_CosS(yaw) * Math_CosS(pitch) * camDist;
-                play->view.lookAt.x = ivanPos.x;
-                play->view.lookAt.y = ivanPos.y + lookAtHeight;
-                play->view.lookAt.z = ivanPos.z;
-                // Collision check: pull eye toward lookAt if terrain is in the way
-                CollisionPoly* ivanCamPoly = NULL;
-                s32 ivanCamBgId = 0;
-                Vec3f ivanCamResult;
-                if (BgCheck_CameraLineTest1(&play->colCtx, &play->view.lookAt, &play->view.eye,
-                                            &ivanCamResult, &ivanCamPoly, 1, 1, 1, -1, &ivanCamBgId)) {
-                    play->view.eye.x = ivanCamResult.x + COLPOLY_GET_NORMAL(ivanCamPoly->normal.x);
-                    play->view.eye.y = ivanCamResult.y + COLPOLY_GET_NORMAL(ivanCamPoly->normal.y);
-                    play->view.eye.z = ivanCamResult.z + COLPOLY_GET_NORMAL(ivanCamPoly->normal.z);
-                }
-                play->view.fovy = 60.0f;
-            }
-        }
-
         POLY_OPA_DISP = Play_SetFog(play, POLY_OPA_DISP);
         POLY_XLU_DISP = Play_SetFog(play, POLY_XLU_DISP);
 
@@ -1474,20 +1421,6 @@ void Play_Draw(PlayState* play) {
         // The billboard is still a viewing matrix at this stage
         Matrix_Mult(&play->billboardMtxF, MTXMODE_APPLY);
         Matrix_Get(&play->viewProjectionMtxF);
-        // Save Link's unscaled view-projection matrix on pass 0 so it can be
-        // restored after the loop for use by update-phase code (Z-targeting etc.)
-        if (splitScreenActive && splitPass == 0) {
-            linkViewProjectionMtxF = play->viewProjectionMtxF;
-        }
-        // Widen the culling frustum for split screen: the half-width viewport creates a
-        // narrow 2:3 projection, but the renderer stretches to fill the actual half-window.
-        // Scale the X row to use the original 4:3 aspect so edge actors aren't culled.
-        if (splitScreenActive) {
-            play->viewProjectionMtxF.xx *= 0.5f;
-            play->viewProjectionMtxF.xy *= 0.5f;
-            play->viewProjectionMtxF.xz *= 0.5f;
-            play->viewProjectionMtxF.xw *= 0.5f;
-        }
         play->billboardMtxF.mf[0][3] = play->billboardMtxF.mf[1][3] = play->billboardMtxF.mf[2][3] =
             play->billboardMtxF.mf[3][0] = play->billboardMtxF.mf[3][1] = play->billboardMtxF.mf[3][2] = 0.0f;
         // This transpose is where the viewing matrix is properly converted into a billboard matrix
@@ -1498,7 +1431,6 @@ void Play_Draw(PlayState* play) {
         gSPSegment(POLY_OPA_DISP++, 0x01, play->billboardMtx);
         gSPSegment(POLY_XLU_DISP++, 0x01, play->billboardMtx);
 
-        if (splitPass == 0) {
         if ((HREG(80) != 10) || (HREG(92) != 0)) {
             Gfx* gfxP;
             Gfx* sp1CC = POLY_OPA_DISP;
@@ -1566,7 +1498,6 @@ void Play_Draw(PlayState* play) {
 
             goto Play_Draw_DrawOverlayElements;
         }
-        } // end splitPass == 0 guard
 
         if ((HREG(80) != 10) || (HREG(83) != 0)) {
             if (play->skyboxId && (play->skyboxId != SKYBOX_UNSET_1D) && !play->envCtx.skyboxDisabled) {
@@ -1676,38 +1607,6 @@ void Play_Draw(PlayState* play) {
             DebugDisplay_DrawObjects(play);
         }
 
-        // Draw the Z-targeting indicator during Link's pass so it uses Link's
-        // camera and appears in Link's viewport, not Ivan's.
-        if (splitScreenActive && splitPass == 0) {
-            // Set up OVERLAY_DISP's orthographic projection before drawing so
-            // the 2D lock-on triangles use the correct coordinate space.
-            SET_FULLSCREEN_VIEWPORT(&play->interfaceCtx.view);
-            func_800AB2C4(&play->interfaceCtx.view);
-            MtxF scaledMtxF = play->viewProjectionMtxF;
-            play->viewProjectionMtxF = linkViewProjectionMtxF;
-            func_8002C124(&play->actorCtx.targetCtx, play);
-            play->viewProjectionMtxF = scaledMtxF;
-        }
-
-        } // end split-screen for loop
-        gSplitScreenPass = 0;
-        gSplitScreenActive = 0;
-
-        // Restore full-screen viewport after split-screen drawing
-        if (splitScreenActive) {
-            Mtx* curViewingPtr = play->view.viewingPtr;
-            Mtx* curProjectionPtr = play->view.projectionPtr;
-            Mtx* curProjectionFlippedPtr = play->view.projectionFlippedPtr;
-            play->view = savedView;
-            play->view.viewingPtr = curViewingPtr;
-            play->view.projectionPtr = curProjectionPtr;
-            play->view.projectionFlippedPtr = curProjectionFlippedPtr;
-            // Restore Link's view-projection matrix so that update-phase code
-            // (Z-targeting, NPC talk checks) uses Link's camera, not Ivan's stale
-            // projection left over from the last draw pass.
-            play->viewProjectionMtxF = linkViewProjectionMtxF;
-        }
-
         if ((R_PAUSE_MENU_MODE == 1) || (gTrnsnUnkState == 1)) {
             Gfx* gfxP = OVERLAY_DISP;
 
@@ -1753,17 +1652,6 @@ void Play_Draw(PlayState* play) {
         GameInteractor_ExecuteOnPlayDrawEnd();
 
     Play_Draw_DrawOverlayElements:
-        // Restore full-screen viewport if split-screen was active (in case we got here via goto)
-        if (splitScreenActive) {
-            Mtx* curViewingPtr = play->view.viewingPtr;
-            Mtx* curProjectionPtr = play->view.projectionPtr;
-            Mtx* curProjectionFlippedPtr = play->view.projectionFlippedPtr;
-            play->view = savedView;
-            play->view.viewingPtr = curViewingPtr;
-            play->view.projectionPtr = curProjectionPtr;
-            play->view.projectionFlippedPtr = curProjectionFlippedPtr;
-        }
-
         if ((HREG(80) != 10) || (HREG(89) != 0)) {
             Play_DrawOverlayElements(play);
         }
@@ -1779,9 +1667,6 @@ Play_Draw_skip:
 
     if (play->view.unk_124 != 0) {
         Camera_Update(GET_ACTIVE_CAM(play));
-        if (gIvanActor != NULL) {
-            play->view.viewingPtr = Graph_Alloc(gfxCtx, sizeof(Mtx));
-        }
         func_800AB944(&play->view);
         play->view.unk_124 = 0;
         if (play->skyboxId && (play->skyboxId != SKYBOX_UNSET_1D) && !play->envCtx.skyboxDisabled) {

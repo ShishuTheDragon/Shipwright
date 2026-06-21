@@ -43,7 +43,6 @@ static std::map<int32_t, const char*> bunnyHoodEffectMap = {
 
 static const std::map<int32_t, const char*> ivanSplitScreenValues = {
     { 0, "Off" },
-    { 1, "Method 1" },
     { 2, "Method 2" },
 };
 
@@ -1684,7 +1683,6 @@ void SohMenu::AddMenuEnhancements() {
             .DefaultIndex(0)
             .Tooltip("Enables Ivan's split-screen mode.\n\n"
                      " - Off: No split screen.\n"
-                     " - Method 1: Dual render passes with independent cameras.\n"
                      " - Method 2: Hook-based architecture (in development)."));
     path.column = SECTION_COLUMN_1;
     AddWidget(path, "Dogs Follow You Everywhere", WIDGET_CVAR_CHECKBOX)

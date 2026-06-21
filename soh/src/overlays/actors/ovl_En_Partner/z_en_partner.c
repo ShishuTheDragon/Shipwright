@@ -1225,9 +1225,8 @@ void EnPartner_Draw(Actor* thisx, PlayState* play) {
         DrawOrb(this, play, this->usedSpell);
     }
 
-    // Draw stamina bar on Ivan's half of the split screen.
-    // Only emit overlay commands once (Ivan's pass = pass 1).
-    if (!gSplitScreenActive || gSplitScreenPass == 1) {
+    // Draw Ivan's stamina bar.
+    {
         // Bar layout: 4px per stamina unit, 1px border all around.
         //   Background: (167,209)-(232,217)  66 x 9 px
         //   Fill max:   (168,210)-(231,216)  64 x 7 px
