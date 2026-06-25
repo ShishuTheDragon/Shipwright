@@ -13,7 +13,7 @@ extern PlayState* gPlayState;
 #include "overlays/actors/ovl_En_Wonder_Talk2/z_en_wonder_talk2.h"
 }
 
-#include "soh/Enhancements/ExtraModes/IvanCoop.h"
+#include "soh/Enhancements/ExtraModes/IvanCoop/IvanCoop.h"
 
 uint8_t Sign_RandomizerHoldsItem(Actor* actor, PlayState* play) {
     const auto signIdentity = ObjectExtension::GetInstance().Get<CheckIdentity>(actor);

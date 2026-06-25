@@ -1,7 +1,7 @@
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/ShipInit.hpp"
 #include "soh/OTRGlobals.h"
-#include "soh/Enhancements/ExtraModes/IvanCoop.h"
+#include "soh/Enhancements/ExtraModes/IvanCoop/IvanCoop.h"
 
 #include <cstring>
 
@@ -9,7 +9,7 @@ extern "C" {
 #include "macros.h"
 #include "variables.h"
 #include "functions.h"
-#include <overlays/actors/ovl_En_Partner/z_en_partner.h>
+#include "soh/Enhancements/ExtraModes/IvanCoop/z_en_partner.h"
 #include <overlays/actors/ovl_Object_Kankyo/z_object_kankyo.h>
 extern PlayState* gPlayState;
 void FrameInterpolation_RecordOpenChild(const void* a, int b);

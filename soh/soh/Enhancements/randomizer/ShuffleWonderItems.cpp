@@ -7,7 +7,7 @@
 #include "particle_cmc.h"
 #include "soh/Enhancements/randomizer/randomizer.h"
 #include "soh/Enhancements/randomizer/RCToRandInf.h"
-#include "soh/Enhancements/ExtraModes/IvanCoop.h"
+#include "soh/Enhancements/ExtraModes/IvanCoop/IvanCoop.h"
 
 extern "C" {
 #include "overlays/actors/ovl_En_Wonder_Item/z_en_wonder_item.h"
