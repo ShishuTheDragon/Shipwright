@@ -22,7 +22,6 @@
     (ACTOR_FLAG_UPDATE_CULLING_DISABLED | ACTOR_FLAG_DRAW_CULLING_DISABLED | ACTOR_FLAG_HOOKSHOT_PULLS_PLAYER | \
      ACTOR_FLAG_CAN_PRESS_SWITCHES)
 
-EnPartner* gIvanActor = NULL;
 f32 gIvanCamYaw = 0.0f;
 f32 gIvanCamPitch = 0.0f;
 
@@ -170,7 +169,6 @@ void EnPartner_Init(Actor* thisx, PlayState* play) {
 
     thisx->room = -1;
 
-    gIvanActor = this;
     gIvanCamYaw = (f32)this->actor.shape.rot.y;
     gIvanCamPitch = 0;
 }
@@ -201,10 +199,6 @@ void EnPartner_Destroy(Actor* thisx, PlayState* play) {
     Collider_DestroyCylinder(play, &this->weaponCollider);
 
     ResourceMgr_UnregisterSkeleton(&this->skelAnime);
-
-    if (gIvanActor == this) {
-        gIvanActor = NULL;
-    }
 }
 
 void EnPartner_UpdateLights(EnPartner* this, PlayState* play) {

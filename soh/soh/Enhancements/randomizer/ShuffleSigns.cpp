@@ -11,8 +11,9 @@ extern PlayState* gPlayState;
 #include "objects/gameplay_keep/gameplay_keep.h"
 #include "overlays/actors/ovl_En_Wonder_Talk/z_en_wonder_talk.h"
 #include "overlays/actors/ovl_En_Wonder_Talk2/z_en_wonder_talk2.h"
-#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
 }
+
+#include "soh/Enhancements/ExtraModes/IvanCoop.h"
 
 uint8_t Sign_RandomizerHoldsItem(Actor* actor, PlayState* play) {
     const auto signIdentity = ObjectExtension::GetInstance().Get<CheckIdentity>(actor);
@@ -51,7 +52,7 @@ void Sign_RandomizerDrawSetup(void* actor) {
     Actor* signActor = (Actor*)actor;
 
     // If not a randomized item or too far, don't draw
-    if (!Sign_RandomizerHoldsItem(signActor, gPlayState) || Actor_XZDistToNearestPlayer(signActor) > 1000.0f) {
+    if (!Sign_RandomizerHoldsItem(signActor, gPlayState) || XZDistToNearestPlayer(signActor) > 1000.0f) {
         return;
     }
 
