@@ -1,6 +1,6 @@
 #pragma once
 
-#include "overlays/actors/ovl_En_Partner/z_en_partner.h"
+#include "soh/Enhancements/ExtraModes/IvanCoop/z_en_partner.h"
 
 extern "C" {
 extern PlayState* gPlayState;

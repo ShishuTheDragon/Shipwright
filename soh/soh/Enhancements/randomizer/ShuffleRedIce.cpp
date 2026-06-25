@@ -12,7 +12,7 @@ extern "C" {
 extern PlayState* gPlayState;
 }
 
-#include "soh/Enhancements/ExtraModes/IvanCoop.h"
+#include "soh/Enhancements/ExtraModes/IvanCoop/IvanCoop.h"
 
 extern void EnItem00_DrawRandomizedItem(EnItem00* enItem00, PlayState* play);
 
