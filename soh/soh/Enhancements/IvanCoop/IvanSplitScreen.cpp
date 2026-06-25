@@ -1,6 +1,7 @@
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/ShipInit.hpp"
 #include "soh/OTRGlobals.h"
+#include "soh/Enhancements/ExtraModes/IvanCoop.h"
 
 #include <cstring>
 
@@ -68,7 +69,7 @@ static void SwapSnowState(ObjectKankyo* snow, PlayState* play) {
     sIvanSnowCount = tmpCount;
 }
 
-static void SetIvansCameraAndViewport() {
+static void SetIvansCameraAndViewport(EnPartner* ivan) {
     const f32 camDist = 90.0f;
     const f32 lookAtHeight = 40.0f;
     const f32 fovy = 60.0f;
@@ -77,7 +78,7 @@ static void SetIvansCameraAndViewport() {
     PlayState* play = gPlayState;
 
     // Read some (currently) global variables:
-    Vec3f ivanPos = gIvanActor->actor.world.pos;
+    Vec3f ivanPos = ivan->actor.world.pos;
     s16 yaw = (s16)gIvanCamYaw;
     s16 pitch = (s16)gIvanCamPitch;
 
@@ -247,7 +248,8 @@ static void OnPlayDrawBegin() {
     did = false;
     sLinkXluBillboardSeg = NULL;
 
-    if (gIvanActor == NULL)
+    EnPartner* ivan = GetIvanActor(gPlayState);
+    if (ivan == NULL)
         return;
 
     PlayState* play = gPlayState;
@@ -285,7 +287,7 @@ static void OnPlayDrawBegin() {
         SwapSnowState(snow, play);
     }
 
-    SetIvansCameraAndViewport();
+    SetIvansCameraAndViewport(ivan);
     RenderEverything();
 
     if (snow != NULL) {
