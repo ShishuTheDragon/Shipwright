@@ -1,7 +1,7 @@
 #include "soh/ActorDB.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/ShipInit.hpp"
-#include "src/overlays/actors/ovl_En_Partner/z_en_partner.h"
+#include "soh/Enhancements/ExtraModes/IvanCoop/z_en_partner.h"
 
 extern "C" {
 #include "macros.h"
@@ -13,6 +13,21 @@ static s16 ivanActorId;
 
 #define CVAR_NAME CVAR_ENHANCEMENT("IvanCoopModeEnabled")
 #define CVAR_VALUE CVarGetInteger(CVAR_NAME, 0)
+
+EnPartner* GetIvanActor(PlayState* play) {
+    return (EnPartner*)Actor_Find(&play->actorCtx, ivanActorId, ACTORCAT_ITEMACTION);
+}
+
+f32 XZDistToNearestPlayer(Actor* actor) {
+    EnPartner* ivan = GetIvanActor(gPlayState);
+    if (ivan != NULL) {
+        f32 distToIvan = Actor_WorldDistXZToActor(actor, &ivan->actor);
+        if (distToIvan < actor->xzDistToPlayer) {
+            return distToIvan;
+        }
+    }
+    return actor->xzDistToPlayer;
+}
 
 static void SpawnIvan() {
     if (!gPlayState)
