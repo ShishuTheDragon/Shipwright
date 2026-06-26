@@ -4,6 +4,7 @@
 #include "soh/Enhancements/ExtraModes/IvanCoop/IvanCoop.h"
 
 #include <cstring>
+#include <spdlog/spdlog.h>
 
 extern "C" {
 #include "macros.h"
