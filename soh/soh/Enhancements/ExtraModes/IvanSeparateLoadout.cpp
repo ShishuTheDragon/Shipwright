@@ -293,6 +293,78 @@ static Gfx* IvanDrawSlotItem(Gfx* displayListHead, u8 slot, Vec3s center, s16 al
     return displayListHead;
 }
 
+struct Centers {
+    s16 dpadX, dpadY;
+    s16 cButtonsX, cButtonsY;
+};
+
+static Centers GetCenters() {
+    s16 bottomMargin = CVarGetInteger(CVAR_COSMETIC("HUD.Margin.B"), 0);
+    s16 leftMargin = CVarGetInteger(CVAR_COSMETIC("HUD.Margin.L"), 0);
+    s16 rightMargin = CVarGetInteger(CVAR_COSMETIC("HUD.Margin.R"), 0);
+
+    Centers centers;
+
+    /* dpadX/Y */ {
+        s16 posType = CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.PosType"), ORIGINAL_LOCATION);
+        bool useMargins = CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.UseMargins"), 0) != 0;
+        s16 yMargin = useMargins ? bottomMargin : 0;
+
+        if (posType == ORIGINAL_LOCATION) {
+            centers.dpadX = (s16)(dPadCenterX + (useMargins ? leftMargin : 0));
+            centers.dpadY = (s16)(dPadCenterY + yMargin);
+        } else {
+            s16 posX = CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.PosX"), 0);
+            centers.dpadY = (s16)(CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.PosY"), 0) + yMargin);
+            switch (posType) {
+                case ANCHOR_LEFT:
+                    centers.dpadX = (s16)OTRGetDimensionFromLeftEdge(posX + (useMargins ? leftMargin : 0));
+                    break;
+                case ANCHOR_RIGHT:
+                    centers.dpadX = (s16)OTRGetDimensionFromRightEdge(posX + (useMargins ? rightMargin : 0));
+                    break;
+                case ANCHOR_NONE:
+                    centers.dpadX = posX;
+                    break;
+                case HIDDEN:
+                default:
+                    centers.dpadX = -9999;
+                    break;
+            }
+        }
+    }
+
+    /* cButtonsX/Y */ {
+        s16 posType = CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.PosType"), ORIGINAL_LOCATION);
+        bool useMargins = CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.UseMargins"), 0) != 0;
+        s16 yMargin = useMargins ? bottomMargin : 0;
+
+        if (posType == ORIGINAL_LOCATION) {
+            centers.cButtonsX = (s16)(cButtonsCenterX + (useMargins ? rightMargin : 0));
+            centers.cButtonsY = (s16)(cButtonsCenterY + yMargin);
+        } else {
+            s16 posX = CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.PosX"), 0);
+            centers.cButtonsY = (s16)(CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.PosY"), 0) + yMargin);
+            switch (posType) {
+                case ANCHOR_LEFT:
+                    centers.cButtonsX = (s16)OTRGetDimensionFromLeftEdge(posX + (useMargins ? leftMargin : 0));
+                    break;
+                case ANCHOR_RIGHT:
+                    centers.cButtonsX = (s16)OTRGetDimensionFromRightEdge(posX + (useMargins ? rightMargin : 0));
+                    break;
+                case ANCHOR_NONE:
+                    centers.cButtonsX = posX;
+                    break;
+                case HIDDEN:
+                default:
+                    centers.cButtonsX = -9999;
+                    break;
+            }
+        }
+    }
+    return centers;
+}
+
 static void OnInterfaceDraw() {
     PlayState* play = gPlayState;
     InterfaceContext* interfaceCtx = &gPlayState->interfaceCtx;
@@ -324,75 +396,13 @@ static void OnInterfaceDraw() {
 
     gDPSetPrimColor(OVERLAY_DISP++, 0, 0, tint.r, tint.g, tint.b, ivanHudAlpha);
 
-    s16 bottomMargin = CVarGetInteger(CVAR_COSMETIC("HUD.Margin.B"), 0);
-    s16 leftMargin = CVarGetInteger(CVAR_COSMETIC("HUD.Margin.L"), 0);
-    s16 rightMargin = CVarGetInteger(CVAR_COSMETIC("HUD.Margin.R"), 0);
-
-    Vec3s dCenter = { dPadCenterX, dPadCenterY, 0 };
-    {
-        s16 posType = CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.PosType"), ORIGINAL_LOCATION);
-        bool useMargins = CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.UseMargins"), 0) != 0;
-        s16 yMargin = useMargins ? bottomMargin : 0;
-
-        if (posType == ORIGINAL_LOCATION) {
-            dCenter.x = (s16)(dPadCenterX + (useMargins ? leftMargin : 0));
-            dCenter.y = (s16)(dPadCenterY + yMargin);
-        } else {
-            s16 posX = CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.PosX"), 0);
-            dCenter.y = (s16)(CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.PosY"), 0) + yMargin);
-            switch (posType) {
-                case ANCHOR_LEFT:
-                    dCenter.x = (s16)OTRGetDimensionFromLeftEdge(posX + (useMargins ? leftMargin : 0));
-                    break;
-                case ANCHOR_RIGHT:
-                    dCenter.x = (s16)OTRGetDimensionFromRightEdge(posX + (useMargins ? rightMargin : 0));
-                    break;
-                case ANCHOR_NONE:
-                    dCenter.x = posX;
-                    break;
-                case HIDDEN:
-                default:
-                    dCenter.x = -9999;
-                    break;
-            }
-        }
-    }
-
-    Vec3s cCenter = { cButtonsCenterX, cButtonsCenterY, 0 };
-    {
-        s16 posType = CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.PosType"), ORIGINAL_LOCATION);
-        bool useMargins = CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.UseMargins"), 0) != 0;
-        s16 yMargin = useMargins ? bottomMargin : 0;
-
-        if (posType == ORIGINAL_LOCATION) {
-            cCenter.x = (s16)(cButtonsCenterX + (useMargins ? rightMargin : 0));
-            cCenter.y = (s16)(cButtonsCenterY + yMargin);
-        } else {
-            s16 posX = CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.PosX"), 0);
-            cCenter.y = (s16)(CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.PosY"), 0) + yMargin);
-            switch (posType) {
-                case ANCHOR_LEFT:
-                    cCenter.x = (s16)OTRGetDimensionFromLeftEdge(posX + (useMargins ? leftMargin : 0));
-                    break;
-                case ANCHOR_RIGHT:
-                    cCenter.x = (s16)OTRGetDimensionFromRightEdge(posX + (useMargins ? rightMargin : 0));
-                    break;
-                case ANCHOR_NONE:
-                    cCenter.x = posX;
-                    break;
-                case HIDDEN:
-                default:
-                    cCenter.x = -9999;
-                    break;
-            }
-        }
-    }
+    Centers clusters = GetCenters();
 
     Vec3s centers[4] = {
-        { (s16)(cCenter.x - itemSpacing), cCenter.y, 0 }, // C-Left
-        { cCenter.x, (s16)(cCenter.y + itemSpacing), 0 }, // C-Down
-        { (s16)(cCenter.x + itemSpacing), cCenter.y, 0 }, // C-Right
-        { cCenter.x, (s16)(cCenter.y - itemSpacing), 0 }, // C-Up
+        { (s16)(clusters.cButtonsX - itemSpacing), clusters.cButtonsY, 0 }, // C-Left
+        { clusters.cButtonsX, (s16)(clusters.cButtonsY + itemSpacing), 0 }, // C-Down
+        { (s16)(clusters.cButtonsX + itemSpacing), clusters.cButtonsY, 0 }, // C-Right
+        { clusters.cButtonsX, (s16)(clusters.cButtonsY - itemSpacing), 0 }, // C-Up
     };
 
     gDPLoadTextureBlock(OVERLAY_DISP++, gButtonBackgroundTex, G_IM_FMT_IA, G_IM_SIZ_8b, 32, 32, 0,
@@ -404,16 +414,17 @@ static void OnInterfaceDraw() {
 
     if (CVarGetInteger(CVAR_ENHANCEMENT("DpadEquips"), 0) != 0) {
         Vec3s dpadCenters[4] = {
-            { dCenter.x, (s16)(dCenter.y - itemSpacing), 0 }, // Dpad-Up
-            { dCenter.x, (s16)(dCenter.y + itemSpacing), 0 }, // Dpad-Down
-            { (s16)(dCenter.x - itemSpacing), dCenter.y, 0 }, // Dpad-Left
-            { (s16)(dCenter.x + itemSpacing), dCenter.y, 0 }, // Dpad-Right
+            { clusters.dpadX, (s16)(clusters.dpadY - itemSpacing), 0 }, // Dpad-Up
+            { clusters.dpadX, (s16)(clusters.dpadY + itemSpacing), 0 }, // Dpad-Down
+            { (s16)(clusters.dpadX - itemSpacing), clusters.dpadY, 0 }, // Dpad-Left
+            { (s16)(clusters.dpadX + itemSpacing), clusters.dpadY, 0 }, // Dpad-Right
         };
 
         gDPLoadTextureBlock(OVERLAY_DISP++, gDPadTex, G_IM_FMT_IA, G_IM_SIZ_16b, dPadSize, dPadSize, 0,
                             G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD,
                             G_TX_NOLOD);
-        OVERLAY_DISP = DrawWideTextureRectCentered(OVERLAY_DISP, dCenter, dPadSize, dPadTexStep);
+        Vec3s dpadTexCenter = { clusters.dpadX, clusters.dpadY, 0 };
+        OVERLAY_DISP = DrawWideTextureRectCentered(OVERLAY_DISP, dpadTexCenter, dPadSize, dPadTexStep);
 
         for (size_t i = 0; i < ARRAY_COUNT(dpadCenters); i++) {
             u8 slot = (u8)((size_t)IvanItemIndex::DPadUp + i);
