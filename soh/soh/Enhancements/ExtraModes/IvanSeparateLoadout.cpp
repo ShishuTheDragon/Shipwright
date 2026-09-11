@@ -148,10 +148,10 @@ static void IvanSeedEquipAnim(PlayState* play, u8 slot, s16 item) {
 }
 
 static void OnKaleidoUpdate() {
-    auto play = gPlayState;
+    PlayState* play = gPlayState;
 
     if (play->pauseCtx.state == 6 && play->pauseCtx.pageIndex == PAUSE_ITEM) {
-        auto cursorItem = play->pauseCtx.cursorItem[PAUSE_ITEM];
+        u16 cursorItem = play->pauseCtx.cursorItem[PAUSE_ITEM];
 
         if (cursorItem != PAUSE_ITEM_NONE) {
             u32 ivanButtons = play->state.input[1].press.button;
@@ -329,9 +329,9 @@ static Vec3s IvanClusterCenter(const char* baseCvar, s16 defaultX, s16 defaultY,
     return center;
 }
 
-static void IvanDrawInventory() {
-    auto play = gPlayState;
-    auto interfaceCtx = &gPlayState->interfaceCtx;
+static void OnInterfaceDraw() {
+    PlayState* play = gPlayState;
+    InterfaceContext* interfaceCtx = &gPlayState->interfaceCtx;
 
     OPEN_DISPS(play->state.gfxCtx);
 
@@ -454,15 +454,11 @@ static void IvanDrawInventory() {
     CLOSE_DISPS(play->state.gfxCtx);
 }
 
-static void RegisterIvanSeparateEquipSlots() {
-    // Clear any in-flight animations
-    for (auto& anim : sIvanEquipAnim)
-        anim = {};
-
+static void RegisterIvanSeparateLoadout() {
     bool enabled = CVAR_IVAN_COOP_MODE_VALUE != 0 && CVAR_IVAN_SEPARATE_LOADOUT_VALUE != 0;
     COND_HOOK(OnKaleidoUpdate, enabled, OnKaleidoUpdate);
-    COND_HOOK(OnInterfaceDraw, enabled, IvanDrawInventory);
+    COND_HOOK(OnInterfaceDraw, enabled, OnInterfaceDraw);
 }
 
-static RegisterShipInitFunc initFunc(RegisterIvanSeparateEquipSlots,
+static RegisterShipInitFunc initFunc(RegisterIvanSeparateLoadout,
                                      { CVAR_IVAN_COOP_MODE_NAME, CVAR_IVAN_SEPARATE_LOADOUT_NAME });
