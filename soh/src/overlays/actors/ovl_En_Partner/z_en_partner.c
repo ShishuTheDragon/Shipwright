@@ -863,10 +863,13 @@ void EnPartner_Update(Actor* thisx, PlayState* play) {
             buttonMax = ARRAY_COUNT(gSaveContext.equips.cButtonSlots);
         }
 
+        uint8_t separateLoadout = CVarGetInteger(CVAR_ENHANCEMENT("IvanSeparateLoadout"), 0) != 0;
+
         if (this->usedItem == 0xFF && this->itemTimer <= 0) {
             for (uint8_t i = 0; i < buttonMax; i++) {
                 if (CHECK_BTN_ALL(sControlInput.press.button, partnerButtons[i])) {
-                    this->usedItem = gSaveContext.equips.buttonItems[i + 1];
+                    this->usedItem =
+                        separateLoadout ? gSaveContext.ship.ivanButtonItems[i] : gSaveContext.equips.buttonItems[i + 1];
                     this->usedItemButton = i;
                     pressed = 1;
                 }
