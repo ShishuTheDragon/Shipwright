@@ -2,8 +2,6 @@
 #include "soh/Enhancements/cosmetics/cosmeticsTypes.h"
 #include "soh/ShipInit.hpp"
 
-#include <string>
-
 extern "C" {
 #include "textures/parameter_static/parameter_static.h"
 #include "soh_assets.h"
@@ -62,9 +60,6 @@ struct IvanEquipButton {
     u16 button;
     IvanItemIndex slot;
 };
-
-// Vanilla has no left-anchored element on this path; Ivan splits his clusters across both edges.
-enum class IvanClusterEdge { Left, Right };
 
 static const IvanEquipButton equipButtons[] = {
     { BTN_CLEFT, IvanItemIndex::CLeft },      { BTN_CDOWN, IvanItemIndex::CDown },
@@ -298,59 +293,6 @@ static Gfx* IvanDrawSlotItem(Gfx* displayListHead, u8 slot, Vec3s center, s16 al
     return displayListHead;
 }
 
-// Mirrors the vanilla D-pad placement in z_parameter.c; no scale, as vanilla's slider is stubbed.
-static Vec3s IvanClusterCenter(const char* baseCvar, s16 defaultX, s16 defaultY, IvanClusterEdge edge) {
-    std::string base = baseCvar;
-    s16 posType = CVarGetInteger((base + ".PosType").c_str(), ORIGINAL_LOCATION);
-    bool useMargins = CVarGetInteger((base + ".UseMargins").c_str(), 0) != 0;
-
-    s16 bottomMargin = CVarGetInteger(CVAR_COSMETIC("HUD.Margin.B"), 0);
-    s16 leftMargin = CVarGetInteger(CVAR_COSMETIC("HUD.Margin.L"), 0);
-    s16 rightMargin = CVarGetInteger(CVAR_COSMETIC("HUD.Margin.R"), 0);
-
-    s16 xMargin = 0;
-    s16 yMargin = 0;
-    if (useMargins) {
-        // Both clusters are bottom-anchored, so the bottom margin applies in every position mode.
-        yMargin = bottomMargin;
-        if (posType == ORIGINAL_LOCATION) {
-            xMargin = (edge == IvanClusterEdge::Left) ? leftMargin : rightMargin;
-        }
-    }
-
-    Vec3s center = { defaultX, defaultY, 0 };
-    if (posType == ORIGINAL_LOCATION) {
-        center.x = (s16)(defaultX + xMargin);
-        center.y = (s16)(defaultY + yMargin);
-        return center;
-    }
-
-    s16 posX = CVarGetInteger((base + ".PosX").c_str(), 0);
-    center.y = (s16)(CVarGetInteger((base + ".PosY").c_str(), 0) + yMargin);
-    switch (posType) {
-        case ANCHOR_LEFT:
-            if (useMargins) {
-                xMargin = leftMargin;
-            }
-            center.x = (s16)OTRGetDimensionFromLeftEdge(posX + xMargin);
-            break;
-        case ANCHOR_RIGHT:
-            if (useMargins) {
-                xMargin = rightMargin;
-            }
-            center.x = (s16)OTRGetDimensionFromRightEdge(posX + xMargin);
-            break;
-        case ANCHOR_NONE:
-            center.x = posX;
-            break;
-        case HIDDEN:
-        default:
-            center.x = -9999;
-            break;
-    }
-    return center;
-}
-
 static void OnInterfaceDraw() {
     PlayState* play = gPlayState;
     InterfaceContext* interfaceCtx = &gPlayState->interfaceCtx;
@@ -382,9 +324,69 @@ static void OnInterfaceDraw() {
 
     gDPSetPrimColor(OVERLAY_DISP++, 0, 0, tint.r, tint.g, tint.b, ivanHudAlpha);
 
-    Vec3s cCenter =
-        IvanClusterCenter(CVAR_COSMETIC("Ivan.CButtons"), cButtonsCenterX, cButtonsCenterY, IvanClusterEdge::Right);
-    Vec3s dCenter = IvanClusterCenter(CVAR_COSMETIC("Ivan.Dpad"), dPadCenterX, dPadCenterY, IvanClusterEdge::Left);
+    s16 bottomMargin = CVarGetInteger(CVAR_COSMETIC("HUD.Margin.B"), 0);
+    s16 leftMargin = CVarGetInteger(CVAR_COSMETIC("HUD.Margin.L"), 0);
+    s16 rightMargin = CVarGetInteger(CVAR_COSMETIC("HUD.Margin.R"), 0);
+
+    Vec3s dCenter = { dPadCenterX, dPadCenterY, 0 };
+    {
+        s16 posType = CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.PosType"), ORIGINAL_LOCATION);
+        bool useMargins = CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.UseMargins"), 0) != 0;
+        s16 yMargin = useMargins ? bottomMargin : 0;
+
+        if (posType == ORIGINAL_LOCATION) {
+            dCenter.x = (s16)(dPadCenterX + (useMargins ? leftMargin : 0));
+            dCenter.y = (s16)(dPadCenterY + yMargin);
+        } else {
+            s16 posX = CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.PosX"), 0);
+            dCenter.y = (s16)(CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.PosY"), 0) + yMargin);
+            switch (posType) {
+                case ANCHOR_LEFT:
+                    dCenter.x = (s16)OTRGetDimensionFromLeftEdge(posX + (useMargins ? leftMargin : 0));
+                    break;
+                case ANCHOR_RIGHT:
+                    dCenter.x = (s16)OTRGetDimensionFromRightEdge(posX + (useMargins ? rightMargin : 0));
+                    break;
+                case ANCHOR_NONE:
+                    dCenter.x = posX;
+                    break;
+                case HIDDEN:
+                default:
+                    dCenter.x = -9999;
+                    break;
+            }
+        }
+    }
+
+    Vec3s cCenter = { cButtonsCenterX, cButtonsCenterY, 0 };
+    {
+        s16 posType = CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.PosType"), ORIGINAL_LOCATION);
+        bool useMargins = CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.UseMargins"), 0) != 0;
+        s16 yMargin = useMargins ? bottomMargin : 0;
+
+        if (posType == ORIGINAL_LOCATION) {
+            cCenter.x = (s16)(cButtonsCenterX + (useMargins ? rightMargin : 0));
+            cCenter.y = (s16)(cButtonsCenterY + yMargin);
+        } else {
+            s16 posX = CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.PosX"), 0);
+            cCenter.y = (s16)(CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.PosY"), 0) + yMargin);
+            switch (posType) {
+                case ANCHOR_LEFT:
+                    cCenter.x = (s16)OTRGetDimensionFromLeftEdge(posX + (useMargins ? leftMargin : 0));
+                    break;
+                case ANCHOR_RIGHT:
+                    cCenter.x = (s16)OTRGetDimensionFromRightEdge(posX + (useMargins ? rightMargin : 0));
+                    break;
+                case ANCHOR_NONE:
+                    cCenter.x = posX;
+                    break;
+                case HIDDEN:
+                default:
+                    cCenter.x = -9999;
+                    break;
+            }
+        }
+    }
 
     Vec3s centers[4] = {
         { (s16)(cCenter.x - itemSpacing), cCenter.y, 0 }, // C-Left
