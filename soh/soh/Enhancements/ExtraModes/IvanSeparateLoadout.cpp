@@ -276,6 +276,28 @@ static Gfx* IvanDrawEquipAnim(Gfx* displayListHead, u8 slot, Vec3s target, s16 a
     return displayListHead;
 }
 
+// Draws one slot's equipped icon at `center`, or its in-flight equip animation while one is running.
+static Gfx* IvanDrawSlotItem(Gfx* displayListHead, u8 slot, Vec3s center, s16 alpha) {
+    if (sIvanEquipAnim[slot].active) {
+        return IvanDrawEquipAnim(displayListHead, slot, center, alpha);
+    }
+
+    s16 item = IvanIconItem(gSaveContext.ship.ivanButtonItems[slot]);
+    if (item == ITEM_NONE) {
+        return displayListHead;
+    }
+
+    gDPPipeSync(displayListHead++);
+    gDPLoadTextureBlock(displayListHead++, gItemIcons[item], G_IM_FMT_RGBA, G_IM_SIZ_32b, 32, 32, 0,
+                        G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD,
+                        G_TX_NOLOD);
+    gDPSetPrimColor(displayListHead++, 0, 0, 255, 255, 255, alpha);
+    displayListHead = DrawWideTextureRectCentered(displayListHead, center, itemIconSize, itemIconTexStep);
+    displayListHead =
+        DrawAmmoCountAt(displayListHead, item, center.x - (itemIconSize / 2), center.y - (itemIconSize / 2), alpha);
+    return displayListHead;
+}
+
 // Mirrors the vanilla D-pad placement in z_parameter.c; no scale, as vanilla's slider is stubbed.
 static Vec3s IvanClusterCenter(const char* baseCvar, s16 defaultX, s16 defaultY, IvanClusterEdge edge) {
     std::string base = baseCvar;
@@ -362,6 +384,8 @@ static void OnInterfaceDraw() {
 
     Vec3s cCenter =
         IvanClusterCenter(CVAR_COSMETIC("Ivan.CButtons"), cButtonsCenterX, cButtonsCenterY, IvanClusterEdge::Right);
+    Vec3s dCenter = IvanClusterCenter(CVAR_COSMETIC("Ivan.Dpad"), dPadCenterX, dPadCenterY, IvanClusterEdge::Left);
+
     Vec3s centers[4] = {
         { (s16)(cCenter.x - itemSpacing), cCenter.y, 0 }, // C-Left
         { cCenter.x, (s16)(cCenter.y + itemSpacing), 0 }, // C-Down
@@ -377,7 +401,6 @@ static void OnInterfaceDraw() {
     }
 
     if (CVarGetInteger(CVAR_ENHANCEMENT("DpadEquips"), 0) != 0) {
-        Vec3s dCenter = IvanClusterCenter(CVAR_COSMETIC("Ivan.Dpad"), dPadCenterX, dPadCenterY, IvanClusterEdge::Left);
         Vec3s dpadCenters[4] = {
             { dCenter.x, (s16)(dCenter.y - itemSpacing), 0 }, // Dpad-Up
             { dCenter.x, (s16)(dCenter.y + itemSpacing), 0 }, // Dpad-Down
@@ -392,48 +415,14 @@ static void OnInterfaceDraw() {
 
         for (size_t i = 0; i < ARRAY_COUNT(dpadCenters); i++) {
             u8 slot = (u8)((size_t)IvanItemIndex::DPadUp + i);
-            if (sIvanEquipAnim[slot].active) {
-                OVERLAY_DISP = IvanDrawEquipAnim(OVERLAY_DISP, slot, dpadCenters[i], ivanHudAlpha);
-                continue;
-            }
-
-            s16 item = IvanIconItem(gSaveContext.ship.ivanButtonItems[slot]);
-            if (item == ITEM_NONE) {
-                continue;
-            }
-
-            gDPPipeSync(OVERLAY_DISP++);
-            void* texture = gItemIcons[item];
-            gDPLoadTextureBlock(OVERLAY_DISP++, texture, G_IM_FMT_RGBA, G_IM_SIZ_32b, 32, 32, 0,
-                                G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK,
-                                G_TX_NOLOD, G_TX_NOLOD);
-            gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, ivanHudAlpha);
-            OVERLAY_DISP = DrawWideTextureRectCentered(OVERLAY_DISP, dpadCenters[i], itemIconSize, itemIconTexStep);
-            OVERLAY_DISP = DrawAmmoCountAt(OVERLAY_DISP, item, dpadCenters[i].x - (itemIconSize / 2),
-                                           dpadCenters[i].y - (itemIconSize / 2), ivanHudAlpha);
+            OVERLAY_DISP = IvanDrawSlotItem(OVERLAY_DISP, slot, dpadCenters[i], ivanHudAlpha);
         }
     }
 
+    // Only the three item-bearing C slots; centers[3] is C-Up, which carries the Navi label instead.
     for (size_t i = 0; i < 3; i++) {
         u8 slot = (u8)((size_t)IvanItemIndex::CLeft + i);
-        if (sIvanEquipAnim[slot].active) {
-            OVERLAY_DISP = IvanDrawEquipAnim(OVERLAY_DISP, slot, centers[i], ivanHudAlpha);
-            continue;
-        }
-
-        s16 item = IvanIconItem(gSaveContext.ship.ivanButtonItems[slot]);
-        if (item == ITEM_NONE) {
-            continue;
-        }
-
-        gDPPipeSync(OVERLAY_DISP++);
-        void* texture = gItemIcons[item];
-        gDPLoadTextureBlock(OVERLAY_DISP++, texture, G_IM_FMT_RGBA, G_IM_SIZ_32b, 32, 32, 0, G_TX_NOMIRROR | G_TX_WRAP,
-                            G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-        gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, ivanHudAlpha);
-        OVERLAY_DISP = DrawWideTextureRectCentered(OVERLAY_DISP, centers[i], itemIconSize, itemIconTexStep);
-        OVERLAY_DISP = DrawAmmoCountAt(OVERLAY_DISP, item, centers[i].x - (itemIconSize / 2),
-                                       centers[i].y - (itemIconSize / 2), ivanHudAlpha);
+        OVERLAY_DISP = IvanDrawSlotItem(OVERLAY_DISP, slot, centers[i], ivanHudAlpha);
     }
 
     s16 cUpLeftX = centers[3].x - (cButtonSize / 2);
