@@ -362,6 +362,7 @@ static Centers GetCenters() {
             }
         }
     }
+
     return centers;
 }
 
