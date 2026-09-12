@@ -334,18 +334,7 @@ static Centers GetCenters() {
     return centers;
 }
 
-static void OnInterfaceDraw() {
-    PlayState* play = gPlayState;
-    InterfaceContext* interfaceCtx = &gPlayState->interfaceCtx;
-
-    OPEN_DISPS(play->state.gfxCtx);
-
-    Gfx_SetupDL_39Overlay(play->state.gfxCtx);
-
-    gDPPipeSync(OVERLAY_DISP++);
-    gDPSetCombineMode(OVERLAY_DISP++, G_CC_MODULATEIA_PRIM, G_CC_MODULATEIA_PRIM);
-    gDPSetEnvColor(OVERLAY_DISP++, 0, 0, 0, 255);
-
+static Color_RGB8 GetTint() {
     Color_RGB8 primary = { 255, 255, 255 };
     if (CVarGetInteger(CVAR_COSMETIC("Ivan.IdlePrimary.Changed"), 0)) {
         primary = CVarGetColor24(CVAR_COSMETIC("Ivan.IdlePrimary.Value"), (Color_RGB8){ 255, 255, 255 });
@@ -359,59 +348,69 @@ static void OnInterfaceDraw() {
         (u8)(((u16)primary.g + (u16)secondary.g) / 2),
         (u8)(((u16)primary.b + (u16)secondary.b) / 2),
     };
+    return tint;
+}
 
-    // Follow the life meter, not the C-button alphas, which dim for restrictions Ivan ignores.
-    s16 ivanHudAlpha = interfaceCtx->healthAlpha;
+static void OnInterfaceDraw() {
+    PlayState* play = gPlayState;
+    InterfaceContext* interfaceCtx = &gPlayState->interfaceCtx;
 
-    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, tint.r, tint.g, tint.b, ivanHudAlpha);
+    Centers centers = GetCenters();
+    Color_RGB8 tint = GetTint();
+    s16 alpha = interfaceCtx->healthAlpha;
 
-    Centers clusters = GetCenters();
+    OPEN_DISPS(play->state.gfxCtx);
+    Gfx_SetupDL_39Overlay(play->state.gfxCtx);
+    gDPPipeSync(OVERLAY_DISP++);
+    gDPSetCombineMode(OVERLAY_DISP++, G_CC_MODULATEIA_PRIM, G_CC_MODULATEIA_PRIM);
+    gDPSetEnvColor(OVERLAY_DISP++, 0, 0, 0, 255);
 
-    Vec3s centers[4] = {
-        { (s16)(clusters.cButtonsX - itemSpacing), clusters.cButtonsY, 0 }, // C-Left
-        { clusters.cButtonsX, (s16)(clusters.cButtonsY + itemSpacing), 0 }, // C-Down
-        { (s16)(clusters.cButtonsX + itemSpacing), clusters.cButtonsY, 0 }, // C-Right
-        { clusters.cButtonsX, (s16)(clusters.cButtonsY - itemSpacing), 0 }, // C-Up
+    Vec3s cButtonCenters[4] = {
+        { (s16)(centers.cButtonsX - itemSpacing), centers.cButtonsY, 0 }, // C-Left
+        { centers.cButtonsX, (s16)(centers.cButtonsY + itemSpacing), 0 }, // C-Down
+        { (s16)(centers.cButtonsX + itemSpacing), centers.cButtonsY, 0 }, // C-Right
+        { centers.cButtonsX, (s16)(centers.cButtonsY - itemSpacing), 0 }, // C-Up
     };
 
+    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, tint.r, tint.g, tint.b, alpha);
     gDPLoadTextureBlock(OVERLAY_DISP++, gButtonBackgroundTex, G_IM_FMT_IA, G_IM_SIZ_8b, 32, 32, 0,
                         G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD,
                         G_TX_NOLOD);
-    for (size_t i = 0; i < ARRAY_COUNT(centers); i++) {
-        OVERLAY_DISP = DrawWideTextureRectCentered(OVERLAY_DISP, centers[i], cButtonSize, cButtonTexStep);
+    for (size_t i = 0; i < ARRAY_COUNT(cButtonCenters); i++) {
+        OVERLAY_DISP = DrawWideTextureRectCentered(OVERLAY_DISP, cButtonCenters[i], cButtonSize, cButtonTexStep);
     }
 
     if (CVarGetInteger(CVAR_ENHANCEMENT("DpadEquips"), 0)) {
         Vec3s dpadCenters[4] = {
-            { clusters.dpadX, (s16)(clusters.dpadY - itemSpacing), 0 }, // Dpad-Up
-            { clusters.dpadX, (s16)(clusters.dpadY + itemSpacing), 0 }, // Dpad-Down
-            { (s16)(clusters.dpadX - itemSpacing), clusters.dpadY, 0 }, // Dpad-Left
-            { (s16)(clusters.dpadX + itemSpacing), clusters.dpadY, 0 }, // Dpad-Right
+            { centers.dpadX, (s16)(centers.dpadY - itemSpacing), 0 }, // Dpad-Up
+            { centers.dpadX, (s16)(centers.dpadY + itemSpacing), 0 }, // Dpad-Down
+            { (s16)(centers.dpadX - itemSpacing), centers.dpadY, 0 }, // Dpad-Left
+            { (s16)(centers.dpadX + itemSpacing), centers.dpadY, 0 }, // Dpad-Right
         };
 
         gDPLoadTextureBlock(OVERLAY_DISP++, gDPadTex, G_IM_FMT_IA, G_IM_SIZ_16b, dPadSize, dPadSize, 0,
                             G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD,
                             G_TX_NOLOD);
-        Vec3s dpadTexCenter = { clusters.dpadX, clusters.dpadY, 0 };
+        Vec3s dpadTexCenter = { centers.dpadX, centers.dpadY, 0 };
         OVERLAY_DISP = DrawWideTextureRectCentered(OVERLAY_DISP, dpadTexCenter, dPadSize, dPadTexStep);
 
         for (size_t i = 0; i < ARRAY_COUNT(dpadCenters); i++) {
             u8 slot = (u8)((size_t)IvanItemIndex::DPadUp + i);
-            OVERLAY_DISP = DrawItemIcon(OVERLAY_DISP, slot, dpadCenters[i].x, dpadCenters[i].y, ivanHudAlpha);
+            OVERLAY_DISP = DrawItemIcon(OVERLAY_DISP, slot, dpadCenters[i].x, dpadCenters[i].y, alpha);
         }
     }
 
     // Only the three item-bearing C slots; centers[3] is C-Up, which carries the Navi label instead.
     for (size_t i = 0; i < 3; i++) {
         u8 slot = (u8)((size_t)IvanItemIndex::CLeft + i);
-        OVERLAY_DISP = DrawItemIcon(OVERLAY_DISP, slot, centers[i].x, centers[i].y, ivanHudAlpha);
+        OVERLAY_DISP = DrawItemIcon(OVERLAY_DISP, slot, cButtonCenters[i].x, cButtonCenters[i].y, alpha);
     }
 
-    s16 cUpLeftX = centers[3].x - (cButtonSize / 2);
-    s16 cUpLeftY = centers[3].y - (cButtonSize / 2);
+    s16 cUpLeftX = cButtonCenters[3].x - (cButtonSize / 2);
+    s16 cUpLeftY = cButtonCenters[3].y - (cButtonSize / 2);
 
     gDPPipeSync(OVERLAY_DISP++);
-    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, ivanHudAlpha);
+    gDPSetPrimColor(OVERLAY_DISP++, 0, 0, 255, 255, 255, alpha);
     gDPSetCombineLERP(OVERLAY_DISP++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0, PRIMITIVE,
                       ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
     gDPLoadTextureBlock_4b(OVERLAY_DISP++, (void*)gNaviCUpENGTex, G_IM_FMT_IA, 32, 8, 0, G_TX_NOMIRROR | G_TX_WRAP,
