@@ -45,7 +45,6 @@ enum class IvanItemIndex : u8 {
 };
 
 struct IvanEquipAnim {
-    bool active;
     s16 startX, startY;
     s16 framesLeft;
 };
@@ -129,7 +128,6 @@ static void IvanSeedEquipAnim(PlayState* play, u8 slot) {
     s16 cursorSlot = play->pauseCtx.cursorSlot[PAUSE_ITEM];
     s16 idx = cursorSlot * 4;
     const s16 halfQuad = 16; // itemVtx is the quad's top-left; the sprite draws centered
-    sIvanEquipAnim[slot].active = true;
     sIvanEquipAnim[slot].startX = (s16)(play->pauseCtx.itemVtx[idx].v.ob[0] + 160 + halfQuad);
     sIvanEquipAnim[slot].startY = (s16)(120 - play->pauseCtx.itemVtx[idx].v.ob[1] + halfQuad);
     sIvanEquipAnim[slot].framesLeft = ivanEquipAnimFrames;
@@ -163,7 +161,7 @@ static void OnKaleidoUpdate() {
                         if (CVarGetInteger(CVAR_ENHANCEMENT("ItemUnequip"), 0) &&
                             gSaveContext.ship.ivanButtonItems[targetSlot] == cursorItem) {
                             gSaveContext.ship.ivanButtonItems[targetSlot] = ITEM_NONE;
-                            sIvanEquipAnim[targetSlot].active = false;
+                            sIvanEquipAnim[targetSlot].framesLeft = 0;
                             Audio_PlaySfxGeneral(NA_SE_SY_DECIDE, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
                                                  &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
                             break;
@@ -174,7 +172,7 @@ static void OnKaleidoUpdate() {
                         for (size_t j = 0; j < ARRAY_COUNT(gSaveContext.ship.ivanButtonItems); j++) {
                             if (j != targetSlot && gSaveContext.ship.ivanButtonItems[j] == cursorItem) {
                                 gSaveContext.ship.ivanButtonItems[j] = displacedItem;
-                                sIvanEquipAnim[j].active = false;
+                                sIvanEquipAnim[j].framesLeft = 0;
                             }
                         }
                         gSaveContext.ship.ivanButtonItems[targetSlot] = cursorItem;
@@ -237,7 +235,7 @@ static Gfx* DrawAmmoCountAt(Gfx* displayListHead, s16 itemId, s16 x, s16 y, s16 
     return displayListHead;
 }
 
-// Callers must check active first and skip the slot's static icon while the flight is running.
+// Callers must check framesLeft first and skip the slot's static icon while the flight is running.
 static Gfx* IvanDrawEquipAnim(Gfx* displayListHead, u8 slot, Vec3s target, s16 alpha) {
     IvanEquipAnim& anim = sIvanEquipAnim[slot];
     float frac = (float)anim.framesLeft / ivanEquipAnimFrames;
@@ -255,18 +253,13 @@ static Gfx* IvanDrawEquipAnim(Gfx* displayListHead, u8 slot, Vec3s target, s16 a
     gDPSetPrimColor(displayListHead++, 0, 0, 255, 255, 255, alpha);
     displayListHead = DrawWideTextureRectCentered(displayListHead, pos, itemIconSize, itemIconTexStep);
 
-    if (anim.framesLeft > 0) {
-        anim.framesLeft--;
-    }
-    if (anim.framesLeft == 0) {
-        anim.active = false;
-    }
+    anim.framesLeft--;
     return displayListHead;
 }
 
 // Draws one slot's equipped icon at `center`, or its in-flight equip animation while one is running.
 static Gfx* IvanDrawSlotItem(Gfx* displayListHead, u8 slot, Vec3s center, s16 alpha) {
-    if (sIvanEquipAnim[slot].active) {
+    if (sIvanEquipAnim[slot].framesLeft > 0) {
         return IvanDrawEquipAnim(displayListHead, slot, center, alpha);
     }
 
