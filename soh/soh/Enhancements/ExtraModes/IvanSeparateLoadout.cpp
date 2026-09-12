@@ -63,19 +63,6 @@ static const IvanEquipButton equipButtons[] = {
 
 static IvanEquipAnim sIvanEquipAnim[ARRAY_COUNT(gSaveContext.ship.ivanButtonItems)];
 
-static s16 IvanIconItem(s16 itemId) {
-    switch (itemId) {
-        case ITEM_ARROW_FIRE:
-            return ITEM_BOW_ARROW_FIRE;
-        case ITEM_ARROW_ICE:
-            return ITEM_BOW_ARROW_ICE;
-        case ITEM_ARROW_LIGHT:
-            return ITEM_BOW_ARROW_LIGHT;
-        default:
-            return itemId;
-    }
-}
-
 static bool IsAmmoItem(s16 itemId) {
     if ((itemId >= ITEM_BOW_ARROW_FIRE) && (itemId <= ITEM_BOW_ARROW_LIGHT)) {
         return true;
@@ -235,17 +222,22 @@ static Gfx* DrawAmmoCountAt(Gfx* displayListHead, s16 itemId, s16 x, s16 y, s16 
     return displayListHead;
 }
 
-// Draws one slot's equipped icon at `center`. While an equip animation is running the icon is drawn along its flight
-// path instead, and the ammo count is held back until it lands.
-static Gfx* IvanDrawSlotItem(Gfx* displayListHead, u8 slot, Vec3s center, s16 alpha) {
-    s16 item = IvanIconItem(gSaveContext.ship.ivanButtonItems[slot]);
+static Gfx* DrawItemIcon(Gfx* displayListHead, u8 slot, Vec3s center, s16 alpha) {
+    s16 item = gSaveContext.ship.ivanButtonItems[slot];
     if (item == ITEM_NONE) {
         return displayListHead;
     }
 
+    if (item == ITEM_ARROW_FIRE)
+        item = ITEM_BOW_ARROW_FIRE;
+    else if (item == ITEM_ARROW_ICE)
+        item = ITEM_BOW_ARROW_ICE;
+    else if (item == ITEM_ARROW_LIGHT)
+        item = ITEM_BOW_ARROW_LIGHT;
+
     IvanEquipAnim& anim = sIvanEquipAnim[slot];
-    bool inFlight = anim.framesLeft > 0;
-    if (inFlight) {
+    bool animating = anim.framesLeft > 0;
+    if (animating) {
         float frac = (float)anim.framesLeft / ivanEquipAnimFrames;
         center.x = (s16)(center.x + (anim.startX - center.x) * frac);
         center.y = (s16)(center.y + (anim.startY - center.y) * frac);
@@ -258,7 +250,7 @@ static Gfx* IvanDrawSlotItem(Gfx* displayListHead, u8 slot, Vec3s center, s16 al
                         G_TX_NOLOD);
     gDPSetPrimColor(displayListHead++, 0, 0, 255, 255, 255, alpha);
     displayListHead = DrawWideTextureRectCentered(displayListHead, center, itemIconSize, itemIconTexStep);
-    if (!inFlight) {
+    if (!animating) {
         displayListHead =
             DrawAmmoCountAt(displayListHead, item, center.x - (itemIconSize / 2), center.y - (itemIconSize / 2), alpha);
     }
@@ -401,14 +393,14 @@ static void OnInterfaceDraw() {
 
         for (size_t i = 0; i < ARRAY_COUNT(dpadCenters); i++) {
             u8 slot = (u8)((size_t)IvanItemIndex::DPadUp + i);
-            OVERLAY_DISP = IvanDrawSlotItem(OVERLAY_DISP, slot, dpadCenters[i], ivanHudAlpha);
+            OVERLAY_DISP = DrawItemIcon(OVERLAY_DISP, slot, dpadCenters[i], ivanHudAlpha);
         }
     }
 
     // Only the three item-bearing C slots; centers[3] is C-Up, which carries the Navi label instead.
     for (size_t i = 0; i < 3; i++) {
         u8 slot = (u8)((size_t)IvanItemIndex::CLeft + i);
-        OVERLAY_DISP = IvanDrawSlotItem(OVERLAY_DISP, slot, centers[i], ivanHudAlpha);
+        OVERLAY_DISP = DrawItemIcon(OVERLAY_DISP, slot, centers[i], ivanHudAlpha);
     }
 
     s16 cUpLeftX = centers[3].x - (cButtonSize / 2);
