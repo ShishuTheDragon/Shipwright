@@ -147,7 +147,7 @@ static void OnKaleidoUpdate() {
             u32 ivanButtons = play->state.input[1].press.button;
             if (cursorItem != ITEM_SOLD_OUT && cursorItem != ITEM_NONE) {
                 // En_Partner only polls Ivan's D-pad slots when DpadEquips is on.
-                bool dpadEquips = CVarGetInteger(CVAR_ENHANCEMENT("DpadEquips"), 0) != 0;
+                bool dpadEquips = CVarGetInteger(CVAR_ENHANCEMENT("DpadEquips"), 0);
 
                 for (size_t i = 0; i < ARRAY_COUNT(equipButtons); i++) {
                     if (!dpadEquips && equipButtons[i].slot >= IvanItemIndex::DPadUp) {
@@ -302,7 +302,7 @@ static Centers GetCenters() {
 
     /* dpadX/Y */ {
         s16 posType = CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.PosType"), ORIGINAL_LOCATION);
-        bool useMargins = CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.UseMargins"), 0) != 0;
+        bool useMargins = CVarGetInteger(CVAR_COSMETIC("Ivan.Dpad.UseMargins"), 0);
         s16 yMargin = useMargins ? bottomMargin : 0;
 
         if (posType == ORIGINAL_LOCATION) {
@@ -331,7 +331,7 @@ static Centers GetCenters() {
 
     /* cButtonsX/Y */ {
         s16 posType = CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.PosType"), ORIGINAL_LOCATION);
-        bool useMargins = CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.UseMargins"), 0) != 0;
+        bool useMargins = CVarGetInteger(CVAR_COSMETIC("Ivan.CButtons.UseMargins"), 0);
         s16 yMargin = useMargins ? bottomMargin : 0;
 
         if (posType == ORIGINAL_LOCATION) {
@@ -408,7 +408,7 @@ static void OnInterfaceDraw() {
         OVERLAY_DISP = DrawWideTextureRectCentered(OVERLAY_DISP, centers[i], cButtonSize, cButtonTexStep);
     }
 
-    if (CVarGetInteger(CVAR_ENHANCEMENT("DpadEquips"), 0) != 0) {
+    if (CVarGetInteger(CVAR_ENHANCEMENT("DpadEquips"), 0)) {
         Vec3s dpadCenters[4] = {
             { clusters.dpadX, (s16)(clusters.dpadY - itemSpacing), 0 }, // Dpad-Up
             { clusters.dpadX, (s16)(clusters.dpadY + itemSpacing), 0 }, // Dpad-Down
@@ -453,7 +453,7 @@ static void OnInterfaceDraw() {
 }
 
 static void RegisterIvanSeparateLoadout() {
-    bool enabled = CVAR_IVAN_COOP_MODE_VALUE != 0 && CVAR_IVAN_SEPARATE_LOADOUT_VALUE != 0;
+    bool enabled = CVAR_IVAN_COOP_MODE_VALUE && CVAR_IVAN_SEPARATE_LOADOUT_VALUE;
     COND_HOOK(OnKaleidoUpdate, enabled, OnKaleidoUpdate);
     COND_HOOK(OnInterfaceDraw, enabled, OnInterfaceDraw);
 }
