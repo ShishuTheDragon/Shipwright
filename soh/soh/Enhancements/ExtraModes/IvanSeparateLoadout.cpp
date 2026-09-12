@@ -1,6 +1,7 @@
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/Enhancements/cosmetics/cosmeticsTypes.h"
 #include "soh/ShipInit.hpp"
+#include "soh/frame_interpolation.h" // IWYU pragma: keep
 
 extern "C" {
 #include "textures/parameter_static/parameter_static.h"
@@ -14,8 +15,6 @@ Gfx* Gfx_TextureIA8(Gfx* displayListHead, void* texture, s16 textureWidth, s16 t
                     s16 rectWidth, s16 rectHeight, u16 dsdx, u16 dtdy);
 float OTRGetDimensionFromLeftEdge(float v);
 float OTRGetDimensionFromRightEdge(float v);
-void FrameInterpolation_RecordOpenChild(const void* a, int b);
-void FrameInterpolation_RecordCloseChild(void);
 }
 
 #define CVAR_IVAN_COOP_MODE_NAME CVAR_ENHANCEMENT("IvanCoopModeEnabled")
