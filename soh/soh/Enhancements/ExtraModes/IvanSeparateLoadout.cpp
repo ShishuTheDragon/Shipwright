@@ -181,7 +181,7 @@ static Gfx* DrawWideTextureRectCentered(Gfx* displayListHead, Vec3s center, s16 
     return displayListHead;
 }
 
-static Gfx* DrawAmmoCountAt(Gfx* displayListHead, s16 itemId, s16 x, s16 y, s16 alpha) {
+static Gfx* DrawAmmoCount(Gfx* displayListHead, s16 itemId, s16 x, s16 y, s16 alpha) {
     if (!GameInteractor_Should(VB_DRAW_AMMO_COUNT, IsAmmoItem(itemId), &itemId)) {
         return displayListHead;
     }
@@ -220,7 +220,7 @@ static Gfx* DrawAmmoCountAt(Gfx* displayListHead, s16 itemId, s16 x, s16 y, s16 
     return displayListHead;
 }
 
-static Gfx* DrawItem(Gfx* displayListHead, u8 slot, Vec3s center, s16 alpha) {
+static Gfx* DrawItemIcon(Gfx* displayListHead, u8 slot, s16 centerX, s16 centerY, s16 alpha) {
     s16 item = gSaveContext.ship.ivanButtonItems[slot];
     if (item == ITEM_NONE) {
         return displayListHead;
@@ -237,15 +237,15 @@ static Gfx* DrawItem(Gfx* displayListHead, u8 slot, Vec3s center, s16 alpha) {
     bool animating = anim.framesLeft > 0;
     if (animating) {
         float frac = (float)anim.framesLeft / ivanEquipAnimFrames;
-        center.x = (s16)(center.x + (anim.startX - center.x) * frac);
-        center.y = (s16)(center.y + (anim.startY - center.y) * frac);
+        centerX = (s16)(centerX + (anim.startX - centerX) * frac);
+        centerY = (s16)(centerY + (anim.startY - centerY) * frac);
         anim.framesLeft--;
     }
 
     static const s16 iconSize = 16;
     static const s16 iconDD = 512 * 32 / iconSize;
-    s16 x = center.x - (iconSize / 2);
-    s16 y = center.y - (iconSize / 2);
+    s16 x = centerX - (iconSize / 2);
+    s16 y = centerY - (iconSize / 2);
 
     gDPSetPrimColor(displayListHead++, 0, 0, 255, 255, 255, alpha);
     gDPLoadTextureBlock(displayListHead++, gItemIcons[item], G_IM_FMT_RGBA, G_IM_SIZ_32b, 32, 32, 0,
@@ -255,7 +255,7 @@ static Gfx* DrawItem(Gfx* displayListHead, u8 slot, Vec3s center, s16 alpha) {
                             G_TX_RENDERTILE, 0, 0, iconDD << 1, iconDD << 1);
 
     if (!animating) {
-        displayListHead = DrawAmmoCountAt(displayListHead, item, x, y, alpha);
+        displayListHead = DrawAmmoCount(displayListHead, item, x, y, alpha);
     }
 
     return displayListHead;
@@ -397,14 +397,14 @@ static void OnInterfaceDraw() {
 
         for (size_t i = 0; i < ARRAY_COUNT(dpadCenters); i++) {
             u8 slot = (u8)((size_t)IvanItemIndex::DPadUp + i);
-            OVERLAY_DISP = DrawItem(OVERLAY_DISP, slot, dpadCenters[i], ivanHudAlpha);
+            OVERLAY_DISP = DrawItemIcon(OVERLAY_DISP, slot, dpadCenters[i].x, dpadCenters[i].y, ivanHudAlpha);
         }
     }
 
     // Only the three item-bearing C slots; centers[3] is C-Up, which carries the Navi label instead.
     for (size_t i = 0; i < 3; i++) {
         u8 slot = (u8)((size_t)IvanItemIndex::CLeft + i);
-        OVERLAY_DISP = DrawItem(OVERLAY_DISP, slot, centers[i], ivanHudAlpha);
+        OVERLAY_DISP = DrawItemIcon(OVERLAY_DISP, slot, centers[i].x, centers[i].y, ivanHudAlpha);
     }
 
     s16 cUpLeftX = centers[3].x - (cButtonSize / 2);
