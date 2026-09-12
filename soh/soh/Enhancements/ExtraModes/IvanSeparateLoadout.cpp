@@ -259,13 +259,13 @@ static Gfx* IvanDrawEquipAnim(Gfx* displayListHead, u8 slot, Vec3s target, s16 a
 
 // Draws one slot's equipped icon at `center`, or its in-flight equip animation while one is running.
 static Gfx* IvanDrawSlotItem(Gfx* displayListHead, u8 slot, Vec3s center, s16 alpha) {
-    if (sIvanEquipAnim[slot].framesLeft > 0) {
-        return IvanDrawEquipAnim(displayListHead, slot, center, alpha);
-    }
-
     s16 item = IvanIconItem(gSaveContext.ship.ivanButtonItems[slot]);
     if (item == ITEM_NONE) {
         return displayListHead;
+    }
+
+    if (sIvanEquipAnim[slot].framesLeft > 0) {
+        return IvanDrawEquipAnim(displayListHead, slot, center, alpha);
     }
 
     gDPPipeSync(displayListHead++);
