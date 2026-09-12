@@ -46,7 +46,6 @@ enum class IvanItemIndex : u8 {
 
 struct IvanEquipAnim {
     bool active;
-    s16 item;
     s16 startX, startY;
     s16 framesLeft;
 };
@@ -126,12 +125,11 @@ static bool IvanCanUseItem(s16 itemId) {
 }
 
 // Converts the cursor's grid vertex to HUD space, the inverse of vanilla's x-160 / 120-y mapping.
-static void IvanSeedEquipAnim(PlayState* play, u8 slot, s16 item) {
+static void IvanSeedEquipAnim(PlayState* play, u8 slot) {
     s16 cursorSlot = play->pauseCtx.cursorSlot[PAUSE_ITEM];
     s16 idx = cursorSlot * 4;
     const s16 halfQuad = 16; // itemVtx is the quad's top-left; the sprite draws centered
     sIvanEquipAnim[slot].active = true;
-    sIvanEquipAnim[slot].item = item;
     sIvanEquipAnim[slot].startX = (s16)(play->pauseCtx.itemVtx[idx].v.ob[0] + 160 + halfQuad);
     sIvanEquipAnim[slot].startY = (s16)(120 - play->pauseCtx.itemVtx[idx].v.ob[1] + halfQuad);
     sIvanEquipAnim[slot].framesLeft = ivanEquipAnimFrames;
@@ -180,7 +178,7 @@ static void OnKaleidoUpdate() {
                             }
                         }
                         gSaveContext.ship.ivanButtonItems[targetSlot] = cursorItem;
-                        IvanSeedEquipAnim(play, targetSlot, cursorItem);
+                        IvanSeedEquipAnim(play, targetSlot);
                         Audio_PlaySfxGeneral(NA_SE_SY_DECIDE, &gSfxDefaultPos, 4, &gSfxDefaultFreqAndVolScale,
                                              &gSfxDefaultFreqAndVolScale, &gSfxDefaultReverb);
                         break;
@@ -248,7 +246,7 @@ static Gfx* IvanDrawEquipAnim(Gfx* displayListHead, u8 slot, Vec3s target, s16 a
         (s16)(target.y + (anim.startY - target.y) * frac),
         0,
     };
-    s16 item = IvanIconItem(anim.item);
+    s16 item = IvanIconItem(gSaveContext.ship.ivanButtonItems[slot]);
 
     gDPPipeSync(displayListHead++);
     gDPLoadTextureBlock(displayListHead++, gItemIcons[item], G_IM_FMT_RGBA, G_IM_SIZ_32b, 32, 32, 0,
