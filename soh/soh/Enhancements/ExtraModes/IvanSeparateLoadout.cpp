@@ -235,37 +235,21 @@ static Gfx* DrawAmmoCountAt(Gfx* displayListHead, s16 itemId, s16 x, s16 y, s16 
     return displayListHead;
 }
 
-// Callers must check framesLeft first and skip the slot's static icon while the flight is running.
-static Gfx* IvanDrawEquipAnim(Gfx* displayListHead, u8 slot, Vec3s target, s16 alpha) {
-    IvanEquipAnim& anim = sIvanEquipAnim[slot];
-    float frac = (float)anim.framesLeft / ivanEquipAnimFrames;
-    Vec3s pos = {
-        (s16)(target.x + (anim.startX - target.x) * frac),
-        (s16)(target.y + (anim.startY - target.y) * frac),
-        0,
-    };
-    s16 item = IvanIconItem(gSaveContext.ship.ivanButtonItems[slot]);
-
-    gDPPipeSync(displayListHead++);
-    gDPLoadTextureBlock(displayListHead++, gItemIcons[item], G_IM_FMT_RGBA, G_IM_SIZ_32b, 32, 32, 0,
-                        G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD,
-                        G_TX_NOLOD);
-    gDPSetPrimColor(displayListHead++, 0, 0, 255, 255, 255, alpha);
-    displayListHead = DrawWideTextureRectCentered(displayListHead, pos, itemIconSize, itemIconTexStep);
-
-    anim.framesLeft--;
-    return displayListHead;
-}
-
-// Draws one slot's equipped icon at `center`, or its in-flight equip animation while one is running.
+// Draws one slot's equipped icon at `center`. While an equip animation is running the icon is drawn along its flight
+// path instead, and the ammo count is held back until it lands.
 static Gfx* IvanDrawSlotItem(Gfx* displayListHead, u8 slot, Vec3s center, s16 alpha) {
     s16 item = IvanIconItem(gSaveContext.ship.ivanButtonItems[slot]);
     if (item == ITEM_NONE) {
         return displayListHead;
     }
 
-    if (sIvanEquipAnim[slot].framesLeft > 0) {
-        return IvanDrawEquipAnim(displayListHead, slot, center, alpha);
+    IvanEquipAnim& anim = sIvanEquipAnim[slot];
+    bool inFlight = anim.framesLeft > 0;
+    if (inFlight) {
+        float frac = (float)anim.framesLeft / ivanEquipAnimFrames;
+        center.x = (s16)(center.x + (anim.startX - center.x) * frac);
+        center.y = (s16)(center.y + (anim.startY - center.y) * frac);
+        anim.framesLeft--;
     }
 
     gDPPipeSync(displayListHead++);
@@ -274,8 +258,10 @@ static Gfx* IvanDrawSlotItem(Gfx* displayListHead, u8 slot, Vec3s center, s16 al
                         G_TX_NOLOD);
     gDPSetPrimColor(displayListHead++, 0, 0, 255, 255, 255, alpha);
     displayListHead = DrawWideTextureRectCentered(displayListHead, center, itemIconSize, itemIconTexStep);
-    displayListHead =
-        DrawAmmoCountAt(displayListHead, item, center.x - (itemIconSize / 2), center.y - (itemIconSize / 2), alpha);
+    if (!inFlight) {
+        displayListHead =
+            DrawAmmoCountAt(displayListHead, item, center.x - (itemIconSize / 2), center.y - (itemIconSize / 2), alpha);
+    }
     return displayListHead;
 }
 
