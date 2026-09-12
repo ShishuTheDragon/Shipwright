@@ -25,8 +25,6 @@ float OTRGetDimensionFromRightEdge(float v);
 
 static const s16 cButtonSize = 16;
 static const s16 cButtonTexStep = 512 * 32 / cButtonSize;
-static const s16 itemIconSize = 16;
-static const s16 itemIconTexStep = 512 * 32 / itemIconSize;
 static const s16 itemSpacing = 16;
 static const s16 dPadSize = 32;
 static const s16 dPadTexStep = 512;
@@ -222,7 +220,7 @@ static Gfx* DrawAmmoCountAt(Gfx* displayListHead, s16 itemId, s16 x, s16 y, s16 
     return displayListHead;
 }
 
-static Gfx* DrawItemIcon(Gfx* displayListHead, u8 slot, Vec3s center, s16 alpha) {
+static Gfx* DrawItem(Gfx* displayListHead, u8 slot, Vec3s center, s16 alpha) {
     s16 item = gSaveContext.ship.ivanButtonItems[slot];
     if (item == ITEM_NONE) {
         return displayListHead;
@@ -244,16 +242,22 @@ static Gfx* DrawItemIcon(Gfx* displayListHead, u8 slot, Vec3s center, s16 alpha)
         anim.framesLeft--;
     }
 
-    gDPPipeSync(displayListHead++);
+    static const s16 iconSize = 16;
+    static const s16 iconDD = 512 * 32 / iconSize;
+    s16 x = center.x - (iconSize / 2);
+    s16 y = center.y - (iconSize / 2);
+
+    gDPSetPrimColor(displayListHead++, 0, 0, 255, 255, 255, alpha);
     gDPLoadTextureBlock(displayListHead++, gItemIcons[item], G_IM_FMT_RGBA, G_IM_SIZ_32b, 32, 32, 0,
                         G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD,
                         G_TX_NOLOD);
-    gDPSetPrimColor(displayListHead++, 0, 0, 255, 255, 255, alpha);
-    displayListHead = DrawWideTextureRectCentered(displayListHead, center, itemIconSize, itemIconTexStep);
+    gSPWideTextureRectangle(displayListHead++, x << 2, y << 2, (x + iconSize) << 2, (y + iconSize) << 2,
+                            G_TX_RENDERTILE, 0, 0, iconDD << 1, iconDD << 1);
+
     if (!animating) {
-        displayListHead =
-            DrawAmmoCountAt(displayListHead, item, center.x - (itemIconSize / 2), center.y - (itemIconSize / 2), alpha);
+        displayListHead = DrawAmmoCountAt(displayListHead, item, x, y, alpha);
     }
+
     return displayListHead;
 }
 
@@ -393,14 +397,14 @@ static void OnInterfaceDraw() {
 
         for (size_t i = 0; i < ARRAY_COUNT(dpadCenters); i++) {
             u8 slot = (u8)((size_t)IvanItemIndex::DPadUp + i);
-            OVERLAY_DISP = DrawItemIcon(OVERLAY_DISP, slot, dpadCenters[i], ivanHudAlpha);
+            OVERLAY_DISP = DrawItem(OVERLAY_DISP, slot, dpadCenters[i], ivanHudAlpha);
         }
     }
 
     // Only the three item-bearing C slots; centers[3] is C-Up, which carries the Navi label instead.
     for (size_t i = 0; i < 3; i++) {
         u8 slot = (u8)((size_t)IvanItemIndex::CLeft + i);
-        OVERLAY_DISP = DrawItemIcon(OVERLAY_DISP, slot, centers[i], ivanHudAlpha);
+        OVERLAY_DISP = DrawItem(OVERLAY_DISP, slot, centers[i], ivanHudAlpha);
     }
 
     s16 cUpLeftX = centers[3].x - (cButtonSize / 2);
