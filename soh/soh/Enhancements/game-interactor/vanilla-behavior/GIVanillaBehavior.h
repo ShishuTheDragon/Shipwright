@@ -4097,4 +4097,15 @@ typedef enum {
     // - none
     VB_EMPTY_BOTTLE_OI,
 
+    // #### `result`
+    // ```c
+    // true
+    // ```
+    // Side-effect hook: lets an enhancement scale a computed damage value in place.
+    // Fired from the collision-damage paths.
+    // #### `args`
+    // - `*Actor` (the actor taking damage, or the PlayState for the sword-damage path)
+    // - `*u8`   (the damage value to modify)
+    VB_MODIFY_INCOMING_DAMAGE,
+
 } GIVanillaBehavior;

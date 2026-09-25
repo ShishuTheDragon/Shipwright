@@ -111,7 +111,7 @@ void EnPartner_Init(Actor* thisx, PlayState* play) {
     this->actor.colChkInfo.mass = MASS_HEAVY;
     this->collider.base.ocFlags1 |= OC1_TYPE_PLAYER;
     this->collider.info.toucher.damage = 1;
-    GET_PLAYER(play)->ivanDamageMultiplier = 1;
+    this->damageMultiplier = 1;
 
     Collider_InitCylinder(play, &this->weaponCollider);
     Collider_SetCylinder(play, &this->weaponCollider, &this->actor, &sWeaponCylinderInit);
@@ -146,10 +146,7 @@ void EnPartner_Destroy(Actor* thisx, PlayState* play) {
         this->windEffect = NULL;
     }
 
-    Player* player = GET_PLAYER(play);
-    if (player) {
-        player->ivanDamageMultiplier = 1;
-    }
+    this->damageMultiplier = 1;
 
     LightContext_RemoveLight(play, &play->lightCtx, this->lightNodeGlow);
     LightContext_RemoveLight(play, &play->lightCtx, this->lightNodeNoGlow);
@@ -636,7 +633,7 @@ void UseSpell(Actor* thisx, PlayState* play, u8 started, u8 spellType) {
 
             switch (this->usedSpell) {
                 case 1:
-                    GET_PLAYER(play)->ivanDamageMultiplier = 1;
+                    this->damageMultiplier = 1;
                     break;
             }
 
@@ -650,7 +647,7 @@ void UseSpell(Actor* thisx, PlayState* play, u8 started, u8 spellType) {
 
                 switch (this->usedSpell) {
                     case 1: // Din's
-                        GET_PLAYER(play)->ivanDamageMultiplier = 2;
+                        this->damageMultiplier = 2;
                         break;
                     case 2: // Nayru's
                         GET_PLAYER(play)->invincibilityTimer = -10;

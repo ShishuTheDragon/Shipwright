@@ -35,6 +35,7 @@ typedef struct EnPartner {
     u8 usedItemButton;
     u8 usedSpell;
     u8 damageTimer;
+    u8 damageMultiplier;
     s16 magicTimer;
 
     u8 shouldDraw;

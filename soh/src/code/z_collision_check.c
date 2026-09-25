@@ -2,6 +2,7 @@
 #include "vt.h"
 #include "overlays/effects/ovl_Effect_Ss_HitMark/z_eff_ss_hitmark.h"
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
+#include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include <assert.h>
 #include <libultraship/bridge/consolevariablebridge.h>
 
@@ -3028,9 +3029,8 @@ void CollisionCheck_ApplyDamage(PlayState* play, CollisionCheckContext* colChkCt
         collider->actor->colChkInfo.damage += damage;
     }
 
-    if (CVarGetInteger(CVAR_ENHANCEMENT("IvanCoopModeEnabled"), 0)) {
-        collider->actor->colChkInfo.damage *= GET_PLAYER(play)->ivanDamageMultiplier;
-    }
+    GameInteractor_Should(VB_MODIFY_INCOMING_DAMAGE, true, collider->actor,
+                          &collider->actor->colChkInfo.damage);
 }
 
 /**
@@ -3651,9 +3651,7 @@ u8 CollisionCheck_GetSwordDamage(s32 dmgFlags, PlayState* play) {
         damage = 8;
     }
 
-    if (CVarGetInteger(CVAR_ENHANCEMENT("IvanCoopModeEnabled"), 0)) {
-        damage *= GET_PLAYER(play)->ivanDamageMultiplier;
-    }
+    GameInteractor_Should(VB_MODIFY_INCOMING_DAMAGE, true, play, &damage);
 
     KREG(7) = damage;
     return damage;

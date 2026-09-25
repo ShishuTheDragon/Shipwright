@@ -142,6 +142,16 @@ static void RegisterIvanCoop() {
         Actor* actor = static_cast<Actor*>(actorRef);
         PatchDistIfNeeded(actor);
     });
+
+    COND_VB_SHOULD(VB_MODIFY_INCOMING_DAMAGE, CVAR_VALUE, {
+        va_arg(args, void*); // context (actor/play) — unused
+        u8* damage = va_arg(args, u8*);
+        if (!gPlayState) return;
+        Actor* ivanActor = FindIvan(&gPlayState->actorCtx);
+        if (ivanActor) {
+            *damage *= ((EnPartner*)ivanActor)->damageMultiplier;
+        }
+    });
 }
 
 static RegisterShipInitFunc initFunc(RegisterIvanCoop, { CVAR_NAME });
